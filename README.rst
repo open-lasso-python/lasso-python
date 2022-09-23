@@ -21,7 +21,9 @@ Module Overview:
  - `lasso.dimred`_
  - `lasso.diffcrash`_
 
-For further infos please read the Documentation_.
+For further infos please read the Documentation:
+
+    |DOCS| `Documentation`_
 
 .. _LASSO GmbH: https://www.lasso.de/en
 .. _Documentation: https://open-lasso-python.github.io/lasso-python/build/html/index.html
@@ -29,18 +31,23 @@ For further infos please read the Documentation_.
 .. _lasso.diffcrash: https://open-lasso-python.github.io/lasso-python/build/html/diffcrash/diffcrash.html
 .. _lasso.dimred: https://lasso-gmbh.github.io/lasso-python/build/html/dimred/dimred.html
 
+
+Installation
+------------
+
+:: 
+
+    python -m pip install lasso-python
+
+
 Community
 ---------
 
-Discussions on: 
+Join our open-source community on: 
 
     |DISCORD| `Discord`_
-
-Documentation:
-
-    |DOCS| `Website`_
  
-.. _Website:  https://open-lasso-python.github.io/lasso-python/build/html/index.html
+.. _Docspage:  https://open-lasso-python.github.io/lasso-python/build/html/index.html
 .. _Discord:  https://discord.gg/jYUgTsEWtN
 
 .. |LASSO| image:: ./docs/images/lasso-logo.png
@@ -49,10 +56,3 @@ Documentation:
     :target: https://open-lasso-python.github.io/lasso-python/build/html/index.html
 .. |DISCORD| image:: ./docs/images/icon-discord.png
     :target: https://discord.gg/GeHu79b
-
-Installation
-------------
-
-:: 
-
-    python -m pip install lasso-python
