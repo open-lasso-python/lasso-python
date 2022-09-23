@@ -1,0 +1,15 @@
+h5py >= 2.8
+scipy
+sklearn
+numpy
+plotly
+matplotlib
+grpcio
+flatbuffers
+protobuf
+pyarrow
+flask
+attrs
+psutil
+rich
+pandas
