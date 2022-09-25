@@ -1,4 +1,3 @@
-
 import numpy as np
 from typing import Union
 
@@ -9,12 +8,14 @@ from scipy.sparse.linalg import eigsh
 from sklearn.neighbors import KDTree
 
 
-def run_graph_laplacian(points: np.ndarray,
-                        n_eigenmodes: int = 5,
-                        min_neighbors: Union[int, None] = None,
-                        sigma: Union[float, None] = None,
-                        search_radius: Union[float, None] = None):
-    '''
+def run_graph_laplacian(
+    points: np.ndarray,
+    n_eigenmodes: int = 5,
+    min_neighbors: Union[int, None] = None,
+    sigma: Union[float, None] = None,
+    search_radius: Union[float, None] = None,
+):
+    """
     Compute a graph laplacian.
 
     Parameters
@@ -36,20 +37,24 @@ def run_graph_laplacian(points: np.ndarray,
         eigenvalues from the graph
     eigenvectors : np.ndarray
         eigenvectors with shape (n_points x n_eigenvectors)
-    '''
+    """
     with np.warnings.catch_warnings():
-        regex_string = r'the matrix subclass is not the recommended way to represent' + \
-                       r'matrices or deal with linear algebra'
-        np.warnings.filterwarnings('ignore', regex_string)
+        regex_string = (
+            r"the matrix subclass is not the recommended way to represent"
+            + r"matrices or deal with linear algebra"
+        )
+        np.warnings.filterwarnings("ignore", regex_string)
         L = _laplacian_gauss_idw(points, min_neighbors, sigma, search_radius)
         return _laplacian(L, points, n_eigenmodes)
 
 
-def _laplacian_gauss_idw(points: np.ndarray,
-                         min_neighbors: Union[int, None] = None,
-                         sigma: Union[float, None] = None,
-                         search_radius: Union[float, None] = None):
-    '''
+def _laplacian_gauss_idw(
+    points: np.ndarray,
+    min_neighbors: Union[int, None] = None,
+    sigma: Union[float, None] = None,
+    search_radius: Union[float, None] = None,
+):
+    """
     Calculates the laplacian matrix for the sample points of a manifold. The inverse
     of the the gauss-transformed distance is used as weighting of the neighbors.
 
@@ -70,7 +75,7 @@ def _laplacian_gauss_idw(points: np.ndarray,
     -------
     L: array-like, shape (n_points, n_points)
       The laplacian matrix for manifold given by its sampling `points`.
-    '''
+    """
     assert 2 == points.ndim
 
     if min_neighbors is None:
@@ -88,10 +93,12 @@ def _laplacian_gauss_idw(points: np.ndarray,
 
     graph = dok_matrix((len(points), len(points)), dtype=np.double)
 
-    for i, (j, d, e, k) in enumerate(zip(
-        *tree.query_radius(points, return_distance=True, r=search_radius),
-        *tree.query(points, return_distance=True, k=1 + min_neighbors)
-    )):
+    for i, (j, d, e, k) in enumerate(
+        zip(
+            *tree.query_radius(points, return_distance=True, r=search_radius),
+            *tree.query(points, return_distance=True, k=1 + min_neighbors)
+        )
+    ):
         # Always search for k neighbors, this prevents strongly connected local areas
         # a little bit, attracting the eigenfield
         if len(j) < 1 + min_neighbors:
@@ -110,10 +117,8 @@ def _laplacian_gauss_idw(points: np.ndarray,
     return csgraph.laplacian(graph, normed=True)
 
 
-def _laplacian(L: csgraph,
-               points: np.ndarray,
-               n_eigenmodes: int = 5):
-    '''
+def _laplacian(L: csgraph, points: np.ndarray, n_eigenmodes: int = 5):
+    """
     Compute the laplacian of a graph L
 
     Parameters
@@ -131,7 +136,7 @@ def _laplacian(L: csgraph,
         eingenvalues of the graph
     eigen_vecs : np.ndarray
         eigenvectors of each graph vector (iNode x nEigenmodes)
-    '''
+    """
 
     n_nonzero_eigenvalues = 0
     n_eigenvalues = int(n_eigenmodes * 1.5)
@@ -141,20 +146,19 @@ def _laplacian(L: csgraph,
 
     while n_nonzero_eigenvalues < n_eigenmodes:
 
-        eigen_vals, eigen_vecs = map(
-            np.real, eigsh(L, n_eigenvalues, which='SA'))
+        eigen_vals, eigen_vecs = map(np.real, eigsh(L, n_eigenvalues, which="SA"))
 
-        iStart = np.argmax(eigen_vals > 1E-7)
+        iStart = np.argmax(eigen_vals > 1e-7)
         n_nonzero_eigenvalues = len(eigen_vals) - iStart
 
         if n_nonzero_eigenvalues >= n_eigenmodes:
-            eigen_vecs = eigen_vecs[:, iStart:iStart + n_eigenmodes]
-            eigen_vals = eigen_vals[iStart:iStart + n_eigenmodes]
+            eigen_vecs = eigen_vecs[:, iStart : iStart + n_eigenmodes]
+            eigen_vals = eigen_vals[iStart : iStart + n_eigenmodes]
 
         n_eigenvalues = int(n_eigenvalues * 1.5)
 
     # optional plotting
-    '''
+    """
     if export_filepath:
 
         indexes = random.sample(range(0, len(points)), min(39000, len(points)))
@@ -172,6 +176,6 @@ def _laplacian(L: csgraph,
                   fringe=subeigen,
                   filepath=export_filepath,
                   fringe_names=fringe_names)
-    '''
+    """
 
     return eigen_vals, eigen_vecs

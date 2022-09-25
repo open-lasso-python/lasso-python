@@ -1,18 +1,27 @@
-
 import logging
 import os
 import re
 import stat
 import sys
 import time
-from ctypes import (CDLL, POINTER, Structure, byref, c_char_p, c_float, c_int,
-                    c_int32, c_int64, c_uint64, sizeof)
+from ctypes import (
+    CDLL,
+    POINTER,
+    Structure,
+    byref,
+    c_char_p,
+    c_float,
+    c_int,
+    c_int32,
+    c_int64,
+    c_uint64,
+    sizeof,
+)
 from typing import Any, Dict, List, Set, Tuple, Union
 
 import numpy as np
 
-from .fz_config import (FemzipArrayType, FemzipVariableCategory,
-                        get_last_int_of_line)
+from .fz_config import FemzipArrayType, FemzipVariableCategory, get_last_int_of_line
 
 
 class FemzipException(Exception):
@@ -94,7 +103,7 @@ class FemzipAPI:
 
     @staticmethod
     def load_dynamic_library(path: str) -> CDLL:
-        ''' Load a library and check for correct execution
+        """Load a library and check for correct execution
 
         Parameters
         ----------
@@ -105,7 +114,7 @@ class FemzipAPI:
         -------
         library: CDLL
             loaded library
-        '''
+        """
 
         # check executable rights
         if not os.access(path, os.X_OK) or not os.access(path, os.R_OK):
@@ -120,9 +129,11 @@ class FemzipAPI:
     def api(self) -> CDLL:
         if self._api is None:
 
-            bin_dirpath = os.path.abspath(os.path.dirname(sys.executable)) \
-                if hasattr(sys, 'frozen') \
+            bin_dirpath = (
+                os.path.abspath(os.path.dirname(sys.executable))
+                if hasattr(sys, "frozen")
                 else os.path.dirname(os.path.abspath(__file__))
+            )
 
             # Flexlm Settings
             # prevent flexlm gui to pop up
@@ -135,18 +146,10 @@ class FemzipAPI:
             if "win32" in sys.platform:
 
                 shared_lib_name = "api_extended.dll"
-                self.load_dynamic_library(
-                    os.path.join(bin_dirpath, "libmmd.dll")
-                )
-                self.load_dynamic_library(
-                    os.path.join(bin_dirpath, "libifcoremd.dll")
-                )
-                self.load_dynamic_library(
-                    os.path.join(bin_dirpath, "libifportmd.dll")
-                )
-                self.load_dynamic_library(
-                    os.path.join(bin_dirpath, "libiomp5md.dll")
-                )
+                self.load_dynamic_library(os.path.join(bin_dirpath, "libmmd.dll"))
+                self.load_dynamic_library(os.path.join(bin_dirpath, "libifcoremd.dll"))
+                self.load_dynamic_library(os.path.join(bin_dirpath, "libifportmd.dll"))
+                self.load_dynamic_library(os.path.join(bin_dirpath, "libiomp5md.dll"))
                 self.load_dynamic_library(
                     os.path.join(bin_dirpath, "femzip_a_dyna_sidact_generic.dll")
                 )
@@ -156,31 +159,19 @@ class FemzipAPI:
             # linux hopefully
             else:
                 shared_lib_name = "api_extended.so"
-                self.load_dynamic_library(
-                    os.path.join(bin_dirpath, "libiomp5.so")
-                )
-                self.load_dynamic_library(
-                    os.path.join(bin_dirpath, "libintlc.so.5")
-                )
-                self.load_dynamic_library(
-                    os.path.join(bin_dirpath, "libirng.so")
-                )
-                self.load_dynamic_library(
-                    os.path.join(bin_dirpath, "libimf.so")
-                )
-                self.load_dynamic_library(
-                    os.path.join(bin_dirpath, "libsvml.so")
-                )
+                self.load_dynamic_library(os.path.join(bin_dirpath, "libiomp5.so"))
+                self.load_dynamic_library(os.path.join(bin_dirpath, "libintlc.so.5"))
+                self.load_dynamic_library(os.path.join(bin_dirpath, "libirng.so"))
+                self.load_dynamic_library(os.path.join(bin_dirpath, "libimf.so"))
+                self.load_dynamic_library(os.path.join(bin_dirpath, "libsvml.so"))
                 self.load_dynamic_library(
                     os.path.join(bin_dirpath, "libfemzip_a_dyna_sidact_generic.so")
                 )
                 self.load_dynamic_library(
-                    os.path.join(bin_dirpath,
-                                 "libfemzip_post_licgenerator_ext_flexlm.so")
+                    os.path.join(bin_dirpath, "libfemzip_post_licgenerator_ext_flexlm.so")
                 )
 
-            filepath = os.path.join(
-                bin_dirpath, shared_lib_name)
+            filepath = os.path.join(bin_dirpath, shared_lib_name)
             self._api = self.load_dynamic_library(filepath)
 
             # license check
@@ -191,33 +182,37 @@ class FemzipAPI:
             self._api.is_sidact_file.restype = c_int
 
             # content infos
-            self._api.get_file_metadata.argtypes = (
-                c_char_p, POINTER(FemzipFileMetadata))
+            self._api.get_file_metadata.argtypes = (c_char_p, POINTER(FemzipFileMetadata))
             self._api.get_file_metadata.restype = FemzipError
 
             # free
-            self._api.free_variable_array.argtypes = (
-                POINTER(FemzipFileMetadata),)
+            self._api.free_variable_array.argtypes = (POINTER(FemzipFileMetadata),)
             self._api.free_variable_array.restype = c_int32
 
             # get buffer dims
-            self._api.get_buffer_info.argtypes = (
-                c_char_p, POINTER(FemzipBufferInfo))
+            self._api.get_buffer_info.argtypes = (c_char_p, POINTER(FemzipBufferInfo))
             self._api.get_buffer_info.restype = FemzipError
 
             # read geom
             self._api.read_geometry.argtypes = (
-                c_char_p, POINTER(FemzipBufferInfo), POINTER(c_int32), c_int32)
+                c_char_p,
+                POINTER(FemzipBufferInfo),
+                POINTER(c_int32),
+                c_int32,
+            )
             self._api.read_geometry.restype = FemzipError
 
             # read var
             self._api.read_variables.argtypes = (
-                POINTER(c_float), c_int, c_int, POINTER(FemzipFileMetadata))
+                POINTER(c_float),
+                c_int,
+                c_int,
+                POINTER(FemzipFileMetadata),
+            )
             self._api.read_variables.restype = FemzipError
 
             # femunzip version
-            self._api.is_femunzip_version_ok.argtypes = (
-                c_char_p, POINTER(c_int))
+            self._api.is_femunzip_version_ok.argtypes = (c_char_p, POINTER(c_int))
             self._api.is_femunzip_version_ok.restype = FemzipError
 
             # femzip status
@@ -225,16 +220,11 @@ class FemzipAPI:
             self._api.get_femzip_status.restype = FemzipAPIStatus
 
             # get part titles
-            self._api.get_part_titles.argtypes = (
-                c_char_p,
-                POINTER(c_int32),
-                c_int32
-            )
+            self._api.get_part_titles.argtypes = (c_char_p, POINTER(c_int32), c_int32)
             self._api.get_part_titles.restype = FemzipError
 
             # finish reading states
-            self._api.finish_reading_states.argtypes = (
-                POINTER(c_int32), c_int64)
+            self._api.finish_reading_states.argtypes = (POINTER(c_int32), c_int64)
             self._api.finish_reading_states.restype = FemzipError
 
             # close file
@@ -242,45 +232,37 @@ class FemzipAPI:
             self._api.close_current_file.restype = FemzipError
 
             # read single state
-            self._api.read_single_state.argtypes = (
-                c_int32, c_int32, POINTER(c_float), c_int64)
+            self._api.read_single_state.argtypes = (c_int32, c_int32, POINTER(c_float), c_int64)
             self._api.read_single_state.restype = FemzipError
 
             # read state activity
-            self._api.read_activity.argtypes = (
-                c_int32, c_int32, POINTER(c_float))
+            self._api.read_activity.argtypes = (c_int32, c_int32, POINTER(c_float))
             self._api.read_activity.restype = FemzipError
 
             # free buffer info
-            self._api.free_buffer_info.argtypes = (
-                POINTER(FemzipBufferInfo),)
+            self._api.free_buffer_info.argtypes = (POINTER(FemzipBufferInfo),)
             self._api.free_buffer_info.restype = c_int32
 
         return self._api
 
     @staticmethod
-    def _parse_state_filter(state_filter: Union[Set[int], None],
-                            n_timesteps: int) -> Set[int]:
+    def _parse_state_filter(state_filter: Union[Set[int], None], n_timesteps: int) -> Set[int]:
 
         # convert negative indexes
-        state_filter_parsed = {
-            entry if entry >= 0 else entry + n_timesteps for entry in state_filter
-        } if state_filter is not None else{
-            entry for entry in range(n_timesteps)
-        }
+        state_filter_parsed = (
+            {entry if entry >= 0 else entry + n_timesteps for entry in state_filter}
+            if state_filter is not None
+            else {entry for entry in range(n_timesteps)}
+        )
 
         # filter invalid indexes
-        state_filter_valid = {
-            entry
-            for entry in state_filter_parsed
-            if 0 <= entry < n_timesteps
-        }
+        state_filter_valid = {entry for entry in state_filter_parsed if 0 <= entry < n_timesteps}
 
         return state_filter_valid
 
     @staticmethod
     def _check_femzip_error(err: FemzipError) -> None:
-        """ Checks a femzip error coming from C (usually)
+        """Checks a femzip error coming from C (usually)
 
         Parameters
         ----------
@@ -301,14 +283,11 @@ class FemzipAPI:
                 pass
 
             err_msg = "Error Code '{0}': {1}"
-            raise FemzipException(err_msg.format(
-                err.ier,
-                fz_error_msg
-            ))
+            raise FemzipException(err_msg.format(err.ier, fz_error_msg))
 
     @staticmethod
     def struct_to_dict(struct: Structure) -> Dict[str, Any]:
-        """ Converts a ctypes struct into a dict
+        """Converts a ctypes struct into a dict
 
         Parameters
         ----------
@@ -322,16 +301,14 @@ class FemzipAPI:
         Examples
         --------
             >>> api.struct_to_dict(api.get_femzip_status())
-            {'is_file_open': 1, 'is_geometry_read': 1, 'is_states_open': 0, 'i_timestep_state': -1, 'i_timestep_activity': -1}
+            {'is_file_open': 1, 'is_geometry_read': 1, 'is_states_open': 0,
+            'i_timestep_state': -1, 'i_timestep_activity': -1}
         """
-        return {
-            field_name: getattr(struct, field_name)
-            for field_name, _ in struct._fields_
-        }
+        return {field_name: getattr(struct, field_name) for field_name, _ in struct._fields_}
 
     @staticmethod
     def copy_struct(src: Structure, dest: Structure):
-        """ Copies all fields from src struct to dest
+        """Copies all fields from src struct to dest
 
         Parameters
         ----------
@@ -353,15 +330,15 @@ class FemzipAPI:
             b'Oops'
         """
 
-        assert (src._fields_ == dest._fields_)
+        assert src._fields_ == dest._fields_
 
         for field_name, _ in src._fields_:
             setattr(dest, field_name, getattr(src, field_name))
 
-    def get_part_titles(self,
-                        filepath: str,
-                        buffer_info: Union[None, FemzipBufferInfo] = None) -> memoryview:
-        """ Get the part title section
+    def get_part_titles(
+        self, filepath: str, buffer_info: Union[None, FemzipBufferInfo] = None
+    ) -> memoryview:
+        """Get the part title section
 
         Parameters
         ----------
@@ -377,9 +354,7 @@ class FemzipAPI:
         """
 
         # find out how much memory to allocate
-        buffer_info_parsed = self.get_buffer_info(filepath) \
-            if buffer_info is None \
-            else buffer_info
+        buffer_info_parsed = self.get_buffer_info(filepath) if buffer_info is None else buffer_info
 
         # allocate memory
         BufferType = c_int32 * (buffer_info_parsed.size_titles)
@@ -393,12 +368,12 @@ class FemzipAPI:
         )
         self._check_femzip_error(err)
 
-        return memoryview(buffer).cast('B')
+        return memoryview(buffer).cast("B")
 
-    def read_state_deletion_info(self,
-                                 buffer_info: FemzipBufferInfo,
-                                 state_filter: Union[Set[int], None] = None) -> np.ndarray:
-        """ Get information which elements are alive
+    def read_state_deletion_info(
+        self, buffer_info: FemzipBufferInfo, state_filter: Union[Set[int], None] = None
+    ) -> np.ndarray:
+        """Get information which elements are alive
 
         Parameters
         ----------
@@ -445,15 +420,11 @@ class FemzipAPI:
 
             # walk forward in buffer
             state_buffer_ptr = StateBufferType.from_buffer(
-                buffer_c,
-                sizeof(c_float) * buffer_info.size_activity * n_timesteps_read
+                buffer_c, sizeof(c_float) * buffer_info.size_activity * n_timesteps_read
             )
 
             # do the thing
-            err = self.api.read_activity(
-                i_timestep,
-                buffer_info.size_activity,
-                state_buffer_ptr)
+            err = self.api.read_activity(i_timestep, buffer_info.size_activity, state_buffer_ptr)
             self._check_femzip_error(err)
 
             # increment buffer ptr if we needed this one
@@ -467,8 +438,9 @@ class FemzipAPI:
                 break
 
         # convert buffer into array
-        array = np.frombuffer(buffer_c, dtype=np.float32)\
-            .reshape((n_timesteps_read, buffer_info.size_activity))
+        array = np.frombuffer(buffer_c, dtype=np.float32).reshape(
+            (n_timesteps_read, buffer_info.size_activity)
+        )
 
         logging.debug("FemzipAPI.read_state_deletion_info end")
 
@@ -476,11 +448,13 @@ class FemzipAPI:
 
         # return memoryview(buffer_c).cast('B')
 
-    def read_single_state(self,
-                          i_timestep: int,
-                          buffer_info: FemzipBufferInfo,
-                          state_buffer: Union[None, memoryview] = None) -> memoryview:
-        """ Read a single state
+    def read_single_state(
+        self,
+        i_timestep: int,
+        buffer_info: FemzipBufferInfo,
+        state_buffer: Union[None, memoryview] = None,
+    ) -> memoryview:
+        """Read a single state
 
         Parameters
         ----------
@@ -516,21 +490,19 @@ class FemzipAPI:
             raise ValueError(err_msg.format(state_buffer.format))
 
         StateBufferType = c_float * buffer_info.size_state
-        state_buffer_c = StateBufferType() \
-            if state_buffer is None \
-            else StateBufferType.from_buffer(state_buffer)
+        state_buffer_c = (
+            StateBufferType() if state_buffer is None else StateBufferType.from_buffer(state_buffer)
+        )
 
         err = self.api.read_single_state(
-            i_timestep,
-            buffer_info.n_timesteps,
-            state_buffer_c,
-            buffer_info.size_state)
+            i_timestep, buffer_info.n_timesteps, state_buffer_c, buffer_info.size_state
+        )
         self._check_femzip_error(err)
 
-        return memoryview(state_buffer_c).cast('B')
+        return memoryview(state_buffer_c).cast("B")
 
     def close_current_file(self) -> None:
-        """ Closes the current file handle(use not recommended)
+        """Closes the current file handle(use not recommended)
 
         Notes
         -----
@@ -547,7 +519,7 @@ class FemzipAPI:
         self._check_femzip_error(err)
 
     def get_femzip_status(self) -> FemzipAPIStatus:
-        """ Check the status of the femzip api
+        """Check the status of the femzip api
 
         Returns
         -------
@@ -565,12 +537,13 @@ class FemzipAPI:
         Examples
         --------
             >>> print(api.struct_to_dict(api.get_femzip_status()))
-            {'is_file_open': 0, 'is_geometry_read': 0, 'is_states_open': 0, 'i_timestep_state': -1, 'i_timestep_activity': -1}
+            {'is_file_open': 0, 'is_geometry_read': 0, 'is_states_open': 0,
+            'i_timestep_state': -1, 'i_timestep_activity': -1}
         """
         return self.api.get_femzip_status()
 
     def is_femunzip_version_ok(self, filepath: str) -> bool:
-        """ Checks if the femunzip version can be handled
+        """Checks if the femunzip version can be handled
 
         Parameters
         ----------
@@ -587,13 +560,12 @@ class FemzipAPI:
             True
         """
         is_ok = c_int(-1)
-        err = self.api.is_femunzip_version_ok(filepath.encode("ascii"),
-                                              byref(is_ok))
+        err = self.api.is_femunzip_version_ok(filepath.encode("ascii"), byref(is_ok))
         self._check_femzip_error(err)
         return is_ok.value == 1
 
     def has_femunziplib_license(self) -> bool:
-        """ Checks whether the extended libraries are available
+        """Checks whether the extended libraries are available
 
         Returns
         -------
@@ -610,7 +582,7 @@ class FemzipAPI:
         return has_license
 
     def is_sidact_file(self, filepath: str) -> bool:
-        """ Tests if a filepath points at a sidact file
+        """Tests if a filepath points at a sidact file
 
         Parameters
         ----------
@@ -632,7 +604,7 @@ class FemzipAPI:
         return self.api.is_sidact_file(filepath.encode("ascii")) == 1
 
     def get_buffer_info(self, filepath: str) -> FemzipBufferInfo:
-        """ Get the dimensions of the buffers for femzip
+        """Get the dimensions of the buffers for femzip
 
         Parameters
         ----------
@@ -650,7 +622,10 @@ class FemzipAPI:
             >>> buffer_info = api.get_buffer_info(filepath)
             >>> # buffer info is a c struct, but we can print it
             >>> api.struct_to_dict(buffer_info)
-            {'n_timesteps': 12, 'timesteps': <lasso.femzip.femzip_api.LP_c_float object at 0x0000028A8F6B21C0>, 'size_geometry': 537125, 'size_state': 1462902, 'size_displacement': 147716, 'size_activity': 47385, 'size_post': 1266356, 'size_titles': 1448}
+            {'n_timesteps': 12,
+            'timesteps': <lasso.femzip.femzip_api.LP_c_float object at 0x0000028A8F6B21C0>,
+            'size_geometry': 537125, 'size_state': 1462902, 'size_displacement': 147716,
+            'size_activity': 47385, 'size_post': 1266356, 'size_titles': 1448}
             >>> for i_timestep in range(buffer_info.n_timesteps):
             >>>     print(buffer_info.timesteps[i_timestep])
             0.0
@@ -684,10 +659,13 @@ class FemzipAPI:
 
         return buffer_info_2
 
-    def read_geometry(self, filepath: str,
-                      buffer_info: Union[FemzipBufferInfo, None] = None,
-                      close_file: bool = True) -> memoryview:
-        """ Read the geometry buffer from femzip
+    def read_geometry(
+        self,
+        filepath: str,
+        buffer_info: Union[FemzipBufferInfo, None] = None,
+        close_file: bool = True,
+    ) -> memoryview:
+        """Read the geometry buffer from femzip
 
         Parameters
         ----------
@@ -715,13 +693,10 @@ class FemzipAPI:
         """
 
         # find out how much memory to allocate
-        buffer_info = self.get_buffer_info(filepath) \
-            if buffer_info is None \
-            else buffer_info
+        buffer_info = self.get_buffer_info(filepath) if buffer_info is None else buffer_info
 
         # allocate memory
-        GeomBufferType = c_int * (buffer_info.size_geometry +
-                                  buffer_info.size_titles)
+        GeomBufferType = c_int * (buffer_info.size_geometry + buffer_info.size_titles)
         buffer = GeomBufferType()
 
         # read geometry
@@ -734,13 +709,15 @@ class FemzipAPI:
 
         self._check_femzip_error(err)
 
-        return memoryview(buffer).cast('B')
+        return memoryview(buffer).cast("B")
 
-    def read_states(self,
-                    filepath: str,
-                    buffer_info: Union[FemzipBufferInfo, None] = None,
-                    state_filter: Union[Set[int], None] = None) -> np.ndarray:
-        """ Reads all femzip state information
+    def read_states(
+        self,
+        filepath: str,
+        buffer_info: Union[FemzipBufferInfo, None] = None,
+        state_filter: Union[Set[int], None] = None,
+    ) -> np.ndarray:
+        """Reads all femzip state information
 
         Parameters
         ----------
@@ -762,17 +739,14 @@ class FemzipAPI:
             >>> array_states = api.read_states("path/to/d3plot.fz", buffer_info)
         """
 
-        buffer_info_parsed = self.get_buffer_info(filepath) \
-            if buffer_info is None \
-            else buffer_info
+        buffer_info_parsed = self.get_buffer_info(filepath) if buffer_info is None else buffer_info
 
         # filter invalid indexes
-        state_filter_valid = self._parse_state_filter(state_filter,
-                                                      buffer_info_parsed.n_timesteps)
+        state_filter_valid = self._parse_state_filter(state_filter, buffer_info_parsed.n_timesteps)
 
-        n_states_to_allocate = (buffer_info_parsed.n_timesteps
-                                if state_filter is None
-                                else len(state_filter_valid))
+        n_states_to_allocate = (
+            buffer_info_parsed.n_timesteps if state_filter is None else len(state_filter_valid)
+        )
 
         # allocate buffer
         BufferType = c_float * (buffer_info_parsed.size_state * n_states_to_allocate)
@@ -785,11 +759,7 @@ class FemzipAPI:
             buffer_state = buffer[buffer_info.size_state * n_timesteps_read]
 
             # read state data
-            self.read_single_state(
-                i_timestep,
-                buffer_info_parsed,
-                buffer_state
-            )
+            self.read_single_state(i_timestep, buffer_info_parsed, buffer_state)
 
             if i_timestep in state_filter_valid:
                 n_timesteps_read += 1
@@ -799,12 +769,13 @@ class FemzipAPI:
                 break
 
         array = np.from_buffer(buffer, dtype=np.float32).reshape(
-            (n_timesteps_read, buffer_info_parsed.size_state))
+            (n_timesteps_read, buffer_info_parsed.size_state)
+        )
 
         return array
 
     def get_file_metadata(self, filepath: str) -> FemzipFileMetadata:
-        """ Get infos about the femzip variables in the file
+        """Get infos about the femzip variables in the file
 
         Parameters
         ----------
@@ -829,15 +800,16 @@ class FemzipAPI:
             {'version_zip': 605.0, 'activity_flag': 1, 'number_of_variables': 535, ...}
 
             >>> # We can iterate the variable names contained in the file
-            >>> print([file_metadata.variable_infos[i_var].name.decode("utf8").strip() for i_var in range(file_metadata.number_of_variables)])
+            >>> print(
+                [file_metadata.variable_infos[i_var].name.decode("utf8").strip()
+                for i_var in range(file_metadata.number_of_variables)]
+            )
             ['global', 'Parts: Energies and others', 'coordinates', 'velocities', ...]
         """
         file_metadata = FemzipFileMetadata()
 
         # get variable infos
-        err = self.api.get_file_metadata(
-            filepath.encode("ascii"),
-            byref(file_metadata))
+        err = self.api.get_file_metadata(filepath.encode("ascii"), byref(file_metadata))
         self._check_femzip_error(err)
 
         # transfer memory to python
@@ -848,27 +820,30 @@ class FemzipAPI:
 
         return file_metadata2
 
-    def _get_variables_state_buffer_size(self,
-                                         n_parts: int,
-                                         n_rigid_walls: int,
-                                         n_rigid_wall_vars: int,
-                                         n_airbag_particles: int,
-                                         n_airbags: int,
-                                         file_metadata: FemzipFileMetadata) -> int:
+    def _get_variables_state_buffer_size(
+        self,
+        n_parts: int,
+        n_rigid_walls: int,
+        n_rigid_wall_vars: int,
+        n_airbag_particles: int,
+        n_airbags: int,
+        file_metadata: FemzipFileMetadata,
+    ) -> int:
 
         buffer_size_state = 0
         var_indexes_to_remove: Set[int] = set()
         for i_var in range(file_metadata.number_of_variables):
             var_info = file_metadata.variable_infos[i_var]
             variable_name = var_info.name.decode("utf-8")
-            variable_category = FemzipVariableCategory.from_int(
-                var_info.var_type)
+            variable_category = FemzipVariableCategory.from_int(var_info.var_type)
             if variable_category == FemzipVariableCategory.NODE:
 
                 variable_multiplier = 1
-                if FemzipArrayType.node_displacement.value in variable_name or \
-                   FemzipArrayType.node_velocities.value in variable_name or  \
-                   FemzipArrayType.node_accelerations.value in variable_name:
+                if (
+                    FemzipArrayType.node_displacement.value in variable_name
+                    or FemzipArrayType.node_velocities.value in variable_name
+                    or FemzipArrayType.node_accelerations.value in variable_name
+                ):
                     variable_multiplier = 3
 
                 array_size = file_metadata.number_of_nodes * variable_multiplier
@@ -876,8 +851,10 @@ class FemzipAPI:
                 file_metadata.variable_infos[i_var].var_size = array_size
 
             elif variable_category == FemzipVariableCategory.SHELL:
-                array_size = (file_metadata.number_of_shell_elements
-                              - file_metadata.number_of_rigid_shell_elements)
+                array_size = (
+                    file_metadata.number_of_shell_elements
+                    - file_metadata.number_of_rigid_shell_elements
+                )
                 file_metadata.variable_infos[i_var].var_size = array_size
                 buffer_size_state += array_size
             elif variable_category == FemzipVariableCategory.SOLID:
@@ -924,20 +901,19 @@ class FemzipAPI:
         return buffer_size_state
 
     def _decompose_read_variables_array(
-            self,
-            n_parts: int,
-            n_rigid_walls: int,
-            n_rigid_wall_vars: int,
-            n_airbag_particles: int,
-            n_airbags: int,
-            all_vars_array: np.ndarray,
-            n_timesteps_read: int,
-            file_metadata: FemzipFileMetadata
+        self,
+        n_parts: int,
+        n_rigid_walls: int,
+        n_rigid_wall_vars: int,
+        n_airbag_particles: int,
+        n_airbags: int,
+        all_vars_array: np.ndarray,
+        n_timesteps_read: int,
+        file_metadata: FemzipFileMetadata,
     ) -> Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray]:
 
         # decompose array
-        result_arrays: Dict[Tuple[int, str,
-                                  FemzipVariableCategory], np.ndarray] = {}
+        result_arrays: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray] = {}
         var_pos = 0
         for i_var in range(file_metadata.number_of_variables):
 
@@ -945,77 +921,89 @@ class FemzipAPI:
             variable_name: str = var_info.name.decode("utf-8")
             variable_index: int = var_info.var_index
             variable_type = FemzipArrayType.from_string(variable_name)
-            variable_category = FemzipVariableCategory.from_int(
-                var_info.var_type)
+            variable_category = FemzipVariableCategory.from_int(var_info.var_type)
 
             if variable_category == FemzipVariableCategory.NODE:
-                if variable_type.value == FemzipArrayType.node_displacement.value or \
-                   variable_type.value == FemzipArrayType.node_velocities.value or  \
-                   variable_type.value == FemzipArrayType.node_accelerations.value:
+                if (
+                    variable_type.value == FemzipArrayType.node_displacement.value
+                    or variable_type.value == FemzipArrayType.node_velocities.value
+                    or variable_type.value == FemzipArrayType.node_accelerations.value
+                ):
                     array_size = file_metadata.number_of_nodes * 3
-                    var_array = all_vars_array[:, var_pos:var_pos + array_size]\
-                        .reshape((n_timesteps_read, file_metadata.number_of_nodes, 3))
+                    var_array = all_vars_array[:, var_pos : var_pos + array_size].reshape(
+                        (n_timesteps_read, file_metadata.number_of_nodes, 3)
+                    )
                     var_pos += array_size
-                    result_arrays[(
-                        variable_index, variable_name, FemzipVariableCategory.NODE)] = var_array
+                    result_arrays[
+                        (variable_index, variable_name, FemzipVariableCategory.NODE)
+                    ] = var_array
                 else:
                     array_size = file_metadata.number_of_nodes
-                    var_array = all_vars_array[:, var_pos:var_pos + array_size]
+                    var_array = all_vars_array[:, var_pos : var_pos + array_size]
                     var_pos += array_size
-                    result_arrays[(variable_index,
-                                   variable_name, FemzipVariableCategory.NODE)] = var_array
+                    result_arrays[
+                        (variable_index, variable_name, FemzipVariableCategory.NODE)
+                    ] = var_array
 
             elif variable_category == FemzipVariableCategory.SHELL:
-                array_size = (file_metadata.number_of_shell_elements
-                              - file_metadata.number_of_rigid_shell_elements)
-                var_array = all_vars_array[:, var_pos:var_pos + array_size]
+                array_size = (
+                    file_metadata.number_of_shell_elements
+                    - file_metadata.number_of_rigid_shell_elements
+                )
+                var_array = all_vars_array[:, var_pos : var_pos + array_size]
                 var_pos += array_size
-                result_arrays[(variable_index,
-                               variable_name, FemzipVariableCategory.SHELL)] = var_array
+                result_arrays[
+                    (variable_index, variable_name, FemzipVariableCategory.SHELL)
+                ] = var_array
             elif variable_category == FemzipVariableCategory.SOLID:
                 array_size = file_metadata.number_of_solid_elements
-                var_array = all_vars_array[:, var_pos:var_pos + array_size]
+                var_array = all_vars_array[:, var_pos : var_pos + array_size]
                 var_pos += array_size
-                result_arrays[(variable_index,
-                               variable_name, FemzipVariableCategory.SOLID)] = var_array
+                result_arrays[
+                    (variable_index, variable_name, FemzipVariableCategory.SOLID)
+                ] = var_array
             elif variable_category == FemzipVariableCategory.BEAM:
                 array_size = file_metadata.number_of_1D_elements
-                var_array = all_vars_array[:, var_pos:var_pos + array_size]
+                var_array = all_vars_array[:, var_pos : var_pos + array_size]
                 var_pos += array_size
-                result_arrays[variable_index, variable_name,
-                              FemzipVariableCategory.BEAM] = var_array
+                result_arrays[
+                    variable_index, variable_name, FemzipVariableCategory.BEAM
+                ] = var_array
             elif variable_category == FemzipVariableCategory.THICK_SHELL:
                 array_size = file_metadata.number_of_thick_shell_elements
-                var_array = all_vars_array[:, var_pos:var_pos + array_size]
+                var_array = all_vars_array[:, var_pos : var_pos + array_size]
                 var_pos += array_size
-                result_arrays[variable_index, variable_name,
-                              FemzipVariableCategory.THICK_SHELL] = var_array
+                result_arrays[
+                    variable_index, variable_name, FemzipVariableCategory.THICK_SHELL
+                ] = var_array
             elif variable_category == FemzipVariableCategory.GLOBAL:
                 array_size = 6
-                var_array = all_vars_array[:, var_pos:var_pos + array_size]
+                var_array = all_vars_array[:, var_pos : var_pos + array_size]
                 var_pos += array_size
-                result_arrays[variable_index, variable_name,
-                              FemzipVariableCategory.GLOBAL] = var_array
+                result_arrays[
+                    variable_index, variable_name, FemzipVariableCategory.GLOBAL
+                ] = var_array
             elif variable_category == FemzipVariableCategory.PART:
                 array_size = n_parts * 7 + n_rigid_walls * n_rigid_wall_vars
-                var_array = all_vars_array[:, var_pos:var_pos + array_size]
+                var_array = all_vars_array[:, var_pos : var_pos + array_size]
                 var_pos += array_size
-                result_arrays[variable_index, variable_name,
-                              FemzipVariableCategory.PART] = var_array
+                result_arrays[
+                    variable_index, variable_name, FemzipVariableCategory.PART
+                ] = var_array
             elif variable_category == FemzipVariableCategory.CPM_FLOAT_VAR:
                 array_size = n_airbag_particles
-                var_array = all_vars_array[:, var_pos:var_pos + array_size]
+                var_array = all_vars_array[:, var_pos : var_pos + array_size]
                 var_pos += array_size
                 result_arrays[variable_index, variable_name, variable_category] = var_array
             elif variable_category == FemzipVariableCategory.CPM_INT_VAR:
                 array_size = n_airbag_particles
-                var_array = all_vars_array[:, var_pos:var_pos + array_size].view(np.int32)
+                var_array = all_vars_array[:, var_pos : var_pos + array_size].view(np.int32)
                 var_pos += array_size
                 result_arrays[variable_index, variable_name, variable_category] = var_array
             elif variable_category == FemzipVariableCategory.CPM_AIRBAG:
                 n_airbag_vars = 2
                 array_size = n_airbags * n_airbag_vars
-                var_array = all_vars_array[:, var_pos:var_pos + array_size]
+                var_array = all_vars_array[:, var_pos : var_pos + array_size]
                 var_array = var_array.reshape((var_array.shape[0], n_airbags, n_airbag_vars))
                 var_pos += array_size
                 result_arrays[variable_index, variable_name, variable_category] = var_array
@@ -1033,9 +1021,9 @@ class FemzipAPI:
         n_rigid_wall_vars: int,
         n_airbag_particles: int,
         n_airbags: int,
-        state_filter: Union[Set[int], None] = None
+        state_filter: Union[Set[int], None] = None,
     ) -> Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray]:
-        """ Read specific variables from Femzip
+        """Read specific variables from Femzip
 
         Parameters
         ----------
@@ -1085,11 +1073,11 @@ class FemzipAPI:
         logging.info(f"buffer_size_state: {buffer_size_state}")
 
         # specify which states to read
-        states_to_copy = {
-            i_timestep for i_timestep in state_filter
-            if i_timestep < n_timesteps + 1
-        } if state_filter is not None \
-            else{i_timestep for i_timestep in range(n_timesteps)}
+        states_to_copy = (
+            {i_timestep for i_timestep in state_filter if i_timestep < n_timesteps + 1}
+            if state_filter is not None
+            else {i_timestep for i_timestep in range(n_timesteps)}
+        )
         logging.info(f"states_to_copy: {states_to_copy}")
 
         # take timesteps into account
@@ -1107,16 +1095,17 @@ class FemzipAPI:
             logging.info("timestep: {0}".format(i_timestep))
 
             buffer_ptr_state = BufferStateType.from_buffer(
-                buffer,
-                sizeof(c_float) * n_timesteps_read * buffer_size_state
+                buffer, sizeof(c_float) * n_timesteps_read * buffer_size_state
             )
 
             # read the variables into the buffer
             fortran_offset = 1
-            err = self.api.read_variables(buffer_ptr_state,
-                                          buffer_size_state,
-                                          i_timestep + fortran_offset,
-                                          byref(file_metadata))
+            err = self.api.read_variables(
+                buffer_ptr_state,
+                buffer_size_state,
+                i_timestep + fortran_offset,
+                byref(file_metadata),
+            )
             self._check_femzip_error(err)
 
             # check if there is nothing to read anymore
@@ -1129,8 +1118,7 @@ class FemzipAPI:
                 logging.info("All states processed")
                 break
 
-        array = np.ctypeslib.as_array(buffer, shape=(buffer_size,))\
-            .reshape((n_timesteps_read, -1))
+        array = np.ctypeslib.as_array(buffer, shape=(buffer_size,)).reshape((n_timesteps_read, -1))
 
         # decompose total array into array pieces again
         result_arrays = self._decompose_read_variables_array(
@@ -1141,13 +1129,13 @@ class FemzipAPI:
             n_airbags=n_airbags,
             all_vars_array=array,
             n_timesteps_read=n_timesteps_read,
-            file_metadata=file_metadata
+            file_metadata=file_metadata,
         )
 
         return result_arrays
 
     def _copy_variable_info_array(self, file_metadata: FemzipFileMetadata) -> FemzipFileMetadata:
-        """ Copies a variable info array into python memory
+        """Copies a variable info array into python memory
 
         Parameters
         ----------
@@ -1185,11 +1173,13 @@ class FemzipD3plotArrayMapping:
 
     fz_array_slices = Tuple[slice]
 
-    def __init__(self,
-                 d3plot_array_type: str,
-                 fz_array_slices: Tuple[slice] = (slice(None),),
-                 i_integration_point: Union[int, None] = None,
-                 i_var_index: Union[int, None] = None):
+    def __init__(
+        self,
+        d3plot_array_type: str,
+        fz_array_slices: Tuple[slice] = (slice(None),),
+        i_integration_point: Union[int, None] = None,
+        i_var_index: Union[int, None] = None,
+    ):
         self.d3plot_array_type = d3plot_array_type
         self.fz_array_slices = fz_array_slices
         self.i_integration_point = i_integration_point
@@ -1203,10 +1193,12 @@ class FemzipArrayMetadata:
     # set when parsed
     fz_var_index: Union[int, None] = None
 
-    def __init__(self,
-                 array_type: FemzipArrayType,
-                 category: FemzipVariableCategory,
-                 d3plot_mappings: List[FemzipD3plotArrayMapping]):
+    def __init__(
+        self,
+        array_type: FemzipArrayType,
+        category: FemzipVariableCategory,
+        d3plot_mappings: List[FemzipD3plotArrayMapping],
+    ):
         self.array_type = array_type
         self.category = category
         self.d3plot_mappings = d3plot_mappings
@@ -1215,7 +1207,7 @@ class FemzipArrayMetadata:
         return self.array_type.value in fz_name
 
     def parse(self, fz_var_name: str, fz_var_index: int) -> None:
-        """ Parses the incoming femzip variable name and extracts infos
+        """Parses the incoming femzip variable name and extracts infos
 
         Parameters
         ----------

@@ -1,9 +1,8 @@
-
 from enum import Enum
 
 
 class FilterType(Enum):
-    """ Used for filtering d3plot arrays
+    """Used for filtering d3plot arrays
 
     Use PART, BEAM, SHELL, SOLID or TSHELL
 

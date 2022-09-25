@@ -1,4 +1,3 @@
-
 import logging
 import re
 import traceback
@@ -7,10 +6,11 @@ from typing import Dict, List, Set, Tuple, Union
 import numpy as np
 from lasso.dyna.ArrayType import ArrayType
 from lasso.femzip.femzip_api import FemzipAPI, FemzipFileMetadata, VariableInfo
-from lasso.femzip.fz_config import (FemzipArrayType, FemzipVariableCategory,
-                                    get_last_int_of_line)
+from lasso.femzip.fz_config import FemzipArrayType, FemzipVariableCategory, get_last_int_of_line
 
-TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE: Dict[Tuple[FemzipArrayType, FemzipVariableCategory], Set[str]] = {
+TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE: Dict[
+    Tuple[FemzipArrayType, FemzipVariableCategory], Set[str]
+] = {
     # GLOBAL
     (FemzipArrayType.global_data, FemzipVariableCategory.GLOBAL): {
         # ArrayType.global_timesteps,
@@ -28,24 +28,14 @@ TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE: Dict[Tuple[FemzipArrayType, FemzipVa
         ArrayType.part_velocity,
     },
     # NODE
-    (FemzipArrayType.node_displacement, FemzipVariableCategory.NODE): {
-        ArrayType.node_displacement
-    },
+    (FemzipArrayType.node_displacement, FemzipVariableCategory.NODE): {ArrayType.node_displacement},
     (FemzipArrayType.node_accelerations, FemzipVariableCategory.NODE): {
         ArrayType.node_acceleration
     },
-    (FemzipArrayType.node_velocities, FemzipVariableCategory.NODE): {
-        ArrayType.node_velocity
-    },
-    (FemzipArrayType.node_temperatures, FemzipVariableCategory.NODE): {
-        ArrayType.node_temperature
-    },
-    (FemzipArrayType.node_heat_flux, FemzipVariableCategory.NODE): {
-        ArrayType.node_heat_flux
-    },
-    (FemzipArrayType.node_mass_scaling, FemzipVariableCategory.NODE): {
-        ArrayType.node_mass_scaling
-    },
+    (FemzipArrayType.node_velocities, FemzipVariableCategory.NODE): {ArrayType.node_velocity},
+    (FemzipArrayType.node_temperatures, FemzipVariableCategory.NODE): {ArrayType.node_temperature},
+    (FemzipArrayType.node_heat_flux, FemzipVariableCategory.NODE): {ArrayType.node_heat_flux},
+    (FemzipArrayType.node_mass_scaling, FemzipVariableCategory.NODE): {ArrayType.node_mass_scaling},
     (FemzipArrayType.node_temperature_gradient, FemzipVariableCategory.NODE): {
         ArrayType.node_temperature_gradient
     },
@@ -84,24 +74,12 @@ TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE: Dict[Tuple[FemzipArrayType, FemzipVa
         ArrayType.element_beam_axial_strain
     },
     # SHELL
-    (FemzipArrayType.stress_x, FemzipVariableCategory.SHELL): {
-        ArrayType.element_shell_stress
-    },
-    (FemzipArrayType.stress_y, FemzipVariableCategory.SHELL): {
-        ArrayType.element_shell_stress
-    },
-    (FemzipArrayType.stress_z, FemzipVariableCategory.SHELL): {
-        ArrayType.element_shell_stress
-    },
-    (FemzipArrayType.stress_xy, FemzipVariableCategory.SHELL): {
-        ArrayType.element_shell_stress
-    },
-    (FemzipArrayType.stress_yz, FemzipVariableCategory.SHELL): {
-        ArrayType.element_shell_stress
-    },
-    (FemzipArrayType.stress_xz, FemzipVariableCategory.SHELL): {
-        ArrayType.element_shell_stress
-    },
+    (FemzipArrayType.stress_x, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
+    (FemzipArrayType.stress_y, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
+    (FemzipArrayType.stress_z, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
+    (FemzipArrayType.stress_xy, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
+    (FemzipArrayType.stress_yz, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
+    (FemzipArrayType.stress_xz, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
     (FemzipArrayType.eff_pstrain, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_effective_plastic_strain
     },
@@ -132,9 +110,7 @@ TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE: Dict[Tuple[FemzipArrayType, FemzipVa
     (FemzipArrayType.normal_force_xy, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_normal_force
     },
-    (FemzipArrayType.thickness, FemzipVariableCategory.SHELL): {
-        ArrayType.element_shell_thickness
-    },
+    (FemzipArrayType.thickness, FemzipVariableCategory.SHELL): {ArrayType.element_shell_thickness},
     (FemzipArrayType.unknown_1, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_unknown_variables
     },
@@ -239,66 +215,30 @@ TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE: Dict[Tuple[FemzipArrayType, FemzipVa
         ArrayType.element_tshell_strain
     },
     # SOLID
-    (FemzipArrayType.stress_x, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_stress
-    },
-    (FemzipArrayType.stress_y, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_stress
-    },
-    (FemzipArrayType.stress_z, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_stress
-    },
-    (FemzipArrayType.stress_xy, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_stress
-    },
-    (FemzipArrayType.stress_yz, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_stress
-    },
-    (FemzipArrayType.stress_xz, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_stress
-    },
+    (FemzipArrayType.stress_x, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
+    (FemzipArrayType.stress_y, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
+    (FemzipArrayType.stress_z, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
+    (FemzipArrayType.stress_xy, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
+    (FemzipArrayType.stress_yz, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
+    (FemzipArrayType.stress_xz, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
     (FemzipArrayType.eff_pstrain, FemzipVariableCategory.SOLID): {
         ArrayType.element_solid_effective_plastic_strain
     },
     (FemzipArrayType.history_vars, FemzipVariableCategory.SOLID): {
         ArrayType.element_solid_history_variables
     },
-    (FemzipArrayType.strain_x, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_strain
-    },
-    (FemzipArrayType.strain_y, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_strain
-    },
-    (FemzipArrayType.strain_z, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_strain
-    },
-    (FemzipArrayType.strain_xy, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_strain
-    },
-    (FemzipArrayType.strain_yz, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_strain
-    },
-    (FemzipArrayType.strain_xz, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_strain
-    },
-    (FemzipArrayType.strain_x, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_strain
-    },
-    (FemzipArrayType.strain_y, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_strain
-    },
-    (FemzipArrayType.strain_z, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_strain
-    },
-    (FemzipArrayType.strain_xy, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_strain
-    },
-    (FemzipArrayType.strain_yz, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_strain
-    },
-    (FemzipArrayType.strain_xz, FemzipVariableCategory.SOLID): {
-        ArrayType.element_solid_strain
-    },
+    (FemzipArrayType.strain_x, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.strain_y, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.strain_z, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.strain_xy, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.strain_yz, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.strain_xz, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.strain_x, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.strain_y, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.strain_z, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.strain_xy, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.strain_yz, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.strain_xz, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
     # AIRBAG
     (FemzipArrayType.airbag_state_geom, FemzipVariableCategory.CPM_AIRBAG): {
         ArrayType.airbag_n_active_particles,
@@ -378,36 +318,31 @@ stress_index = {
     FemzipArrayType.beam_t_shear_resultant.value: 1,
     FemzipArrayType.beam_s_bending_moment.value: 0,
     FemzipArrayType.beam_t_bending_moment.value: 1,
-
     FemzipArrayType.strain_x.value: 0,
     FemzipArrayType.strain_y.value: 1,
     FemzipArrayType.strain_z.value: 2,
     FemzipArrayType.strain_xy.value: 3,
     FemzipArrayType.strain_yz.value: 4,
     FemzipArrayType.strain_xz.value: 5,
-
     FemzipArrayType.beam_shear_stress_rs.value: 0,
     FemzipArrayType.beam_shear_stress_tr.value: 1,
-
     FemzipArrayType.airbag_particle_pos_x.value: 0,
     FemzipArrayType.airbag_particle_pos_y.value: 1,
     FemzipArrayType.airbag_particle_pos_z.value: 2,
     FemzipArrayType.airbag_particle_vel_x.value: 0,
     FemzipArrayType.airbag_particle_vel_y.value: 1,
     FemzipArrayType.airbag_particle_vel_z.value: 2,
-
     FemzipArrayType.bending_moment_mx.value: 0,
     FemzipArrayType.bending_moment_my.value: 1,
     FemzipArrayType.bending_moment_mxy.value: 2,
-
     FemzipArrayType.unknown_1.value: 0,
     FemzipArrayType.unknown_2.value: 1,
 }
 
 
 def femzip_to_d3plot(
-        result_arrays: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray]
-        ) -> Dict[str, np.ndarray]:
+    result_arrays: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray]
+) -> Dict[str, np.ndarray]:
     """Map femzip arrays to d3plot arrays
 
     Parameters
@@ -503,11 +438,12 @@ class FemzipArrayInfo:
     i_var   = {self.i_var}"""
 
 
-class FemzipMapper():
+class FemzipMapper:
     """Class for mapping femzip variable data to d3plots.
 
     Takes no arguments.
     """
+
     # regex pattern for reading variables
     name_separation_pattern = re.compile(r"(^[^\(\n]+)(\([^\)]+\))*")
 
@@ -541,10 +477,10 @@ class FemzipMapper():
         # add all the data to its right place
         self._map_arrays(array_infos, self._d3plot_arrays)
 
-    def _convert(self,
-                 result_arrays: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray]
-                 ) -> List[FemzipArrayInfo]:
-        """ Convert femzip result arrays into array infos
+    def _convert(
+        self, result_arrays: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray]
+    ) -> List[FemzipArrayInfo]:
+        """Convert femzip result arrays into array infos
 
         Parameters
         ----------
@@ -568,8 +504,7 @@ class FemzipMapper():
             femzip_array_info.array = array
             femzip_array_info.array_type = FemzipArrayType.from_string(fz_name)
 
-            var_name, i_layer, i_stress, i_history = self._parse_femzip_name(
-                fz_name, fz_cat)
+            var_name, i_layer, i_stress, i_history = self._parse_femzip_name(fz_name, fz_cat)
 
             femzip_array_info.short_name = var_name
             femzip_array_info.i_layer = i_layer
@@ -581,7 +516,7 @@ class FemzipMapper():
 
     @staticmethod
     def _build(fz_arrays: List[FemzipArrayInfo]) -> Dict[str, Tuple[int, ...]]:
-        """ Counts the occurence of all variables in the result array such as the
+        """Counts the occurence of all variables in the result array such as the
         number of layers and stresses.
 
         Paramters
@@ -605,8 +540,9 @@ class FemzipMapper():
         for arr_info in fz_arrays:
             # print(arr_info)
 
-            d3_array_types = TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE[(
-                arr_info.array_type, arr_info.category)]
+            d3_array_types = TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE[
+                (arr_info.array_type, arr_info.category)
+            ]
 
             # var_name = var_name.strip()
             for array_type in d3_array_types:
@@ -640,8 +576,10 @@ class FemzipMapper():
                 # arrays to copy:
                 # - node displacement, veloctiy, acceleration
                 # - airbag integer vars (so we don't need to cast)
-                if arr_info.array.ndim == 3 \
-                   or arr_info.category == FemzipVariableCategory.CPM_INT_VAR:
+                if (
+                    arr_info.array.ndim == 3
+                    or arr_info.category == FemzipVariableCategory.CPM_INT_VAR
+                ):
                     mapping.just_assign = True
 
                 arr_info.mappings.append(mapping)
@@ -668,12 +606,12 @@ class FemzipMapper():
 
             # all arrays which are simply copied (slice has len 2 and only one target)
             # get a just assign flag
-            if (len(arr_info.mappings) == 2 and
-                    len(arr_info.mappings[0].to_slice()) == 2):
+            if len(arr_info.mappings) == 2 and len(arr_info.mappings[0].to_slice()) == 2:
                 arr_info.mappings[0].just_assign = True
 
-                d3_array_types = TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE[(
-                    arr_info.array_type, arr_info.category)]
+                d3_array_types = TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE[
+                    (arr_info.array_type, arr_info.category)
+                ]
 
                 for array_type in d3_array_types:
                     del shape_infos[array_type]
@@ -699,7 +637,8 @@ class FemzipMapper():
         for arr_info in array_infos:
             if arr_info.category == FemzipVariableCategory.CPM_AIRBAG:
                 d3plot_arrays[ArrayType.airbag_n_active_particles] = arr_info.array[:, :, 0].view(
-                    np.int32)
+                    np.int32
+                )
                 d3plot_arrays[ArrayType.airbag_bag_volume] = arr_info.array[:, :, 1]
             else:
                 for mapping in arr_info.mappings:
@@ -716,8 +655,9 @@ class FemzipMapper():
 
                     d3plot_array[slices] = arr_info.array
 
-    def _allocate_d3plot_arrays(self,
-                                array_shapes: Dict[str, Tuple[int, ...]]) -> Dict[str, np.ndarray]:
+    def _allocate_d3plot_arrays(
+        self, array_shapes: Dict[str, Tuple[int, ...]]
+    ) -> Dict[str, np.ndarray]:
         """Initialize all the d3plot arrays.
 
         Parameters
@@ -735,18 +675,14 @@ class FemzipMapper():
             d3plot_arrays[key] = np.empty(shape, dtype=np.float32)
         return d3plot_arrays
 
-    @ property
+    @property
     def d3plot_arrays(self):
-        """Returns the mapped d3plot arrays.
-        """
+        """Returns the mapped d3plot arrays."""
         return self._d3plot_arrays
 
-    def _parse_femzip_name(self,
-                           fz_name: str,
-                           var_type: FemzipVariableCategory) -> Tuple[str,
-                                                                      Union[int, None],
-                                                                      Union[int, None],
-                                                                      Union[int, None]]:
+    def _parse_femzip_name(
+        self, fz_name: str, var_type: FemzipVariableCategory
+    ) -> Tuple[str, Union[int, None], Union[int, None], Union[int, None]]:
         """Parses the femzip variable names.
 
         Parameters
@@ -780,16 +716,14 @@ class FemzipMapper():
         var_name = var_name.strip()
 
         # the slice 1:-1 leaves out the brackets '(' and ')'
-        _, i_layer = get_last_int_of_line(
-            second_grp[1:-1])
+        _, i_layer = get_last_int_of_line(second_grp[1:-1])
 
         if i_layer is not None:
             i_layer -= self.FORTRAN_OFFSET
 
         i_history: Union[int, None] = None
 
-        if var_type != FemzipVariableCategory.PART or \
-                var_type != FemzipVariableCategory.GLOBAL:
+        if var_type != FemzipVariableCategory.PART or var_type != FemzipVariableCategory.GLOBAL:
             i_history = extra_value
 
         if i_history:
@@ -811,21 +745,22 @@ class FemzipMapper():
         return var_name, i_layer, i_stress, i_history
 
 
-def filter_femzip_variables(file_metadata: FemzipFileMetadata,
-                            d3plot_array_filter: Union[Set[str], None]) -> FemzipFileMetadata:
-    """ Filters variable infos regarding d3plot array types
+def filter_femzip_variables(
+    file_metadata: FemzipFileMetadata, d3plot_array_filter: Union[Set[str], None]
+) -> FemzipFileMetadata:
+    """Filters variable infos regarding d3plot array types
 
-        Parameters
-        ----------
-        file_metadata: FemzipFileMetadata
-            metadata of femzip file including contained variables
-        d3plot_array_filter: Union[Set[str], None]
-            array types to filter for if wanted
+    Parameters
+    ----------
+    file_metadata: FemzipFileMetadata
+        metadata of femzip file including contained variables
+    d3plot_array_filter: Union[Set[str], None]
+        array types to filter for if wanted
 
-        Returns
-        -------
-        file_metadata: FemzipFileMetadata
-            filtered array according to array types
+    Returns
+    -------
+    file_metadata: FemzipFileMetadata
+        filtered array according to array types
     """
 
     # find out which arrays we need and
@@ -847,14 +782,17 @@ def filter_femzip_variables(file_metadata: FemzipFileMetadata,
             try:
                 fz_array_type = FemzipArrayType.from_string(var_name)
             except ValueError:
-                warn_msg = ("Warning: lasso-python does not support femzip result"
-                            " field '{0}' category type '{1}'.")
+                warn_msg = (
+                    "Warning: lasso-python does not support femzip result"
+                    " field '{0}' category type '{1}'."
+                )
                 logging.warning(warn_msg.format(var_name.strip(), var_type))
                 continue
 
             # check if we asked for the array
-            matching_array_types = TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE[(
-                fz_array_type, FemzipVariableCategory(var_type))]
+            matching_array_types = TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE[
+                (fz_array_type, FemzipVariableCategory(var_type))
+            ]
 
             if d3plot_array_filter is not None:
                 if not matching_array_types.intersection(d3plot_array_filter):
@@ -875,8 +813,8 @@ def filter_femzip_variables(file_metadata: FemzipFileMetadata,
 
     for i_var, src_i_var in enumerate(vars_to_copy):
         FemzipAPI.copy_struct(
-            file_metadata.variable_infos[src_i_var],
-            filtered_info_array_data[i_var])
+            file_metadata.variable_infos[src_i_var], filtered_info_array_data[i_var]
+        )
     filtered_file_metadata.variable_infos = filtered_info_array_data
 
     return filtered_file_metadata

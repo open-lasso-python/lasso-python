@@ -1,10 +1,9 @@
-
 import numpy as np
 from scipy import stats
 
 
 def jensen_shannon_entropy(p: np.ndarray, q: np.ndarray) -> float:
-    ''' Jensen Shannon Entropy
+    """Jensen Shannon Entropy
 
     Parameters
     ----------
@@ -17,7 +16,7 @@ def jensen_shannon_entropy(p: np.ndarray, q: np.ndarray) -> float:
     -------
     js_divergence: float
         Jensen-Shannon divergence
-    '''
+    """
     p = np.asarray(p)
     q = np.asarray(q)
     # normalize

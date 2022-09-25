@@ -11,7 +11,7 @@ LOGGER = get_logger(__file__)
 
 
 def get_digit(number: int, i_digit: int) -> int:
-    """ Get a digit from a number
+    """Get a digit from a number
 
     Parameters
     ----------
@@ -51,8 +51,8 @@ def get_digit(number: int, i_digit: int) -> int:
 
 
 class D3plotFiletype(enum.Enum):
-    ''' Enum for the filetype of a D3plot
-    '''
+    """Enum for the filetype of a D3plot"""
+
     D3PLOT = 1
     D3PART = 5
     D3EIGV = 11
@@ -60,7 +60,7 @@ class D3plotFiletype(enum.Enum):
 
 
 def d3plot_filetype_from_integer(value: int) -> D3plotFiletype:
-    """ Get a D3plotFiletype object from an integer
+    """Get a D3plotFiletype object from an integer
 
     Parameters
     ----------
@@ -85,19 +85,22 @@ def d3plot_filetype_from_integer(value: int) -> D3plotFiletype:
 
     if value not in valid_entries:
         err_msg = "Invalid filetype value of {0}. Expected one of: {1}"
-        raise ValueError(err_msg.format(
-            value,
-            ",".join("{1} ({0})".format(key, value.value)
-                     for key, value in D3plotFiletype.__members__.items()
-                     if value.value != 4)
-        ))
+        raise ValueError(
+            err_msg.format(
+                value,
+                ",".join(
+                    "{1} ({0})".format(key, value.value)
+                    for key, value in D3plotFiletype.__members__.items()
+                    if value.value != 4
+                ),
+            )
+        )
 
     return valid_entries[value]
 
 
 class D3plotHeader:
-    ''' Class for reading only header information of a d3plot
-    '''
+    """Class for reading only header information of a d3plot"""
 
     # meta
     filepath: str = ""  #: filepath of file
@@ -118,7 +121,7 @@ class D3plotHeader:
 
     source_version: int = 0  #: source version of LS-Dyna
     release_version: str = ""  #: release version of LS-Dyna
-    version: float = 0.  #: version of LS-Dyna
+    version: float = 0.0  #: version of LS-Dyna
     extra_long_header: bool = False  #: if header was longer than default
 
     # general info
@@ -244,7 +247,7 @@ class D3plotHeader:
     unused_numst: int = 0  #: unused and not explained in docs
 
     def __init__(self, filepath: Union[str, BinaryBuffer, None] = None):
-        """ Create a D3plotHeader instance
+        """Create a D3plotHeader instance
 
         Parameters
         ----------
@@ -281,12 +284,11 @@ class D3plotHeader:
             self.load_file(filepath)
 
     def print(self) -> None:
-        """ Print the header
-        """
+        """Print the header"""
         rich.print(self.__dict__)
 
     def _read_file_buffer(self, filepath: str) -> BinaryBuffer:
-        """ Reads a d3plots header
+        """Reads a d3plots header
 
         Parameters
         ----------
@@ -317,15 +319,14 @@ class D3plotHeader:
         # check for extra long header
         n_header_bytes = self._determine_n_bytes(bb, self.wordsize)
         if len(bb) <= n_header_bytes:
-            bb = BinaryBuffer(filepath,
-                              n_bytes=n_header_bytes)
+            bb = BinaryBuffer(filepath, n_bytes=n_header_bytes)
 
         LOGGER.debug("_read_file_buffer end")
 
         return bb
 
     def _determine_n_bytes(self, bb: BinaryBuffer, wordsize: int) -> int:
-        """ Determines how many bytes the header has
+        """Determines how many bytes the header has
 
         Returns
         -------
@@ -340,10 +341,7 @@ class D3plotHeader:
 
         if len(bb) < n_base_words * wordsize:
             err_msg = "File or file buffer must have at least '{0}' bytes instead of '{1}'"
-            raise RuntimeError(err_msg.format(
-                min_n_bytes,
-                len(bb)
-            ))
+            raise RuntimeError(err_msg.format(min_n_bytes, len(bb)))
 
         n_extra_header_words = int(bb.read_number(57 * self.wordsize, self.itype))
 
@@ -351,8 +349,8 @@ class D3plotHeader:
 
         return (n_base_words + n_extra_header_words) * wordsize
 
-    def load_file(self, file: Union[str, BinaryBuffer]) -> 'D3plotHeader':
-        """ Load d3plot header from a d3plot file
+    def load_file(self, file: Union[str, BinaryBuffer]) -> "D3plotHeader":
+        """Load d3plot header from a d3plot file
 
         Parameters
         ----------
@@ -517,12 +515,11 @@ class D3plotHeader:
         if ndim == 8 or ndim == 9:
             ndim = 3
             self.has_rigid_body_data = True
-            if self.raw_header['ndim'] == 9:
+            if self.raw_header["ndim"] == 9:
                 self.has_rigid_road_surface = True
                 self.has_reduced_rigid_body_data = True
         if ndim != 2 and ndim != 3:
-            raise RuntimeError(
-                "Invalid header entry ndim: %d" % self.raw_header["ndim"])
+            raise RuntimeError("Invalid header entry ndim: %d" % self.raw_header["ndim"])
 
         self.n_nodes = self.raw_header["numnp"]
         self.legacy_code_type = self.raw_header["icode"]
@@ -687,21 +684,30 @@ class D3plotHeader:
             # took a 1000 years to figure this out ...
             # TODO 4 gaussian points are not considered
             if self.n_shell_vars > 0:
-                if (self.n_shell_vars -
-                    self.n_shell_tshell_layers *
-                        (6 * self.has_shell_tshell_stress +
-                         self.has_shell_tshell_pstrain +
-                         self.n_shell_tshell_history_vars) -
-                        8 * self.has_shell_forces -
-                        4 * self.has_shell_extra_variables) > 1:
+                if (
+                    self.n_shell_vars
+                    - self.n_shell_tshell_layers
+                    * (
+                        6 * self.has_shell_tshell_stress
+                        + self.has_shell_tshell_pstrain
+                        + self.n_shell_tshell_history_vars
+                    )
+                    - 8 * self.has_shell_forces
+                    - 4 * self.has_shell_extra_variables
+                ) > 1:
                     self.has_element_strain = True
                 # else:
-                    # self.has_element_strain = False
+                # self.has_element_strain = False
             elif self.n_thick_shell_vars > 0:
-                if (self.n_thick_shell_vars -
-                        self.n_shell_tshell_layers * (6 * self.has_shell_tshell_stress +
-                                                      self.has_shell_tshell_pstrain +
-                                                      self.n_shell_tshell_history_vars)) > 1:
+                if (
+                    self.n_thick_shell_vars
+                    - self.n_shell_tshell_layers
+                    * (
+                        6 * self.has_shell_tshell_stress
+                        + self.has_shell_tshell_pstrain
+                        + self.n_shell_tshell_history_vars
+                    )
+                ) > 1:
                     self.has_element_strain = True
                 # else:
                 #     self.has_element_strain = False
@@ -806,7 +812,7 @@ class D3plotHeader:
 
     @property
     def has_femzip_indicator(self) -> bool:
-        """ If the femzip indicator can be found in the header
+        """If the femzip indicator can be found in the header
 
         Notes
         -----
@@ -824,7 +830,7 @@ class D3plotHeader:
 
     @property
     def n_rigid_wall_vars(self) -> int:
-        """ number of rigid wall vars
+        """number of rigid wall vars
 
         Notes
         -----
@@ -835,18 +841,13 @@ class D3plotHeader:
     @property
     def n_solid_layers(self) -> int:
         n_solid_base_vars = (
-            6 * self.has_solid_stress +
-            self.has_solid_pstrain +
-            self.n_solid_history_vars
+            6 * self.has_solid_stress + self.has_solid_pstrain + self.n_solid_history_vars
         )
 
         return 8 if self.n_solid_vars // max(n_solid_base_vars, 1) >= 8 else 1
 
-    def read_words(self,
-                   bb: BinaryBuffer,
-                   words_to_read: dict,
-                   storage_dict: dict = None):
-        ''' Read several words described by a dict
+    def read_words(self, bb: BinaryBuffer, words_to_read: dict, storage_dict: dict = None):
+        """Read several words described by a dict
 
         Parameters
         ----------
@@ -860,7 +861,7 @@ class D3plotHeader:
         -------
         storage_dict: dict
             the storage dict given as arg or a new dict if none was given
-        '''
+        """
 
         if storage_dict is None:
             storage_dict = {}
@@ -873,31 +874,27 @@ class D3plotHeader:
 
             # read data
             if data[1] == self.itype:
-                storage_dict[name] = int(bb.read_number(
-                    data[0], data[1]))
+                storage_dict[name] = int(bb.read_number(data[0], data[1]))
             elif data[1] == self.ftype:
-                storage_dict[name] = float(bb.read_number(
-                    data[0], data[1]))
+                storage_dict[name] = float(bb.read_number(data[0], data[1]))
             elif data[1] == str:
                 try:
-                    storage_dict[name] = bb.read_text(
-                        data[0], data[2])
+                    storage_dict[name] = bb.read_text(data[0], data[2])
                 except UnicodeDecodeError:
                     storage_dict[name] = ""
 
             else:
                 raise RuntimeError(
-                    "Encountered unknown dtype {} during reading.".format(str(data[1])))
+                    "Encountered unknown dtype {} during reading.".format(str(data[1]))
+                )
 
         return storage_dict
 
     @staticmethod
-    def _determine_file_settings(bb: Union[BinaryBuffer, None] = None) -> Tuple[int,
-                                                                                Union[np.int32,
-                                                                                      np.int64],
-                                                                                Union[np.float32,
-                                                                                      np.float64]]:
-        '''Determine the precision of the file
+    def _determine_file_settings(
+        bb: Union[BinaryBuffer, None] = None
+    ) -> Tuple[int, Union[np.int32, np.int64], Union[np.float32, np.float64]]:
+        """Determine the precision of the file
 
         Parameters
         ----------
@@ -912,7 +909,7 @@ class D3plotHeader:
             type of integers
         ftype: np.dtype
             type of floats
-        '''
+        """
 
         LOGGER.debug("_determine_file_settings")
 
@@ -928,9 +925,11 @@ class D3plotHeader:
             value = bb.read_number(44, np.int32)
             if value > 1000:
                 value -= 1000
-            if value == D3plotFiletype.D3PLOT.value or \
-               value == D3plotFiletype.D3PART.value or \
-               value == D3plotFiletype.D3EIGV.value:
+            if (
+                value == D3plotFiletype.D3PLOT.value
+                or value == D3plotFiletype.D3PART.value
+                or value == D3plotFiletype.D3EIGV.value
+            ):
                 wordsize = 4
                 itype = np.int32
                 ftype = np.float32
@@ -944,9 +943,11 @@ class D3plotHeader:
             value = bb.read_number(88, np.int64)
             if value > 1000:
                 value -= 1000
-            if value == D3plotFiletype.D3PLOT.value or \
-               value == D3plotFiletype.D3PART.value or \
-               value == D3plotFiletype.D3EIGV.value:
+            if (
+                value == D3plotFiletype.D3PLOT.value
+                or value == D3plotFiletype.D3PART.value
+                or value == D3plotFiletype.D3EIGV.value
+            ):
                 wordsize = 8
                 itype = np.int64
                 ftype = np.float64
@@ -963,8 +964,8 @@ class D3plotHeader:
 
         return wordsize, itype, ftype
 
-    def compare(self, other: 'D3plotHeader') -> Dict[str, Tuple[Any, Any]]:
-        """ Compare two headers and get the differences
+    def compare(self, other: "D3plotHeader") -> Dict[str, Tuple[Any, Any]]:
+        """Compare two headers and get the differences
 
         Parameters
         ----------
@@ -976,11 +977,10 @@ class D3plotHeader:
         differences: Dict[str, Tuple[Any, Any]]
             The different entries of both headers in a dict
         """
-        assert(isinstance(other, D3plotHeader))
+        assert isinstance(other, D3plotHeader)
 
         differences = {}
-        names = {*self.raw_header.keys(),
-                 *other.raw_header.keys()}
+        names = {*self.raw_header.keys(), *other.raw_header.keys()}
         for name in names:
             value1 = self.raw_header[name] if name in self.raw_header else "missing"
             value2 = other.raw_header[name] if name in self.raw_header else "missing"

@@ -1,39 +1,34 @@
-
-import subprocess
-
-
 class ConsoleColoring:
-    ''' Holds coloring escape sequences for command line shells
-    '''
+    """Holds coloring escape sequences for command line shells"""
 
     # text coloring
-    LIGHT_GREEN = '\033[92m'
-    LIGHT_RED = '\033[91m'
-    LIGHT_CYAN = '\033[96m'
-    LIGHT_BLUE = '\033[94m'
-    LIGHT_PURPLE = '\033[95m'
-    LIGHT_YELLOW = '\033[93m'
+    LIGHT_GREEN = "\033[92m"
+    LIGHT_RED = "\033[91m"
+    LIGHT_CYAN = "\033[96m"
+    LIGHT_BLUE = "\033[94m"
+    LIGHT_PURPLE = "\033[95m"
+    LIGHT_YELLOW = "\033[93m"
 
-    PURPLE = '\033[95m'
-    RED = '\033[91m'
-    GREEN = '\u001b[32m'
-    CYAN = '\u001b[36m'
-    WHITE = '\u001b[37m'
-    BLACK = '\u001b[30m'
-    BLUE = '\u001b[34m'
-    ORANGE = '\u001b[33m'
+    PURPLE = "\033[95m"
+    RED = "\033[91m"
+    GREEN = "\u001b[32m"
+    CYAN = "\u001b[36m"
+    WHITE = "\u001b[37m"
+    BLACK = "\u001b[30m"
+    BLUE = "\u001b[34m"
+    ORANGE = "\u001b[33m"
 
     # special stuff
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    REVERSED = '\u001b[7m'
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    REVERSED = "\u001b[7m"
 
     # ends coloring
-    RESET = '\033[0m'
+    RESET = "\033[0m"
 
     @staticmethod
     def purple(msg, light=False):
-        ''' Format a string in purple
+        """Format a string in purple
 
         Parameters
         ----------
@@ -46,7 +41,7 @@ class ConsoleColoring:
         -------
         formatted_msg : `str`
             string colored for console output
-        '''
+        """
         if light:
             return ConsoleColoring.LIGHT_PURPLE + msg + ConsoleColoring.RESET
         else:
@@ -54,7 +49,7 @@ class ConsoleColoring:
 
     @staticmethod
     def yellow(msg, light=False):
-        ''' Format a string in yellow
+        """Format a string in yellow
 
         Parameters
         ----------
@@ -67,7 +62,7 @@ class ConsoleColoring:
         -------
         formatted_msg : `str`
             string colored for console output
-        '''
+        """
         if light:
             return ConsoleColoring.LIGHT_YELLOW + msg + ConsoleColoring.RESET
         else:
@@ -75,7 +70,7 @@ class ConsoleColoring:
 
     @staticmethod
     def red(msg, light=False):
-        ''' Format a string in red
+        """Format a string in red
 
         Parameters
         ----------
@@ -88,7 +83,7 @@ class ConsoleColoring:
         -------
         formatted_msg : `str`
             string colored for console output
-        '''
+        """
         if light:
             return ConsoleColoring.LIGHT_RED + msg + ConsoleColoring.RESET
         else:
@@ -96,7 +91,7 @@ class ConsoleColoring:
 
     @staticmethod
     def green(msg, light=False):
-        ''' Format a string in green
+        """Format a string in green
 
         Parameters
         ----------
@@ -109,7 +104,7 @@ class ConsoleColoring:
         -------
         formatted_msg : `str`
             string colored for console output
-        '''
+        """
         if light:
             return ConsoleColoring.LIGHT_GREEN + msg + ConsoleColoring.RESET
         else:
@@ -117,7 +112,7 @@ class ConsoleColoring:
 
     @staticmethod
     def blue(msg, light=False):
-        ''' Format a string in green
+        """Format a string in green
 
         Parameters
         ----------
@@ -130,7 +125,7 @@ class ConsoleColoring:
         -------
         formatted_msg : `str`
             string colored for console output
-        '''
+        """
         if light:
             return ConsoleColoring.LIGHT_BLUE + msg + ConsoleColoring.RESET
         else:

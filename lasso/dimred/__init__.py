@@ -1,2 +1,3 @@
+from .dimred_run import DimredRun, DimredStage
 
-from .DimredRun import DimredRun, DimredStage
+__all__ = ["DimredRun", "DimredStage"]

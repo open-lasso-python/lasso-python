@@ -5,12 +5,11 @@ from typing import Tuple
 
 
 class PodFunctionsTest(TestCase):
-
     def test_calculate_V_and_Betas(self):
-        ''' Verify svd works
+        """Verify svd works
         Test for:
         - returns V and B of correct shape
-        - failes if dataset to small (1 sample)'''
+        - failes if dataset to small (1 sample)"""
 
         # random input for 1 sample, 5 timesteps, 100 nodes, 3 dimensions
         rand_samples = np.random.rand(1, 5, 100, 3)
@@ -36,20 +35,20 @@ class PodFunctionsTest(TestCase):
 
         # v_rob should be of shape (k_eigen, timesteps, nodes*dimensions)
         # k_eigen should be min(10, samples-1), so in this case k_eigen = samples-1 = 4
-        k_eigen = min(10, samples-1)
-        self.assertEqual(v_rob.shape, (k_eigen, timesteps, nodes*dimensions))
+        k_eigen = min(10, samples - 1)
+        self.assertEqual(v_rob.shape, (k_eigen, timesteps, nodes * dimensions))
 
         # betas should be of shape (samples, timesteps, k_eigen)
         self.assertEqual(betas.shape, (samples, timesteps, k_eigen))
 
         # v_rob and betas should result in difference in displacements of original result
-        reshaped_samples = rand_samples.reshape(
-            samples, timesteps, nodes*dimensions)
+        reshaped_samples = rand_samples.reshape(samples, timesteps, nodes * dimensions)
 
-        delta_displ = reshaped_samples[:, :] - \
-            np.stack([reshaped_samples[0, :] for _ in range(timesteps)])
+        delta_displ = reshaped_samples[:, :] - np.stack(
+            [reshaped_samples[0, :] for _ in range(timesteps)]
+        )
 
-        recacl_displ = np.einsum('ktn, stk -> stn', v_rob, betas)
+        recacl_displ = np.einsum("ktn, stk -> stn", v_rob, betas)
 
         # check if both original and recalc have the same shape
         self.assertEqual(delta_displ.shape, recacl_displ.shape)

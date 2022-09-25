@@ -1,4 +1,3 @@
-
 import os
 import re
 import time
@@ -7,19 +6,25 @@ from typing import Sequence, Union
 
 import numpy as np
 
-from lasso.dimred.svd.html_str_eles import (const_string, overhead_string,
-                                            script_string, trace_string)
+from lasso.dimred.svd.html_str_eles import (
+    const_string,
+    overhead_string,
+    script_string,
+    trace_string,
+)
 from lasso.plotting.plotting import _read_file
 
 
 def timestamp() -> str:
-    '''
+    """
     Creates a timestamp string of format yymmdd_hhmmss_
-    '''
+    """
+
     def add_zero(in_str) -> str:
         if len(in_str) == 1:
             return "0" + in_str
         return in_str
+
     year, month, day, hour, minute, second, _, _, _ = time.localtime()
     y_str = str(year)[2:]
     mo_str = add_zero(str(month))
@@ -31,16 +36,18 @@ def timestamp() -> str:
     return t_str
 
 
-def plot_clusters_js(beta_cluster: Sequence,
-                     id_cluster: Union[np.ndarray, Sequence],
-                     save_path: str,
-                     img_path: Union[None, str] = None,
-                     mark_outliers: bool = False,
-                     mark_timestamp: bool = True,
-                     filename: str = "3d_beta_plot",
-                     write: bool = True,
-                     show_res: bool = True) -> Union[None, str]:
-    '''
+def plot_clusters_js(
+    beta_cluster: Sequence,
+    id_cluster: Union[np.ndarray, Sequence],
+    save_path: str,
+    img_path: Union[None, str] = None,
+    mark_outliers: bool = False,
+    mark_timestamp: bool = True,
+    filename: str = "3d_beta_plot",
+    write: bool = True,
+    show_res: bool = True,
+) -> Union[None, str]:
+    """
     Creates a .html visualization of input data
 
     Parameters
@@ -70,32 +77,40 @@ def plot_clusters_js(beta_cluster: Sequence,
     -------
     html_str_formatted: str
         If **write=False** returns .hmtl file as string, else None
-    '''
+    """
 
     if not isinstance(img_path, str):
         img_path = ""
 
-    colorlist = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
-                 '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+    colorlist = [
+        "#1f77b4",
+        "#ff7f0e",
+        "#2ca02c",
+        "#d62728",
+        "#9467bd",
+        "#8c564b",
+        "#e377c2",
+        "#7f7f7f",
+        "#bcbd22",
+        "#17becf",
+    ]
     tracelist = []
 
     # rescaling betas to better fit in viz
     scale_multiplier = 300
-    max_val = max(*[
-        max(np.max(cluster), abs(np.min(cluster)))
-        for cluster in beta_cluster
-    ]) if len(beta_cluster) > 1 else max(np.max(beta_cluster[0]), abs(np.min(beta_cluster[0])))
+    max_val = (
+        max(*[max(np.max(cluster), abs(np.min(cluster))) for cluster in beta_cluster])
+        if len(beta_cluster) > 1
+        else max(np.max(beta_cluster[0]), abs(np.min(beta_cluster[0])))
+    )
 
-    beta_cluster = [
-        cluster / max_val * scale_multiplier
-        for cluster in beta_cluster
-    ]
+    beta_cluster = [cluster / max_val * scale_multiplier for cluster in beta_cluster]
 
     id_nr = []
     for group in id_cluster:
         id_group = []
         for entry in group:
-            nr = re.findall(r'\d+', entry)[0]
+            nr = re.findall(r"\d+", entry)[0]
             id_group.append(nr)
         id_nr.append(id_group)
 
@@ -103,30 +118,31 @@ def plot_clusters_js(beta_cluster: Sequence,
         os.path.join(
             # move path to "~/lasso/"
             os.path.split(os.path.split(os.path.dirname(__file__))[0])[0],
-            'plotting/resources/three_latest.min.js'))
+            "plotting/resources/three_latest.min.js",
+        )
+    )
 
-    html_str_formatted = overhead_string + \
-        const_string.format(
-            _three_min_=_three_min_,
-            _path_str_=img_path,
-            _runIdEntries_=id_nr)
+    html_str_formatted = overhead_string + const_string.format(
+        _three_min_=_three_min_, _path_str_=img_path, _runIdEntries_=id_nr
+    )
     for index, cluster in enumerate(beta_cluster):
         name = "Error, my bad"
         color = "pink"
-        if ((index == 0) and mark_outliers):
+        if (index == 0) and mark_outliers:
             name = "outliers"
             color = "black"
         else:
             name = "cluster {i}".format(i=index)
             color = colorlist[(index - 1) % 10]
-        formated_trace = trace_string.format(_traceNr_="trace{i}".format(i=index),
-                                             _name_=name,
-                                             _color_=color,
-                                             _runIDs_=id_cluster[index].tolist(
-        ),
+        formated_trace = trace_string.format(
+            _traceNr_="trace{i}".format(i=index),
+            _name_=name,
+            _color_=color,
+            _runIDs_=id_cluster[index].tolist(),
             _x_=np.around(cluster[:, 0], decimals=5).tolist(),
             _y_=np.around(cluster[:, 1], decimals=5).tolist(),
-            _z_=np.around(cluster[:, 2], decimals=5).tolist())
+            _z_=np.around(cluster[:, 2], decimals=5).tolist(),
+        )
         tracelist.append("trace{i}".format(i=index))
         html_str_formatted += formated_trace
     trace_list_string = "    traceList = ["
@@ -142,13 +158,13 @@ def plot_clusters_js(beta_cluster: Sequence,
         # Timestamp for differentiating different viz / not override previous viz
         stamp = timestamp() if mark_timestamp else ""
 
-        f = open(
-            save_path + '/' + stamp + filename + '.html', 'w')
+        f = open(save_path + "/" + stamp + filename + ".html", "w")
         f.write(html_str_formatted)
         f.close()
-        if(show_res):
-            webbrowser.open('file://' + os.path.realpath(
-                save_path + '/' + stamp + filename + '.html'))
+        if show_res:
+            webbrowser.open(
+                "file://" + os.path.realpath(save_path + "/" + stamp + filename + ".html")
+            )
     else:
         # only needed for testcases
         return html_str_formatted

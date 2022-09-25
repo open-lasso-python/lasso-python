@@ -85,7 +85,7 @@ overhead_string = """
       </div>
     </div>
   </div>
-"""
+"""  # noqa: E501
 
 trace_string = """
   {_traceNr_} =
@@ -142,14 +142,14 @@ script_string = """
     }
 
     const dragFunc = (e) => {
-      
+
       let widthModi = parseFloat(document.getElementById("mySidenav").style.width)
       let userWidth = window.innerWidth - widthModi
 
       const startWidth = parseFloat(plotDiv.style.width)
       document.selection ? document.selection.empty() : window.getSelection().removeAllRanges()
       const newPlotWidth = (e.pageX - drag.offsetWidth / 2 - widthModi)
-      
+
       const newPlotDivMult = newPlotWidth / userWidth
 
       if(!(newPlotDivMult < 0.1) && !(newPlotDivMult > 0.9)) {
@@ -199,7 +199,7 @@ script_string = """
         for (let n=0; n < trace.x.length; n++){
           trace.vertices.push(trace.x[n], trace.y[n], trace.z[n])
         }
-      })      
+      })
     }
 
     function resizeContents(){
@@ -291,12 +291,12 @@ script_string = """
       wheel.className = "colorwheel"
       wheel.id = "colorwheel"
       wheel.addEventListener('mousedown', function(event){
-        mouseDownInWheel = true      
+        mouseDownInWheel = true
         let wheelCanvas = this
         updateMarkerColor(event, wheelCanvas)
       })
       wheel.addEventListener('mousemove', function(event){
-        let wheelCanvas = this        
+        let wheelCanvas = this
         updateMarkerColor(event, wheelCanvas)
       })
       wheel.addEventListener('mouseup', removeColorWheel)
@@ -330,7 +330,7 @@ script_string = """
 
       }
     }
-    
+
     function removeColorWheel(event){
       if(mouseDownInWheel){
         mouseDownInWheel = false
@@ -384,7 +384,7 @@ script_string = """
       grd.addColorStop(1, "transparent")
       ctx.fillStyle = grd
       ctx.fillRect(0, 0, 2*(outerRadius)+10, 2*(outerRadius)+10)
-      
+
       const texture = new THREE.CanvasTexture(ctx.canvas)
       geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3))
       material = new THREE.PointsMaterial({size: outerRadius, sizeAttenuation: false, map: texture, alphaTest: 0.5, transparent: true})
@@ -443,71 +443,70 @@ script_string = """
 
     function clamp(min, max, val)
     {
-    	if (val < min) return min;
-    	if (val > max) return max;
-    	return val;
+      if (val < min) return min;
+      if (val > max) return max;
+      return val;
     }
 
     function makeWheel(diameter)
     {
-    	let can = document.createElement('canvas');
-    	let ctx = can.getContext('2d');
-      const divisor = 1.8 // how "zoomed in" the colorwheel is
-    	can.width = diameter;
-    	can.height = diameter;
-    	let imgData = ctx.getImageData(0,0,diameter,diameter);
-    	let maxRange = diameter / divisor;
-    
-    	for (let y=0; y<diameter; y++) {
-    		for (let x=0; x<diameter; x++) {
-    			let xPos = x - (diameter/2);
-    			let yPos = (diameter-y) - (diameter/2);
-        
-    			let polar = pos2polar( {x:xPos, y:yPos} );
-    			let sat = clamp(0,1,polar.len / ((maxRange/2)));
-    			let val = clamp(0,1, (maxRange-polar.len) / (maxRange/2) );
-        
-    			let rgb = hsv2rgb( {hue:polar.ang, sat:sat, val:val} );
-        
-    			let index = 4 * (x + y*diameter);
-    			imgData.data[index + 0] = rgb[0]*255;
-    			imgData.data[index + 1] = rgb[1]*255;
-    			imgData.data[index + 2] = rgb[2]*255;
-    			imgData.data[index + 3] = 255;
-    		}
-    	}
-    	ctx.putImageData(imgData, 0,0);
-    	return can;
+      let can = document.createElement('canvas');
+      let ctx = can.getContext('2d');
+       const divisor = 1.8 // how "zoomed in" the colorwheel is
+      can.width = diameter;
+      can.height = diameter;
+      let imgData = ctx.getImageData(0,0,diameter,diameter);
+      let maxRange = diameter / divisor;
+      for (let y=0; y<diameter; y++) {
+        for (let x=0; x<diameter; x++) {
+          let xPos = x - (diameter/2);
+          let yPos = (diameter-y) - (diameter/2);
+
+          let polar = pos2polar( {x:xPos, y:yPos} );
+          let sat = clamp(0,1,polar.len / ((maxRange/2)));
+          let val = clamp(0,1, (maxRange-polar.len) / (maxRange/2) );
+
+          let rgb = hsv2rgb( {hue:polar.ang, sat:sat, val:val} );
+
+          let index = 4 * (x + y*diameter);
+          imgData.data[index + 0] = rgb[0]*255;
+          imgData.data[index + 1] = rgb[1]*255;
+          imgData.data[index + 2] = rgb[2]*255;
+          imgData.data[index + 3] = 255;
+        }
+      }
+      ctx.putImageData(imgData, 0,0);
+      return can;
     }
 
     function rad2deg(rad)
     {
-    	return (rad / (Math.PI * 2)) * 360;
+      return (rad / (Math.PI * 2)) * 360;
     }
 
     function pos2polar(inPos)
     {
-    	let vecLen = Math.sqrt( inPos.x*inPos.x + inPos.y*inPos.y );
-    	let something = Math.atan2(inPos.y,inPos.x);
-    	while (something < 0)
-    		something += 2*Math.PI;
-    
-    	return { ang: rad2deg(something), len: vecLen };
+      let vecLen = Math.sqrt( inPos.x*inPos.x + inPos.y*inPos.y );
+      let something = Math.atan2(inPos.y,inPos.x);
+      while (something < 0)
+        something += 2*Math.PI;
+
+      return { ang: rad2deg(something), len: vecLen };
     }
 
     function downloadPlot(){
-    	let downloadLink = document.createElement('a');
-    	downloadLink.setAttribute('download', 'PointEmbedding.png');
-    	let canvas = renderer.domElement;
+      let downloadLink = document.createElement('a');
+      downloadLink.setAttribute('download', 'PointEmbedding.png');
+      let canvas = renderer.domElement;
       let dataURL = canvas.toDataURL('image/png');
-      let url = dataURL.replace(/^data:image\/png/,'data:application/octet-stream');
-    	downloadLink.setAttribute('href',url);
-    	downloadLink.click();
+      let url = dataURL.replace(/^data:image\\/png/,'data:application/octet-stream');
+      downloadLink.setAttribute('href',url);
+      downloadLink.click();
     }
 
     initDocument()
 
-    traceList.forEach(trace =>{      
+    traceList.forEach(trace =>{
       const traceDiv = document.getElementById('traceColorDiv')
       const borderDiv = document.getElementById('borderColorDiv')
       const traceContainDiv = document.createElement('div')
@@ -523,7 +522,7 @@ script_string = """
       traceContainDiv.appendChild(traceMarkCanvas)
       traceContainDiv.appendChild(traceMarkName)
       traceContainDiv.setAttribute("class", "traceContainerClass")
-      
+
       addPoints(trace, pointSlider.value, borderSlider.value)
     })
 
@@ -577,7 +576,7 @@ script_string = """
         this.pickedObject = null
       }
       pick(normalizedPosition, scene, camera) {
-        
+
         // pick depending on point size and scale
         const hitRadius = parseFloat(document.getElementById("slider_pt_size").value) * 0.3 / centeredGroup.scale.x
         const raycaster = new THREE.Raycaster()
@@ -585,7 +584,7 @@ script_string = """
         raycaster.setFromCamera(normalizedPosition, camera)
         // get the list of objects the ray intersected
         const intersectedObjects = raycaster.intersectObjects(renderObjects.children)
-        
+
         if (intersectedObjects.length) {
           // we pick the first object, as it is the closest
           this.hitIndex = intersectedObjects[0].index
@@ -624,7 +623,7 @@ script_string = """
       hoverPointSet: false,
       currentTraceIndex: null,
       currentPointIndex: null
-    }    
+    }
 
     function resetHoverPointInfo(){
       hoverPointInfo.hoverPointSet = false,
@@ -646,7 +645,7 @@ script_string = """
         }
         if(validTraceIndex){
           document.getElementById("messageP").parentElement.setAttribute("style" , "display:none")
-        
+
           const runID = runIDs[traceIndex][pickHelper.hitIndex]
           const img = document.getElementById("hoverIMG")
           img.onerror = function() {
@@ -706,7 +705,7 @@ script_string = """
     }
 
     function toRadians(angle) {
-    	return angle * (Math.PI / 180);
+      return angle * (Math.PI / 180);
     }
 
     function dragMouse(e) {
@@ -718,7 +717,7 @@ script_string = """
 
       if(mouseProps.is_left_down){
         // here we rotate around x and y axis
-        
+
         var deltaQuaternion = new THREE.Quaternion().setFromEuler(
           new THREE.Euler( toRadians(delta_y), toRadians(delta_x), 0, 'XYZ')
         )
@@ -726,7 +725,7 @@ script_string = """
 
       } else if (mouseProps.is_middle_down) {
         // here we rotate around z axis
-        
+
         const normPos = getCanvasRelativePosition(event)
         if(normPos.x > parseFloat(plotDiv.style.width) / 2){
           delta_y *= -1
@@ -757,7 +756,7 @@ script_string = """
       }
     }
 
-    
+
     function onMouseScroll(event) {
       event.preventDefault()
       let deltaY = event.deltaY
@@ -804,9 +803,9 @@ script_string = """
     }
 
     function action(time){
-      
+
       renderer.render(scene, camera)
-    
+
       requestAnimationFrame(action)
       pickHelper.pick(pickPosition, scene, camera);
       checkForImageUpdate()
@@ -816,4 +815,4 @@ script_string = """
   </script>
 </body>
 </html>
-"""
+"""  # noqa: E501

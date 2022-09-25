@@ -1,13 +1,16 @@
 from unittest import TestCase
 
 import numpy as np
-from lasso.dyna.D3plotHeader import (D3plotFiletype, D3plotHeader,
-                                     d3plot_filetype_from_integer, get_digit)
+from lasso.dyna.D3plotHeader import (
+    D3plotFiletype,
+    D3plotHeader,
+    d3plot_filetype_from_integer,
+    get_digit,
+)
 from lasso.io.BinaryBuffer import BinaryBuffer
 
 
 class D3plotHeaderTest(TestCase):
-
     def test_loading(self):
 
         filepaths = [
@@ -38,7 +41,8 @@ class D3plotHeaderTest(TestCase):
             self.assertEqual(
                 digit,
                 int(number_str[index]),
-                f"index {index} digit {digit} digit_str {number_str[index]}")
+                f"index {index} digit {digit} digit_str {number_str[index]}",
+            )
 
         self.assertEqual(get_digit(number, 10), 0)
 
@@ -73,9 +77,7 @@ class D3plotHeaderTest(TestCase):
         # 44 -> int32
         # 88 -> int64
         for position in (44, 88):
-            for filetype in (D3plotFiletype.D3PLOT,
-                             D3plotFiletype.D3PART,
-                             D3plotFiletype.D3EIGV):
+            for filetype in (D3plotFiletype.D3PLOT, D3plotFiletype.D3PART, D3plotFiletype.D3EIGV):
 
                 bb = BinaryBuffer()
                 bb.memoryview = memoryview(bytearray(256))

@@ -1,4 +1,3 @@
-
 import contextlib
 import glob
 import os
@@ -7,9 +6,10 @@ from typing import Iterator, List, Union
 
 
 @contextlib.contextmanager
-def open_file_or_filepath(path_or_file: Union[str, typing.BinaryIO],
-                          mode: str) -> Iterator[typing.BinaryIO]:
-    """ This function accepts a file or filepath and handles closing correctly
+def open_file_or_filepath(
+    path_or_file: Union[str, typing.BinaryIO], mode: str
+) -> Iterator[typing.BinaryIO]:
+    """This function accepts a file or filepath and handles closing correctly
 
     Parameters
     ----------
@@ -34,10 +34,10 @@ def open_file_or_filepath(path_or_file: Union[str, typing.BinaryIO],
             file_to_close.close()
 
 
-def collect_files(dirpath: Union[str, List[str]],
-                  patterns: Union[str, List[str]],
-                  recursive: bool = False):
-    ''' Collect files from directories
+def collect_files(
+    dirpath: Union[str, List[str]], patterns: Union[str, List[str]], recursive: bool = False
+):
+    """Collect files from directories
 
     Parameters
     ----------
@@ -56,7 +56,7 @@ def collect_files(dirpath: Union[str, List[str]],
     Examples
     --------
         >>> png_images, jpeg_images = collect_files('./folder', ['*.png', '*.jpeg'])
-    '''
+    """
 
     if not isinstance(dirpath, (list, tuple)):
         dirpath = [dirpath]
@@ -69,12 +69,10 @@ def collect_files(dirpath: Union[str, List[str]],
         files_with_pattern = []
         for current_dir in dirpath:
             # files in root dir
-            files_with_pattern += glob.glob(
-                os.path.join(current_dir, pattern))
+            files_with_pattern += glob.glob(os.path.join(current_dir, pattern))
             # subfolders
             if recursive:
-                files_with_pattern += glob.glob(
-                    os.path.join(current_dir, '**', pattern))
+                files_with_pattern += glob.glob(os.path.join(current_dir, "**", pattern))
 
         found_files.append(sorted(files_with_pattern))
 
