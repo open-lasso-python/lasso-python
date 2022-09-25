@@ -337,8 +337,6 @@ class D3plotTest(TestCase):
         with self.assertRaises(ValueError):
             result = D3plot._is_end_of_file_marker(bb, 0, np.int32)
 
-class D3plotTest2(TestCase):
-
     def test_write(self):
 
         self.maxDiff = None
@@ -470,3 +468,4 @@ class D3plotTest2(TestCase):
         node_disp = d3plot.arrays[ArrayType.node_displacement][:, node_index]
 
         np.testing.assert_allclose(node_disp, disp_node_real, rtol=1E-4)
+
