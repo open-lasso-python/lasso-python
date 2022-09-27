@@ -1,10 +1,10 @@
 version: "3"
 
 tasks:
-  install:
-    desc: Installs the dependencies.
+  setup:
+    desc: Setup the development environment.
     cmds:
-      - poetry install
+      - poetry setup
 
   lint:
     desc: Lints the code and reports on issues.
