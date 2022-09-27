@@ -5,17 +5,14 @@ from unittest import TestCase
 import h5py
 import numpy as np
 
-from lasso.dimred.DimredRun import (DIMRED_STAGES, DimredRun, DimredRunError,
-                                    HDF5FileNames)
-from lasso.dimred.testPlotCreator import create_50_fake_plots
+from lasso.dimred.dimred_run import DIMRED_STAGES, DimredRun, DimredRunError, HDF5FileNames
+from lasso.dimred.test_plot_creator import create_50_fake_plots
 
 
 class TestDimredRun(TestCase):
-
     def test_run(self):
-        ''' Verifies correct function of DimredRun.py'''
-        verification_hdf5_file = h5py.File(
-            "test/DimredRunTest/verificationFile.hdf5", "r")
+        """Verifies correct function of DimredRun.py"""
+        verification_hdf5_file = h5py.File("test/DimredRunTest/verificationFile.hdf5", "r")
 
         with tempfile.TemporaryDirectory() as tmpdir:
 
@@ -38,7 +35,7 @@ class TestDimredRun(TestCase):
                 console=None,
                 project_dir="test/DimredRunTest",
                 n_processes=5,
-                cluster_args=["kmeans"]
+                cluster_args=["kmeans"],
             )
 
             with test_run:
@@ -48,24 +45,24 @@ class TestDimredRun(TestCase):
 
                 # check if reference subsamples match
                 test_refsample = test_run.h5file[HDF5FileNames.subsample_save_name.value]
-                verification_refsample = verification_hdf5_file[HDF5FileNames.subsample_save_name.value]
-                self.assertEqual(test_refsample.shape,
-                                 verification_refsample.shape)
-                self.assertTrue(
-                    (test_refsample[:] - verification_refsample[:]).max() == 0)
+                verification_refsample = verification_hdf5_file[
+                    HDF5FileNames.subsample_save_name.value
+                ]
+                self.assertEqual(test_refsample.shape, verification_refsample.shape)
+                self.assertTrue((test_refsample[:] - verification_refsample[:]).max() == 0)
 
                 # check if the expected reference run is chosen
-                self.assertEqual(os.path.abspath(os.path.join(tmpdir, "SVDTestPlot00/plot")),
-                                 test_run.reference_run)
+                self.assertEqual(
+                    os.path.abspath(os.path.join(tmpdir, "SVDTestPlot00/plot")),
+                    test_run.reference_run,
+                )
 
                 # check if subsampled samples match
                 test_run.subsample_to_reference_run()
 
                 # get subsampled samples
                 test_sub_group = test_run.h5file[HDF5FileNames.subsampled_group_name.value]
-                test_subs = np.stack([
-                    test_sub_group[key][:] for key in test_sub_group.keys()
-                ])
+                test_subs = np.stack([test_sub_group[key][:] for key in test_sub_group.keys()])
 
                 # check if shape is equal to (n_samples, timesteps, subsampled nodes, dims)
                 # we have 50 sample, minus ref_run is 49
@@ -80,32 +77,31 @@ class TestDimredRun(TestCase):
                 # get test betas
                 test_betas_group = test_run.h5file[HDF5FileNames.betas_group_name.value]
                 test_ids = np.stack([key for key in test_betas_group.keys()])
-                test_betas = np.stack([
-                    test_betas_group[key][:] for key in test_betas_group.keys()
-                ])
+                test_betas = np.stack([test_betas_group[key][:] for key in test_betas_group.keys()])
 
                 # we check if test_ids and test_betas are of correct shape
                 # we have 44 samples, 5 timesteps and save the first 10 betas
-                self.assertEqual(test_ids.shape, (49, ))
+                self.assertEqual(test_ids.shape, (49,))
                 self.assertEqual(test_betas.shape, (49, 5, 10))
 
                 test_v_rob = test_run.h5file[HDF5FileNames.v_rob_save_name.value][:]
                 # shape of v_rob must be (eigen, timesteps, nodes)
-                self.assertEqual(test_v_rob.shape, (10, 5, 2000*3))
+                self.assertEqual(test_v_rob.shape, (10, 5, 2000 * 3))
 
                 # verify that calculated betas are reproducable as expected
                 # first, create displ mat containing difference in displ over time
-                verify_displ_stacked = test_subs.reshape(49, 5, 2000*3)
-                verify_diff_mat = np.stack([
-                    verify_displ_stacked[:, 0, :] for _ in range(5)]).reshape(49, 5, 2000*3)
+                verify_displ_stacked = test_subs.reshape(49, 5, 2000 * 3)
+                verify_diff_mat = np.stack(
+                    [verify_displ_stacked[:, 0, :] for _ in range(5)]
+                ).reshape(49, 5, 2000 * 3)
                 verify_displ_stacked = verify_displ_stacked - verify_diff_mat
 
                 # calculate betas and check if they are similar
-                verify_betas = np.einsum('stn, ktn -> stk', verify_displ_stacked, test_v_rob)
+                verify_betas = np.einsum("stn, ktn -> stk", verify_displ_stacked, test_v_rob)
                 self.assertTrue(np.allclose(verify_betas, test_betas))
 
                 # recalculate displ
-                recalc_displ_stacked = np.einsum('stk, ktn -> stn', test_betas, test_v_rob)
+                recalc_displ_stacked = np.einsum("stk, ktn -> stn", test_betas, test_v_rob)
 
                 # Due to projection into eigenspace and back not using all avaiable eigenvectors,
                 # a small error margin is inevitable
@@ -147,7 +143,7 @@ class TestDimredRun(TestCase):
             )
 
     def test_for_errors(self):
-        ''' Verifies correct error behaviour when facing incorrect parser arguments '''
+        """Verifies correct error behaviour when facing incorrect parser arguments"""
 
         with tempfile.TemporaryDirectory() as tmpdir:
             # collect all simulation runs
@@ -157,90 +153,106 @@ class TestDimredRun(TestCase):
                 sim_runs.append(os.path.join(tmpdir, sim, "plot"))
 
             # check invalid start_stage
-            self.assertRaises(DimredRunError, DimredRun,
-                              reference_run="test/dimredTestPlots/SVDTestPlot0/plot",
-                              simulation_runs=sim_runs,
-                              start_stage="INVALID_START",
-                              end_stage=DIMRED_STAGES[-1],
-                              console=None,
-                              project_dir="test/DimredRunTest",
-                              n_processes=5,
-                              )
+            self.assertRaises(
+                DimredRunError,
+                DimredRun,
+                reference_run="test/dimredTestPlots/SVDTestPlot0/plot",
+                simulation_runs=sim_runs,
+                start_stage="INVALID_START",
+                end_stage=DIMRED_STAGES[-1],
+                console=None,
+                project_dir="test/DimredRunTest",
+                n_processes=5,
+            )
 
             # check invalid end_stage
-            self.assertRaises(DimredRunError, DimredRun,
-                              reference_run="test/dimredTestPlots/SVDTestPlot0/plot",
-                              simulation_runs=sim_runs,
-                              start_stage=DIMRED_STAGES[0],
-                              end_stage="INVALID_END",
-                              console=None,
-                              project_dir="test/DimredRunTest",
-                              n_processes=5,
-                              )
+            self.assertRaises(
+                DimredRunError,
+                DimredRun,
+                reference_run="test/dimredTestPlots/SVDTestPlot0/plot",
+                simulation_runs=sim_runs,
+                start_stage=DIMRED_STAGES[0],
+                end_stage="INVALID_END",
+                console=None,
+                project_dir="test/DimredRunTest",
+                n_processes=5,
+            )
 
             # check invalid start_stage after end_stage
-            self.assertRaises(DimredRunError, DimredRun,
-                              reference_run="test/dimredTestPlots/SVDTestPlot0/plot",
-                              simulation_runs=sim_runs,
-                              start_stage=DIMRED_STAGES[-1],
-                              end_stage=DIMRED_STAGES[0],
-                              console=None,
-                              project_dir="test/DimredRunTest",
-                              n_processes=5,
-                              )
+            self.assertRaises(
+                DimredRunError,
+                DimredRun,
+                reference_run="test/dimredTestPlots/SVDTestPlot0/plot",
+                simulation_runs=sim_runs,
+                start_stage=DIMRED_STAGES[-1],
+                end_stage=DIMRED_STAGES[0],
+                console=None,
+                project_dir="test/DimredRunTest",
+                n_processes=5,
+            )
 
             # check invalid simulation runs
-            self.assertRaises(DimredRunError, DimredRun,
-                              simulation_runs="test/dimredTestPlots200/plot",
-                              start_stage=DIMRED_STAGES[0],
-                              end_stage=DIMRED_STAGES[-1],
-                              console=None,
-                              project_dir="test/DimredRunTest",
-                              n_processes=5,
-                              )
+            self.assertRaises(
+                DimredRunError,
+                DimredRun,
+                simulation_runs="test/dimredTestPlots200/plot",
+                start_stage=DIMRED_STAGES[0],
+                end_stage=DIMRED_STAGES[-1],
+                console=None,
+                project_dir="test/DimredRunTest",
+                n_processes=5,
+            )
 
             # check invalid cluster_args
-            self.assertRaises(DimredRunError, DimredRun,
-                              simulation_runs=sim_runs,
-                              start_stage=DIMRED_STAGES[0],
-                              end_stage=DIMRED_STAGES[-1],
-                              console=None,
-                              project_dir="test/DimredRunTest",
-                              n_processes=5,
-                              cluster_args=["noMeans"]
-                              )
+            self.assertRaises(
+                DimredRunError,
+                DimredRun,
+                simulation_runs=sim_runs,
+                start_stage=DIMRED_STAGES[0],
+                end_stage=DIMRED_STAGES[-1],
+                console=None,
+                project_dir="test/DimredRunTest",
+                n_processes=5,
+                cluster_args=["noMeans"],
+            )
 
             # check invalid outlier-args
-            self.assertRaises(DimredRunError, DimredRun,
-                              simulation_runs=sim_runs,
-                              start_stage=DIMRED_STAGES[0],
-                              end_stage=DIMRED_STAGES[-1],
-                              console=None,
-                              project_dir="test/DimredRunTest",
-                              n_processes=5,
-                              cluster_args=["kmeans"],
-                              outlier_args=["DoesNotExist"]
-                              )
+            self.assertRaises(
+                DimredRunError,
+                DimredRun,
+                simulation_runs=sim_runs,
+                start_stage=DIMRED_STAGES[0],
+                end_stage=DIMRED_STAGES[-1],
+                console=None,
+                project_dir="test/DimredRunTest",
+                n_processes=5,
+                cluster_args=["kmeans"],
+                outlier_args=["DoesNotExist"],
+            )
 
             # check inexistent reference run
-            self.assertRaises(DimredRunError, DimredRun,
-                              reference_run=os.path.join(tmpdir, "IDontExist"),
-                              simulation_runs=sim_runs,
-                              start_stage=DIMRED_STAGES[0],
-                              end_stage=DIMRED_STAGES[-1],
-                              console=None,
-                              project_dir="test/DimredRunTest",
-                              n_processes=5,
-                              )
+            self.assertRaises(
+                DimredRunError,
+                DimredRun,
+                reference_run=os.path.join(tmpdir, "IDontExist"),
+                simulation_runs=sim_runs,
+                start_stage=DIMRED_STAGES[0],
+                end_stage=DIMRED_STAGES[-1],
+                console=None,
+                project_dir="test/DimredRunTest",
+                n_processes=5,
+            )
             # check for empty simulation runs
-            self.assertRaises(DimredRunError, DimredRun,
-                              simulation_runs="",
-                              start_stage=DIMRED_STAGES[0],
-                              end_stage=DIMRED_STAGES[-1],
-                              console=None,
-                              project_dir="test/DimredRunTest",
-                              n_processes=5
-                              )
+            self.assertRaises(
+                DimredRunError,
+                DimredRun,
+                simulation_runs="",
+                start_stage=DIMRED_STAGES[0],
+                end_stage=DIMRED_STAGES[-1],
+                console=None,
+                project_dir="test/DimredRunTest",
+                n_processes=5,
+            )
 
     def tearDown(self):
         # cleanup of created files

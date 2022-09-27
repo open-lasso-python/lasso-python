@@ -4,7 +4,7 @@ import enum
 
 
 def get_last_int_of_line(line: str) -> Tuple[str, Union[None, int]]:
-    """ Searches an integer in the line
+    """Searches an integer in the line
 
     Parameters
     ----------
@@ -20,7 +20,7 @@ def get_last_int_of_line(line: str) -> Tuple[str, Union[None, int]]:
     """
     for entry in line.split():
         if entry.isdigit():
-            return line[:line.rfind(entry)], int(entry)
+            return line[: line.rfind(entry)], int(entry)
     return line, None
 
 
@@ -58,7 +58,7 @@ class FemzipVariableCategory(enum.Enum):
     HEXA20 = 13
 
     @staticmethod
-    def from_int(number: int) -> 'FemzipVariableCategory':
+    def from_int(number: int) -> "FemzipVariableCategory":
         if number not in FEMZIP_CATEGORY_TRANSL_DICT:
             err_msg = "Error: Unknown femzip variable category: '{0}'"
             raise RuntimeError(err_msg.format(number))
@@ -106,12 +106,12 @@ class FemzipArrayType(enum.Enum):
     airbag_particle_vel_z = "Vel z"
     airbag_particle_mass = "Mass"
     airbag_particle_radius = "Radius"
-    airbag_particle_spin_energy = 'Spin En'
-    airbag_particle_tran_energy = 'Tran En'
-    airbag_particle_neighbor_dist = 'NS dist'
-    airbag_particle_gas_chamber_id = 'GasC ID'
-    airbag_particle_chamber_id = 'Cham ID'
-    airbag_particle_leakage = 'Leakage'
+    airbag_particle_spin_energy = "Spin En"
+    airbag_particle_tran_energy = "Tran En"
+    airbag_particle_neighbor_dist = "NS dist"
+    airbag_particle_gas_chamber_id = "GasC ID"
+    airbag_particle_chamber_id = "Cham ID"
+    airbag_particle_leakage = "Leakage"
 
     stress_x = "Sigma-x"
     stress_y = "Sigma-y"
@@ -154,8 +154,8 @@ class FemzipArrayType(enum.Enum):
     strain_xz = "Epsilon-zx (IP    1)"
 
     @staticmethod
-    def from_string(femzip_name: str) -> 'FemzipArrayType':
-        """ Converts a variable name to a array type string
+    def from_string(femzip_name: str) -> "FemzipArrayType":
+        """Converts a variable name to a array type string
 
         Parameters
         ----------

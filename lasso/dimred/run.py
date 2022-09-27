@@ -1,20 +1,22 @@
 from rich.console import Console
 from rich.theme import Theme
 
-from lasso.dimred.DimredRun import (DIMRED_STAGES, DimredRun, DimredRunError,
-                                    DimredStage, parse_dimred_args)
+from lasso.dimred.dimred_run import (
+    DIMRED_STAGES,
+    DimredRun,
+    DimredRunError,
+    DimredStage,
+    parse_dimred_args,
+)
 
 
 def main():
 
     # parse command line stuff
     parser = parse_dimred_args()
-    log_theme = Theme({
-        "info": "royal_blue1",
-        "success": "green",
-        "warning": "dark_orange3",
-        "error": "bold red"
-    })
+    log_theme = Theme(
+        {"info": "royal_blue1", "success": "green", "warning": "dark_orange3", "error": "bold red"}
+    )
     console = Console(theme=log_theme, record=True, highlight=False)
 
     try:
@@ -52,28 +54,43 @@ def main():
         with dimred_run:
 
             # setup
-            if dimred_run.start_stage_index <= DIMRED_STAGES.index(DimredStage.REFERENCE_RUN.value) \
-                    <= dimred_run.end_stage_index:
+            if (
+                dimred_run.start_stage_index
+                <= DIMRED_STAGES.index(DimredStage.REFERENCE_RUN.value)
+                <= dimred_run.end_stage_index
+            ):
                 dimred_run.process_reference_run()
 
             # import
-            if dimred_run.start_stage_index <= DIMRED_STAGES.index(DimredStage.IMPORT_RUNS.value) \
-                    <= dimred_run.end_stage_index:
+            if (
+                dimred_run.start_stage_index
+                <= DIMRED_STAGES.index(DimredStage.IMPORT_RUNS.value)
+                <= dimred_run.end_stage_index
+            ):
                 dimred_run.subsample_to_reference_run()
 
             # math
-            if dimred_run.start_stage_index <= DIMRED_STAGES.index(DimredStage.REDUCTION.value) \
-                    <= dimred_run.end_stage_index:
+            if (
+                dimred_run.start_stage_index
+                <= DIMRED_STAGES.index(DimredStage.REDUCTION.value)
+                <= dimred_run.end_stage_index
+            ):
                 dimred_run.dimension_reduction_svd()
 
             # clustering
-            if (dimred_run.start_stage_index <= DIMRED_STAGES.index(DimredStage.CLUSTERING.value)
-                    <= dimred_run.end_stage_index):
+            if (
+                dimred_run.start_stage_index
+                <= DIMRED_STAGES.index(DimredStage.CLUSTERING.value)
+                <= dimred_run.end_stage_index
+            ):
                 dimred_run.clustering_results()
 
             # export
-            if dimred_run.start_stage_index <= DIMRED_STAGES.index(DimredStage.EXPORT_PLOT.value) \
-                    <= dimred_run.end_stage_index:
+            if (
+                dimred_run.start_stage_index
+                <= DIMRED_STAGES.index(DimredStage.EXPORT_PLOT.value)
+                <= dimred_run.end_stage_index
+            ):
                 dimred_run.visualize_results()
 
             # print logfile

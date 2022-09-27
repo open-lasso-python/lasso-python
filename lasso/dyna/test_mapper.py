@@ -1,4 +1,3 @@
-
 from typing import Dict, Set, Tuple, Union
 from unittest import TestCase
 
@@ -29,147 +28,236 @@ part_global_femzip_translations: Dict[Tuple[FemzipArrayType, FemzipVariableCateg
 
 element_nope_femzip_translations: Dict[Tuple[str, FemzipVariableCategory], str] = {
     # NODE
-    (FemzipArrayType.node_displacement.value,
-     FemzipVariableCategory.NODE): ArrayType.node_displacement,
-    (FemzipArrayType.node_accelerations.value,
-     FemzipVariableCategory.NODE): ArrayType.node_acceleration,
-    (FemzipArrayType.node_velocities.value,
-     FemzipVariableCategory.NODE): ArrayType.node_velocity,
-    (FemzipArrayType.node_temperatures.value,
-     FemzipVariableCategory.NODE): ArrayType.node_temperature,
-    (FemzipArrayType.node_heat_flux.value,
-     FemzipVariableCategory.NODE): ArrayType.node_heat_flux,
-    (FemzipArrayType.node_mass_scaling.value,
-     FemzipVariableCategory.NODE): ArrayType.node_mass_scaling,
-    (FemzipArrayType.node_temperature_gradient.value,
-     FemzipVariableCategory.NODE): ArrayType.node_temperature_gradient,
+    (
+        FemzipArrayType.node_displacement.value,
+        FemzipVariableCategory.NODE,
+    ): ArrayType.node_displacement,
+    (
+        FemzipArrayType.node_accelerations.value,
+        FemzipVariableCategory.NODE,
+    ): ArrayType.node_acceleration,
+    (FemzipArrayType.node_velocities.value, FemzipVariableCategory.NODE): ArrayType.node_velocity,
+    (
+        FemzipArrayType.node_temperatures.value,
+        FemzipVariableCategory.NODE,
+    ): ArrayType.node_temperature,
+    (FemzipArrayType.node_heat_flux.value, FemzipVariableCategory.NODE): ArrayType.node_heat_flux,
+    (
+        FemzipArrayType.node_mass_scaling.value,
+        FemzipVariableCategory.NODE,
+    ): ArrayType.node_mass_scaling,
+    (
+        FemzipArrayType.node_temperature_gradient.value,
+        FemzipVariableCategory.NODE,
+    ): ArrayType.node_temperature_gradient,
     # BEAM
-    (FemzipArrayType.beam_axial_force.value,
-     FemzipVariableCategory.BEAM): ArrayType.element_beam_axial_force,
-    (FemzipArrayType.beam_s_bending_moment.value,
-     FemzipVariableCategory.BEAM): ArrayType.element_beam_bending_moment,
-    (FemzipArrayType.beam_t_bending_moment.value,
-     FemzipVariableCategory.BEAM): ArrayType.element_beam_bending_moment,
-    (FemzipArrayType.beam_s_shear_resultant.value,
-     FemzipVariableCategory.BEAM): ArrayType.element_beam_shear_force,
-    (FemzipArrayType.beam_t_shear_resultant.value,
-     FemzipVariableCategory.BEAM): ArrayType.element_beam_shear_force,
-    (FemzipArrayType.beam_torsional_moment.value,
-     FemzipVariableCategory.BEAM): ArrayType.element_beam_torsion_moment,
-    (FemzipArrayType.stress_x.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_stress,
-    (FemzipArrayType.stress_y.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_stress,
-    (FemzipArrayType.stress_z.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_stress,
-    (FemzipArrayType.stress_xy.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_stress,
-    (FemzipArrayType.stress_yz.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_stress,
-    (FemzipArrayType.stress_xz.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_stress,
-    (FemzipArrayType.eff_pstrain.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_effective_plastic_strain,
-    (FemzipArrayType.history_vars.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_history_vars,
-    (FemzipArrayType.bending_moment_mx.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_bending_moment,
-    (FemzipArrayType.bending_moment_my.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_bending_moment,
-    (FemzipArrayType.bending_moment_mxy.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_bending_moment,
-    (FemzipArrayType.shear_force_x.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_shear_force,
-    (FemzipArrayType.shear_force_y.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_shear_force,
-    (FemzipArrayType.normal_force_x.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_normal_force,
-    (FemzipArrayType.normal_force_y.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_normal_force,
-    (FemzipArrayType.normal_force_xy.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_normal_force,
-    (FemzipArrayType.thickness.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_thickness,
-    (FemzipArrayType.unknown_1.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_unknown_variables,
-    (FemzipArrayType.unknown_2.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_unknown_variables,
-    (FemzipArrayType.strain_inner_x.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_strain,
-    (FemzipArrayType.strain_inner_y.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_strain,
-    (FemzipArrayType.strain_inner_z.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_strain,
-    (FemzipArrayType.strain_inner_xy.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_strain,
-    (FemzipArrayType.strain_inner_yz.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_strain,
-    (FemzipArrayType.strain_inner_xz.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_strain,
-    (FemzipArrayType.strain_outer_x.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_strain,
-    (FemzipArrayType.strain_outer_y.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_strain,
-    (FemzipArrayType.strain_outer_z.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_strain,
-    (FemzipArrayType.strain_outer_xy.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_strain,
-    (FemzipArrayType.strain_outer_yz.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_strain,
-    (FemzipArrayType.strain_outer_xz.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_strain,
-    (FemzipArrayType.internal_energy.value,
-     FemzipVariableCategory.SHELL): ArrayType.element_shell_internal_energy,
+    (
+        FemzipArrayType.beam_axial_force.value,
+        FemzipVariableCategory.BEAM,
+    ): ArrayType.element_beam_axial_force,
+    (
+        FemzipArrayType.beam_s_bending_moment.value,
+        FemzipVariableCategory.BEAM,
+    ): ArrayType.element_beam_bending_moment,
+    (
+        FemzipArrayType.beam_t_bending_moment.value,
+        FemzipVariableCategory.BEAM,
+    ): ArrayType.element_beam_bending_moment,
+    (
+        FemzipArrayType.beam_s_shear_resultant.value,
+        FemzipVariableCategory.BEAM,
+    ): ArrayType.element_beam_shear_force,
+    (
+        FemzipArrayType.beam_t_shear_resultant.value,
+        FemzipVariableCategory.BEAM,
+    ): ArrayType.element_beam_shear_force,
+    (
+        FemzipArrayType.beam_torsional_moment.value,
+        FemzipVariableCategory.BEAM,
+    ): ArrayType.element_beam_torsion_moment,
+    (FemzipArrayType.stress_x.value, FemzipVariableCategory.SHELL): ArrayType.element_shell_stress,
+    (FemzipArrayType.stress_y.value, FemzipVariableCategory.SHELL): ArrayType.element_shell_stress,
+    (FemzipArrayType.stress_z.value, FemzipVariableCategory.SHELL): ArrayType.element_shell_stress,
+    (FemzipArrayType.stress_xy.value, FemzipVariableCategory.SHELL): ArrayType.element_shell_stress,
+    (FemzipArrayType.stress_yz.value, FemzipVariableCategory.SHELL): ArrayType.element_shell_stress,
+    (FemzipArrayType.stress_xz.value, FemzipVariableCategory.SHELL): ArrayType.element_shell_stress,
+    (
+        FemzipArrayType.eff_pstrain.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_effective_plastic_strain,
+    (
+        FemzipArrayType.history_vars.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_history_vars,
+    (
+        FemzipArrayType.bending_moment_mx.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_bending_moment,
+    (
+        FemzipArrayType.bending_moment_my.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_bending_moment,
+    (
+        FemzipArrayType.bending_moment_mxy.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_bending_moment,
+    (
+        FemzipArrayType.shear_force_x.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_shear_force,
+    (
+        FemzipArrayType.shear_force_y.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_shear_force,
+    (
+        FemzipArrayType.normal_force_x.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_normal_force,
+    (
+        FemzipArrayType.normal_force_y.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_normal_force,
+    (
+        FemzipArrayType.normal_force_xy.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_normal_force,
+    (
+        FemzipArrayType.thickness.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_thickness,
+    (
+        FemzipArrayType.unknown_1.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_unknown_variables,
+    (
+        FemzipArrayType.unknown_2.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_unknown_variables,
+    (
+        FemzipArrayType.strain_inner_x.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_strain,
+    (
+        FemzipArrayType.strain_inner_y.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_strain,
+    (
+        FemzipArrayType.strain_inner_z.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_strain,
+    (
+        FemzipArrayType.strain_inner_xy.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_strain,
+    (
+        FemzipArrayType.strain_inner_yz.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_strain,
+    (
+        FemzipArrayType.strain_inner_xz.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_strain,
+    (
+        FemzipArrayType.strain_outer_x.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_strain,
+    (
+        FemzipArrayType.strain_outer_y.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_strain,
+    (
+        FemzipArrayType.strain_outer_z.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_strain,
+    (
+        FemzipArrayType.strain_outer_xy.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_strain,
+    (
+        FemzipArrayType.strain_outer_yz.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_strain,
+    (
+        FemzipArrayType.strain_outer_xz.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_strain,
+    (
+        FemzipArrayType.internal_energy.value,
+        FemzipVariableCategory.SHELL,
+    ): ArrayType.element_shell_internal_energy,
     # SOLID
-    (FemzipArrayType.stress_x.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_stress,
-    (FemzipArrayType.stress_y.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_stress,
-    (FemzipArrayType.stress_z.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_stress,
-    (FemzipArrayType.stress_xy.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_stress,
-    (FemzipArrayType.stress_yz.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_stress,
-    (FemzipArrayType.stress_xz.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_stress,
-    (FemzipArrayType.eff_pstrain.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_effective_plastic_strain,
-    (FemzipArrayType.strain_inner_x.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_strain,
-    (FemzipArrayType.strain_inner_y.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_strain,
-    (FemzipArrayType.strain_inner_z.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_strain,
-    (FemzipArrayType.strain_inner_xy.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_strain,
-    (FemzipArrayType.history_vars.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_history_variables,
-    (FemzipArrayType.strain_inner_yz.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_strain,
-    (FemzipArrayType.strain_inner_xz.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_strain,
-    (FemzipArrayType.strain_outer_x.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_strain,
-    (FemzipArrayType.strain_outer_y.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_strain,
-    (FemzipArrayType.strain_outer_z.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_strain,
-    (FemzipArrayType.strain_outer_xy.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_strain,
-    (FemzipArrayType.strain_outer_yz.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_strain,
-    (FemzipArrayType.strain_outer_xz.value,
-     FemzipVariableCategory.SOLID): ArrayType.element_solid_strain
+    (FemzipArrayType.stress_x.value, FemzipVariableCategory.SOLID): ArrayType.element_solid_stress,
+    (FemzipArrayType.stress_y.value, FemzipVariableCategory.SOLID): ArrayType.element_solid_stress,
+    (FemzipArrayType.stress_z.value, FemzipVariableCategory.SOLID): ArrayType.element_solid_stress,
+    (FemzipArrayType.stress_xy.value, FemzipVariableCategory.SOLID): ArrayType.element_solid_stress,
+    (FemzipArrayType.stress_yz.value, FemzipVariableCategory.SOLID): ArrayType.element_solid_stress,
+    (FemzipArrayType.stress_xz.value, FemzipVariableCategory.SOLID): ArrayType.element_solid_stress,
+    (
+        FemzipArrayType.eff_pstrain.value,
+        FemzipVariableCategory.SOLID,
+    ): ArrayType.element_solid_effective_plastic_strain,
+    (
+        FemzipArrayType.strain_inner_x.value,
+        FemzipVariableCategory.SOLID,
+    ): ArrayType.element_solid_strain,
+    (
+        FemzipArrayType.strain_inner_y.value,
+        FemzipVariableCategory.SOLID,
+    ): ArrayType.element_solid_strain,
+    (
+        FemzipArrayType.strain_inner_z.value,
+        FemzipVariableCategory.SOLID,
+    ): ArrayType.element_solid_strain,
+    (
+        FemzipArrayType.strain_inner_xy.value,
+        FemzipVariableCategory.SOLID,
+    ): ArrayType.element_solid_strain,
+    (
+        FemzipArrayType.history_vars.value,
+        FemzipVariableCategory.SOLID,
+    ): ArrayType.element_solid_history_variables,
+    (
+        FemzipArrayType.strain_inner_yz.value,
+        FemzipVariableCategory.SOLID,
+    ): ArrayType.element_solid_strain,
+    (
+        FemzipArrayType.strain_inner_xz.value,
+        FemzipVariableCategory.SOLID,
+    ): ArrayType.element_solid_strain,
+    (
+        FemzipArrayType.strain_outer_x.value,
+        FemzipVariableCategory.SOLID,
+    ): ArrayType.element_solid_strain,
+    (
+        FemzipArrayType.strain_outer_y.value,
+        FemzipVariableCategory.SOLID,
+    ): ArrayType.element_solid_strain,
+    (
+        FemzipArrayType.strain_outer_z.value,
+        FemzipVariableCategory.SOLID,
+    ): ArrayType.element_solid_strain,
+    (
+        FemzipArrayType.strain_outer_xy.value,
+        FemzipVariableCategory.SOLID,
+    ): ArrayType.element_solid_strain,
+    (
+        FemzipArrayType.strain_outer_yz.value,
+        FemzipVariableCategory.SOLID,
+    ): ArrayType.element_solid_strain,
+    (
+        FemzipArrayType.strain_outer_xz.value,
+        FemzipVariableCategory.SOLID,
+    ): ArrayType.element_solid_strain,
 }
 
 
 class MapperTest(TestCase):
-
-    def validate(self,
-                 fz: Dict[Tuple[str, FemzipVariableCategory], np.ndarray],
-                 d3plot_shape: tuple,
-                 data_index_positions: Union[tuple, slice] = slice(None)):
+    def validate(
+        self,
+        fz: Dict[Tuple[str, FemzipVariableCategory], np.ndarray],
+        d3plot_shape: tuple,
+        data_index_positions: Union[tuple, slice] = slice(None),
+    ):
         """Validate that the arrays have the same shape and that the
         raw data has been allocated to the correct postions in the
         d3plot arrays.
@@ -204,9 +292,7 @@ class MapperTest(TestCase):
         # NODE DISPLACEMENT
         nd = np.random.randn(2, 10, 3)
 
-        fz = {
-            (1, FemzipArrayType.node_displacement.value, FemzipVariableCategory.NODE): nd
-        }
+        fz = {(1, FemzipArrayType.node_displacement.value, FemzipVariableCategory.NODE): nd}
 
         m.map(fz)
 
@@ -217,8 +303,8 @@ class MapperTest(TestCase):
         d = np.random.randn(2, 2)
 
         fz = {
-            (1, 'Sigma-z (IP 2)', FemzipVariableCategory.THICK_SHELL): d,
-            (2, 'Epsilon-xy (inner)', FemzipVariableCategory.THICK_SHELL): d,
+            (1, "Sigma-z (IP 2)", FemzipVariableCategory.THICK_SHELL): d,
+            (2, "Epsilon-xy (inner)", FemzipVariableCategory.THICK_SHELL): d,
         }
 
         m = FemzipMapper()
@@ -234,10 +320,10 @@ class MapperTest(TestCase):
         self.assertTrue(np.allclose(r[ArrayType.element_tshell_strain][:, :, 0, 3], d))
 
     def test_internal_shell_energy(self):
-        interal_energy = np.array([[1, 1, .12, 2.121202, 2.1123, 7.213]]).reshape(2, 3)
+        interal_energy = np.array([[1, 1, 0.12, 2.121202, 2.1123, 7.213]]).reshape(2, 3)
 
         fz = {
-            (1, 'internal_energy', FemzipVariableCategory.SHELL): interal_energy,
+            (1, "internal_energy", FemzipVariableCategory.SHELL): interal_energy,
         }
         m = FemzipMapper()
 
@@ -251,8 +337,8 @@ class MapperTest(TestCase):
         d2 = np.random.randn(2, 1200)
 
         fz: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray] = {
-            (1, 'element_dependent_variable_2', FemzipVariableCategory.SHELL): d2,
-            (2, 'element_dependent_variable_1', FemzipVariableCategory.SHELL): d1,
+            (1, "element_dependent_variable_2", FemzipVariableCategory.SHELL): d2,
+            (2, "element_dependent_variable_1", FemzipVariableCategory.SHELL): d1,
         }
         m = FemzipMapper()
 
@@ -262,10 +348,8 @@ class MapperTest(TestCase):
 
         self.assertEqual(r[ArrayType.element_shell_unknown_variables].shape, (2, 1200, 2))
 
-        self.assertTrue(
-            np.allclose(d1, r[ArrayType.element_shell_unknown_variables][:, :, 0]))
-        self.assertTrue(
-            np.allclose(d2, r[ArrayType.element_shell_unknown_variables][:, :, 1]))
+        self.assertTrue(np.allclose(d1, r[ArrayType.element_shell_unknown_variables][:, :, 0]))
+        self.assertTrue(np.allclose(d2, r[ArrayType.element_shell_unknown_variables][:, :, 1]))
 
     def test_effective_p_strain(self):
         m = FemzipMapper()
@@ -274,9 +358,9 @@ class MapperTest(TestCase):
         d3 = np.random.randn(2, 20000)
 
         fz: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray] = {
-            (1, 'Effective plastic strain (   1)', FemzipVariableCategory.SHELL): d1,
-            (2, 'Effective plastic strain (   2)', FemzipVariableCategory.SHELL): d2,
-            (3, 'Effective plastic strain (   3)', FemzipVariableCategory.SHELL): d3,
+            (1, "Effective plastic strain (   1)", FemzipVariableCategory.SHELL): d1,
+            (2, "Effective plastic strain (   2)", FemzipVariableCategory.SHELL): d2,
+            (3, "Effective plastic strain (   3)", FemzipVariableCategory.SHELL): d3,
         }
 
         m.map(fz)
@@ -286,11 +370,14 @@ class MapperTest(TestCase):
         self.assertEqual(r[ArrayType.element_shell_effective_plastic_strain].shape, (2, 20000, 3))
 
         self.assertTrue(
-            np.allclose(d1, r[ArrayType.element_shell_effective_plastic_strain][:, :, 0]))
+            np.allclose(d1, r[ArrayType.element_shell_effective_plastic_strain][:, :, 0])
+        )
         self.assertTrue(
-            np.allclose(d2, r[ArrayType.element_shell_effective_plastic_strain][:, :, 1]))
+            np.allclose(d2, r[ArrayType.element_shell_effective_plastic_strain][:, :, 1])
+        )
         self.assertTrue(
-            np.allclose(d3, r[ArrayType.element_shell_effective_plastic_strain][:, :, 2]))
+            np.allclose(d3, r[ArrayType.element_shell_effective_plastic_strain][:, :, 2])
+        )
 
     def test_others(self):
         stress_1 = np.random.randn(2, 2)
@@ -300,28 +387,23 @@ class MapperTest(TestCase):
         strain1 = np.random.randn(1, 2)
         strain2 = np.random.randn(1, 2)
 
-        hisotry_vars = np.array([[1, 2],
-                                 [0, 3],
-                                 [12, 2]], dtype=np.float)
+        hisotry_vars = np.array([[1, 2], [0, 3], [12, 2]], dtype=np.float)
 
         hisotry_vars1 = np.random.randn(3, 2)
         hisotry_vars2 = np.random.randn(3, 2)
 
         fz: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray] = {
             # stress
-            (1, 'Sigma-x (IP 6)', FemzipVariableCategory.SOLID): stress_1,
-            (2, 'Sigma-y (IP 3)', FemzipVariableCategory.SOLID): stress_2,
-            (3, 'Sigma-x (IP 3)', FemzipVariableCategory.SOLID): stress_3,
-
+            (1, "Sigma-x (IP 6)", FemzipVariableCategory.SOLID): stress_1,
+            (2, "Sigma-y (IP 3)", FemzipVariableCategory.SOLID): stress_2,
+            (3, "Sigma-x (IP 3)", FemzipVariableCategory.SOLID): stress_3,
             # history
-            (4, 'extra_value_per_element  2 (IP 2)', FemzipVariableCategory.SOLID): hisotry_vars,
-            (5, 'extra_value_per_element  21 (IP 15)', FemzipVariableCategory.SOLID): hisotry_vars1,
-            (6, 'extra_value_per_element  4 (IP 3)', FemzipVariableCategory.SOLID): hisotry_vars2,
-
+            (4, "extra_value_per_element  2 (IP 2)", FemzipVariableCategory.SOLID): hisotry_vars,
+            (5, "extra_value_per_element  21 (IP 15)", FemzipVariableCategory.SOLID): hisotry_vars1,
+            (6, "extra_value_per_element  4 (IP 3)", FemzipVariableCategory.SOLID): hisotry_vars2,
             # strain
-            (7, 'Epsilon-xy (outer)', FemzipVariableCategory.SHELL): strain1,
-            (8, 'Epsilon-z (outer)', FemzipVariableCategory.SHELL): strain2,
-
+            (7, "Epsilon-xy (outer)", FemzipVariableCategory.SHELL): strain1,
+            (8, "Epsilon-z (outer)", FemzipVariableCategory.SHELL): strain2,
         }
 
         m = FemzipMapper()
@@ -339,13 +421,16 @@ class MapperTest(TestCase):
         self.assertEqual(r[ArrayType.element_solid_history_variables].shape, (3, 2, 15, 21))
 
         self.assertTrue(
-            np.allclose(hisotry_vars, r[ArrayType.element_solid_history_variables][:, :, 1, 1]))
+            np.allclose(hisotry_vars, r[ArrayType.element_solid_history_variables][:, :, 1, 1])
+        )
 
         self.assertTrue(
-            np.allclose(hisotry_vars1, r[ArrayType.element_solid_history_variables][:, :, 14, 20]))
+            np.allclose(hisotry_vars1, r[ArrayType.element_solid_history_variables][:, :, 14, 20])
+        )
 
         self.assertTrue(
-            np.allclose(hisotry_vars2, r[ArrayType.element_solid_history_variables][:, :, 2, 3]))
+            np.allclose(hisotry_vars2, r[ArrayType.element_solid_history_variables][:, :, 2, 3])
+        )
 
         self.assertEqual(r[ArrayType.element_shell_strain].shape, (1, 2, 2, 4))
 
@@ -357,10 +442,10 @@ class MapperTest(TestCase):
         torsion = np.random.rand(2, 5)
 
         fz: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray] = {
-            (1, 'axial_force', FemzipVariableCategory.BEAM): axial_force,
-            (2, 's_shear_resultant', FemzipVariableCategory.BEAM): shear,
-            (3, 't_bending_moment', FemzipVariableCategory.BEAM): bending,
-            (4, 'torsional_resultant', FemzipVariableCategory.BEAM): torsion,
+            (1, "axial_force", FemzipVariableCategory.BEAM): axial_force,
+            (2, "s_shear_resultant", FemzipVariableCategory.BEAM): shear,
+            (3, "t_bending_moment", FemzipVariableCategory.BEAM): bending,
+            (4, "torsional_resultant", FemzipVariableCategory.BEAM): torsion,
         }
 
         m = FemzipMapper()
@@ -373,24 +458,15 @@ class MapperTest(TestCase):
         self.assertTrue(np.allclose(r["element_beam_axial_force"], axial_force))
 
         self.assertEqual(r[ArrayType.element_beam_shear_force].shape, (2, 4, 1))
-        self.assertTrue(np.allclose(
-            r[ArrayType.element_beam_shear_force][:, :, 0],
-            shear
-        ))
+        self.assertTrue(np.allclose(r[ArrayType.element_beam_shear_force][:, :, 0], shear))
 
         # bending moment
         self.assertEqual(r[ArrayType.element_beam_bending_moment].shape, (3, 123, 2))
-        self.assertTrue(np.allclose(
-            r[ArrayType.element_beam_bending_moment][:, :, 1],
-            bending
-        ))
+        self.assertTrue(np.allclose(r[ArrayType.element_beam_bending_moment][:, :, 1], bending))
 
         # torion
         self.assertEqual(r[ArrayType.element_beam_torsion_moment].shape, (2, 5))
-        self.assertTrue(np.allclose(
-            r[ArrayType.element_beam_torsion_moment],
-            torsion
-        ))
+        self.assertTrue(np.allclose(r[ArrayType.element_beam_torsion_moment], torsion))
 
     #     # TODO
     #     # unknown1 and unknown2

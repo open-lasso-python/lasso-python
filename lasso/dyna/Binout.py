@@ -1,4 +1,3 @@
-
 import glob
 from typing import List, Union
 
@@ -8,7 +7,7 @@ import pandas as pd
 
 from .lsda_py3 import Lsda
 
-'''
+"""
 # Recoded stuff from lsda from LSTC, but much more readable and quoted ...
 #
 class Diskfile:
@@ -96,11 +95,11 @@ class Diskfile:
             # self.lastoffset = 17
 
     # UNFINISHED
-'''
+"""
 
 
 class Binout:
-    '''This class is meant to read binouts from LS-Dyna
+    """This class is meant to read binouts from LS-Dyna
 
     Parameters
     ----------
@@ -114,10 +113,10 @@ class Binout:
     Examples
     --------
         >>> binout = Binout("path/to/binout")
-    '''
+    """
 
     def __init__(self, filepath: str):
-        '''Constructor for a binout
+        """Constructor for a binout
 
         Parameters
         ----------
@@ -141,7 +140,7 @@ class Binout:
             >>> binout = Binout("path/to/binout*")
             >>> binout.filelist
             ['path/to/binout0000','path/to/binout0001']
-        '''
+        """
 
         self.filelist = glob.glob(filepath)
 
@@ -154,7 +153,7 @@ class Binout:
         self.lsda_root = self.lsda.root
 
     def read(self, *path) -> Union[List[str], str, np.ndarray]:
-        '''Read all data from Binout (top to low level)
+        """Read all data from Binout (top to low level)
 
         Parameters
         ----------
@@ -198,12 +197,12 @@ class Binout:
             >>> # read a string value
             >>> binout.read("swforc","date")
             '11/05/2013'
-        '''
+        """
 
         return self._decode_path(path)
 
     def as_df(self, *args) -> pd.DataFrame:
-        """ read data and convert to pandas dataframe if possible
+        """read data and convert to pandas dataframe if possible
 
         Parameters
         ----------
@@ -267,22 +266,23 @@ class Binout:
             err_msg = "data is not a numpy array but has type '{0}'"
             raise ValueError(err_msg.format(type(data)))
 
-        time_array = self.read(*args[:-1], 'time')
+        time_array = self.read(*args[:-1], "time")
         if data.shape[0] != time_array.shape[0]:
             raise ValueError("data series length does not match time array length")
 
-        time_pdi = pd.Index(time_array, name='time')
+        time_pdi = pd.Index(time_array, name="time")
 
         # create dataframe
         if data.ndim > 1:
             df = pd.DataFrame(index=time_pdi)
 
-            if args[0] == 'rcforc':
-                ids = [(str(i) + 'm') if j else (str(i) + 's')
-                       for i, j in zip(self.read('rcforc', 'ids'),
-                                       self.read('rcforc', 'side'))]
+            if args[0] == "rcforc":
+                ids = [
+                    (str(i) + "m") if j else (str(i) + "s")
+                    for i, j in zip(self.read("rcforc", "ids"), self.read("rcforc", "side"))
+                ]
             else:
-                ids = self.read(*args[:-1], 'ids')
+                ids = self.read(*args[:-1], "ids")
 
             for i, j in enumerate(ids):
                 df[str(j)] = data.T[i]
@@ -293,7 +293,7 @@ class Binout:
         return df
 
     def _decode_path(self, path):
-        '''Decode a path and get whatever is inside.
+        """Decode a path and get whatever is inside.
 
         Parameters
         ----------
@@ -310,7 +310,7 @@ class Binout:
         -------
         ret: Union[List[str], np.ndarray]
             either subfolder list or data array
-        '''
+        """
 
         iLevel = len(path)
 
@@ -326,7 +326,7 @@ class Binout:
 
                 dir_symbol = self._get_symbol(self.lsda_root, path)
 
-                if 'metadata' in dir_symbol.children:
+                if "metadata" in dir_symbol.children:
                     return self._collect_variables(dir_symbol)
                 else:
                     return self._bstr_to_str(list(dir_symbol.children.keys()))
@@ -337,7 +337,7 @@ class Binout:
                 return self._get_variable(path)
 
     def _get_symbol(self, symbol, path):
-        '''Get a symbol from a path via lsda
+        """Get a symbol from a path via lsda
 
         Parameters
         ----------
@@ -348,7 +348,7 @@ class Binout:
         -------
         symbol: Symbol
             final symbol after recursive search of path
-        '''
+        """
 
         # check
         if symbol is None:
@@ -370,7 +370,7 @@ class Binout:
             return self._get_symbol(next_symbol, sub_path)
 
     def _get_variable(self, path):
-        '''Read a variable from a given path
+        """Read a variable from a given path
 
         Parameters
         ----------
@@ -380,15 +380,16 @@ class Binout:
         Returns
         -------
         data: np.ndarray
-        '''
+        """
 
         dir_symbol = self._get_symbol(self.lsda_root, path[:-1])
         # variables are somehow binary strings ... dirs not
         variable_name = self._str_to_bstr(path[-1])
 
         # var in metadata
-        if ("metadata" in dir_symbol.children) \
-           and (variable_name in dir_symbol.get("metadata").children):
+        if ("metadata" in dir_symbol.children) and (
+            variable_name in dir_symbol.get("metadata").children
+        ):
             var_symbol = dir_symbol.get("metadata").get(variable_name)
             var_type = var_symbol.type
 
@@ -430,7 +431,7 @@ class Binout:
                 return np.array(data)
 
     def _collect_variables(self, symbol):
-        '''Collect all variables from a symbol
+        """Collect all variables from a symbol
 
         Parameters
         ----------
@@ -443,7 +444,7 @@ class Binout:
         Notes
         -----
             This function collect all variables from the state dirs and metadata.
-        '''
+        """
 
         var_names = set()
         for _, subdir_symbol in symbol.children.items():
@@ -452,7 +453,7 @@ class Binout:
         return self._bstr_to_str(list(var_names))
 
     def _to_string(self, data_array):
-        '''Convert a data series of numbers (usually ints) to a string
+        """Convert a data series of numbers (usually ints) to a string
 
         Parameters
         ----------
@@ -468,12 +469,12 @@ class Binout:
         -----
             This is needed for the reason that sometimes the binary data
             within the files are strings.
-        '''
+        """
 
         return "".join([chr(entry) for entry in data_array])
 
     def _bstr_to_str(self, arg):
-        '''Encodes or decodes a string correctly regarding python version
+        """Encodes or decodes a string correctly regarding python version
 
         Parameters
         ----------
@@ -483,7 +484,7 @@ class Binout:
         -------
         string: str
             converted to python version
-        '''
+        """
 
         # in case of a list call this function with its atomic strings
         if isinstance(arg, (list, tuple)):
@@ -496,7 +497,7 @@ class Binout:
             return arg
 
     def _str_to_bstr(self, string):
-        '''Convert a string to a binary string python version independent
+        """Convert a string to a binary string python version independent
 
         Parameters
         ----------
@@ -505,7 +506,7 @@ class Binout:
         Returns
         -------
         string: bytes
-        '''
+        """
 
         if not isinstance(string, bytes):
             return string.encode("utf-8")
@@ -513,7 +514,7 @@ class Binout:
             return string
 
     def save_hdf5(self, filepath, compression="gzip"):
-        ''' Save a binout as HDF5
+        """Save a binout as HDF5
 
         Parameters
         ----------
@@ -526,13 +527,13 @@ class Binout:
         --------
             >>> binout = Binout("path/to/binout")
             >>> binout.save_hdf5("path/to/binout.h5")
-        '''
+        """
 
         with h5py.File(filepath, "w") as fh:
             self._save_all_variables(fh, compression)
 
     def _save_all_variables(self, hdf5_grp, compression, *path):
-        ''' Iterates through all variables in the Binout
+        """Iterates through all variables in the Binout
 
         Parameters
         ----------
@@ -544,7 +545,7 @@ class Binout:
             compression technique (see h5py docs)
         path: Tuple[str, ...]
             entry path in the binout
-        '''
+        """
 
         ret = self.read(*path)
         path_str = "/".join(path)
@@ -557,12 +558,10 @@ class Binout:
 
             for entry in ret:
                 path_child = path + (entry,)
-                self._save_all_variables(
-                    hdf5_grp, compression, *path_child)
+                self._save_all_variables(hdf5_grp, compression, *path_child)
         # children are variables
         else:
             # can not save strings, only list of strings ...
             if isinstance(ret, str):
                 ret = np.array([ret], dtype=np.dtype("S"))
-            hdf5_grp.create_dataset(
-                path[-1], data=ret, compression=compression)
+            hdf5_grp.create_dataset(path[-1], data=ret, compression=compression)

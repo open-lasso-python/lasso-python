@@ -1,16 +1,12 @@
-import typing
 import numpy as np
 
-from sklearn.manifold import MDS
 from sklearn.preprocessing import normalize
 from scipy.spatial import ConvexHull
 from scipy.stats import binned_statistic_2d
 from scipy.stats._binned_statistic import BinnedStatistic2dResult
 
-from typing import Any, Union
 
-
-def to_spherical_coordinates(points: np.ndarray, centroid: np.ndarray, axis: str = 'Z'):
+def to_spherical_coordinates(points: np.ndarray, centroid: np.ndarray, axis: str = "Z"):
     """Converts the points to spherical coordinatess.
 
     Parameters
@@ -36,21 +32,21 @@ def to_spherical_coordinates(points: np.ndarray, centroid: np.ndarray, axis: str
     indexes = [0, 1, 2]
     # set the correct indexes for swapping if the sphere
     # axis is not aligned with the global z axis
-    if axis == 'Y':
+    if axis == "Y":
         indexes = [0, 2, 1]  # sphere z axis aligned with global y axis
-    elif axis == 'X':
+    elif axis == "X":
         indexes = [2, 1, 0]  # sphere z axis aligned with global x axis
 
     # vectors from centroid to points
     vec = points - centroid
-    vec = normalize(vec, axis=1, norm='l2')
+    vec = normalize(vec, axis=1, norm="l2")
 
     # azimuthal angles on the local xy plane
     # x axis is the zero marker and we correct
     # all negative angles
     az = np.arctan2(vec[:, indexes[1]], vec[:, indexes[0]])
     neg_indexes = np.where(az < 0)
-    az[neg_indexes] += 2*np.pi
+    az[neg_indexes] += 2 * np.pi
 
     # polar angles
     po = np.arccos(vec[:, indexes[2]])
@@ -60,7 +56,7 @@ def to_spherical_coordinates(points: np.ndarray, centroid: np.ndarray, axis: str
 
 def sphere_hashing(histo: BinnedStatistic2dResult, field: np.ndarray):
     """Compute the hash of each bucket in the historgram by mapping
-    the bin numbers to the field values and scaling the field values 
+    the bin numbers to the field values and scaling the field values
     by the number of counts in each bin.
 
     Parameters
@@ -69,7 +65,7 @@ def sphere_hashing(histo: BinnedStatistic2dResult, field: np.ndarray):
         3D historgram containing the indexes of all points of a simulation
         mapped to their projected bins.
 
-    Returns 
+    Returns
     -------
     hashes: np.ndarray
         The hashing result of all points mapped to an embedding space.
@@ -111,18 +107,18 @@ def sphere_hashing(histo: BinnedStatistic2dResult, field: np.ndarray):
 
 
 def create_sphere(diameter: float):
-    """Creates two vectors along the alpha and beta axis of a sphere. Alpha represents 
-     the angle from the sphere axis to the equator. Beta between vectors from the center of the sphere to one
-     of the poles and the equator.
+    """Creates two vectors along the alpha and beta axis of a sphere. Alpha represents
+     the angle from the sphere axis to the equator. Beta between vectors from the
+     center of the sphere to one of the poles and the equator.
 
-     Parameters 
+     Parameters
      ----------
      diameter:
         Diameter of the sphere.
 
-    Returns 
+    Returns
     -------
-    bin_beta: np.ndarray    
+    bin_beta: np.ndarray
         Bin bounds for the beta angles.
 
     bin_alpha: np.ndarray
@@ -134,15 +130,15 @@ def create_sphere(diameter: float):
     # number of partitions for longitude
     n_beta = 144
 
-    r = diameter/2.0
+    r = diameter / 2.0
 
     # area of sphere
     a_sphere = 4 * np.pi * r**2
     n_ele = n_beta**2
-    a_ele = a_sphere/n_ele
+    a_ele = a_sphere / n_ele
 
     # alpha angles around the equator and the size of one step
-    bin_alpha, delt_alpha = np.linspace(0, 2*np.pi, n_alpha, retstep=True)
+    bin_alpha, delt_alpha = np.linspace(0, 2 * np.pi, n_alpha, retstep=True)
 
     # bins for beta axis in terms of axis coorindates between -1 and 1
     count = np.linspace(0.0, float(n_beta), 145)
@@ -157,7 +153,7 @@ def create_sphere(diameter: float):
 
 
 def compute_similarity(embeddings: np.ndarray) -> np.ndarray:
-    '''Computes the similarity of each embedding.
+    """Computes the similarity of each embedding.
 
     Parameters
     ----------
@@ -168,20 +164,23 @@ def compute_similarity(embeddings: np.ndarray) -> np.ndarray:
     -------
     smatrix: np.ndarray
         Similarity matrix.
-    '''
+    """
 
     n_runs = len(embeddings)
     smatrix = np.empty((n_runs, n_runs), dtype=np.float32)
     for ii in range(n_runs):
         for jj in range(n_runs):
-            smatrix[ii, jj] = np.dot(embeddings[ii], embeddings[jj])/np.sqrt(
-                np.dot(embeddings[ii], embeddings[ii])*np.dot(embeddings[jj], embeddings[jj]))
+            smatrix[ii, jj] = np.dot(embeddings[ii], embeddings[jj]) / np.sqrt(
+                np.dot(embeddings[ii], embeddings[ii]) * np.dot(embeddings[jj], embeddings[jj])
+            )
 
     return smatrix
 
 
-def create_historgram(cloud: np.ndarray, sphere_axis: str = 'Z', planar: bool = False) -> BinnedStatistic2dResult:
-    '''Builds a histogram using the blocks of a sphered globe and returns a
+def create_historgram(
+    cloud: np.ndarray, sphere_axis: str = "Z", planar: bool = False
+) -> BinnedStatistic2dResult:
+    """Builds a histogram using the blocks of a sphered globe and returns a
     binned statistics result for two dimensions.
 
     Parameters
@@ -197,10 +196,9 @@ def create_historgram(cloud: np.ndarray, sphere_axis: str = 'Z', planar: bool = 
     -------
     stats: BinnedStatistic2dResult
         Returns a 2D histogram of the sphere with bin numbers and bin statistics.
-    '''
+    """
     # casting to array because of typing
-    centroid = np.array(np.mean(
-        cloud, axis=0))
+    centroid = np.array(np.mean(cloud, axis=0))
 
     qhull_options = ""
     if planar:
@@ -216,8 +214,8 @@ def create_historgram(cloud: np.ndarray, sphere_axis: str = 'Z', planar: bool = 
 
     bins_a, bins_b = create_sphere(dist)
 
-    cloud_alpha, cloud_beta = to_spherical_coordinates(
-        cloud, centroid, axis=sphere_axis)
+    cloud_alpha, cloud_beta = to_spherical_coordinates(cloud, centroid, axis=sphere_axis)
 
-    return binned_statistic_2d(cloud_alpha, cloud_beta, None, 'count', bins=[
-        bins_a, bins_b], expand_binnumbers=True)
+    return binned_statistic_2d(
+        cloud_alpha, cloud_beta, None, "count", bins=[bins_a, bins_b], expand_binnumbers=True
+    )

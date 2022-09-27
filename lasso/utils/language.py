@@ -1,6 +1,5 @@
-
 def get_var(name, context, default=None):
-    ''' Get a variable from a dict context
+    """Get a variable from a dict context
 
     Parameters
     ----------
@@ -11,7 +10,7 @@ def get_var(name, context, default=None):
     default:
         default value or function which creates the default
         value if failed to find var in context
-    '''
+    """
     if not isinstance(name, (list, tuple)):
         name = (name,)
 
@@ -29,7 +28,7 @@ def get_var(name, context, default=None):
 
 
 def set_var(name, value, context):
-    ''' Set a viarble in a dict context
+    """Set a viarble in a dict context
 
     Parameters
     ----------
@@ -39,7 +38,7 @@ def set_var(name, value, context):
         anything to set
     context : dict
         variable dict
-    '''
+    """
 
     if not isinstance(name, (list, tuple)):
         name = (name,)
@@ -48,7 +47,7 @@ def set_var(name, value, context):
     for i_name, current_name in enumerate(name):
 
         # at last level set var
-        if i_name == len(name)-1:
+        if i_name == len(name) - 1:
             current_context[current_name] = value
         # otherwise iterate into next level
         else:

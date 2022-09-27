@@ -1,0 +1,69 @@
+[tool.poetry]
+name = "lasso-python"
+version = "1.6.0"
+description = "An open-source CAE and Machine Learning library."
+authors = ["open-lasso-python <open.lasso.python@gmail.com>"]
+license = "BSD-3"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Topic :: Scientific/Engineering",
+    "Intended Audience :: Science/Research",
+    "Topic :: Utilities",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+packages = [
+    { include = "lasso" }
+]
+
+[tool.poetry.dependencies]
+# We need to support at least 3.8 because of pandas and limit to 3.11 because of
+# scipy.
+python = "^3.8, <3.12"
+h5py = "^3.7.0"
+scipy = "^1.9.1"
+sklearn = "^0.0"
+numpy = "^1.23.3"
+plotly = "^5.10.0"
+matplotlib = "^3.6.0"
+attrs = "^22.1.0"
+psutil = "^5.9.2"
+rich = "^12.5.1"
+pandas = "^1.5.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.3"
+pylint = "^2.15.3"
+flake9 = "^3.8.3"
+black = "^22.8.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = [
+    # Disable missing module docstring since we provide docs through the
+    # docstrings of classes and functions.
+    "missing-module-docstring"
+]
+
+[tool.pylint.basic]
+# Test files and classes don't need linting
+ignore-pattern="^(_|test_|Test)"
+
+[tool.flake8]
+ignore = "E203"
+# Limits the allowed function complexity such as branching etc.
+# For more info see: https://en.wikipedia.org/wiki/Cyclomatic_complexity
+max-complexity = 10
+# We allow longer lines since 80 is quite short
+max-line-length = 100
+
+[tool.black]
+# We allow longer lines since 80 is quite short
+line-length=100
