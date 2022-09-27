@@ -4,6 +4,21 @@ version = "1.6.0"
 description = "An open-source CAE and Machine Learning library."
 authors = ["open-lasso-python <open.lasso.python@gmail.com>"]
 license = "BSD-3"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Topic :: Scientific/Engineering",
+    "Intended Audience :: Science/Research",
+    "Topic :: Utilities",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+packages = [
+    { include = "lasso" }
+]
 
 [tool.poetry.dependencies]
 # We need to support at least 3.8 because of pandas and limit to 3.11 because of
