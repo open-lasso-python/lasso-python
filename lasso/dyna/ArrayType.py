@@ -40,12 +40,15 @@ class ArrayType:
     element_solid_effective_plastic_strain = (
         "element_solid_effective_plastic_strain"  #: shape: (n_states, n_solid_layers, n_solids)
     )
-    element_solid_history_variables = "element_solid_history_variables"  #: shape: (n_states, n_solids, n_solid_layers, n_solids_history_vars)
+    #: shape: (n_states, n_solids, n_solid_layers, n_solids_history_vars)
+    element_solid_history_variables = "element_solid_history_variables"
     element_solid_strain = (
         "element_solid_strain"  #: shape: (n_states, n_solids, n_solid_layers, xx_yy_zz_xy_yz_xz)
     )
-    element_solid_plastic_strain_tensor = "element_solid_plastic_strain_tensor"  #: shape: (n_states, n_solids, n_solid_layers, xx_yy_zz_xy_yz_xz)
-    element_solid_thermal_strain_tensor = "element_solid_thermal_strain_tensor"  #: shape: (n_states, n_solids, n_solid_layers, xx_yy_zz_xy_yz_xz)
+    #: shape: (n_states, n_solids, n_solid_layers, xx_yy_zz_xy_yz_xz)
+    element_solid_plastic_strain_tensor = "element_solid_plastic_strain_tensor"
+    #: shape: (n_states, n_solids, n_solid_layers, xx_yy_zz_xy_yz_xz)
+    element_solid_thermal_strain_tensor = "element_solid_thermal_strain_tensor"
     element_solid_is_alive = "element_solid_is_alive"  #: shape: (n_states, n_solids)
     element_solid_extra_nodes = "element_solid_extra_nodes"  #: shape: (n_solids, 2)
     element_solid_node10_extra_node_indexes = (
@@ -128,7 +131,8 @@ class ArrayType:
     element_beam_axial_strain = (
         "element_beam_axial_strain"  #: shape: (n_states, n_beams, n_beams_layers)
     )
-    element_beam_history_vars = "element_beam_history_vars"  #: shape: (n_states, n_beams, n_beams_layers+3, n_beams_history_vars)
+    element_beam_history_vars = "element_beam_history_vars"  # : shape: (n_states, n_beams, n_beams_layers+3,
+                                                             # n_beams_history_vars)
     element_beam_is_alive = "element_beam_is_alive"  #: shape: (n_states, n_beams)
     # shells
     element_shell_part_indexes = "element_shell_part_indexes"  #: shape (n_shells, 4)
