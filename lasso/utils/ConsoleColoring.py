@@ -42,10 +42,8 @@ class ConsoleColoring:
         formatted_msg : `str`
             string colored for console output
         """
-        if light:
-            return ConsoleColoring.LIGHT_PURPLE + msg + ConsoleColoring.RESET
-        else:
-            return ConsoleColoring.PURPLE + msg + ConsoleColoring.RESET
+        return ConsoleColoring.LIGHT_PURPLE + msg + ConsoleColoring.RESET if light \
+            else ConsoleColoring.PURPLE + msg + ConsoleColoring.RESET
 
     @staticmethod
     def yellow(msg, light=False):
@@ -63,10 +61,8 @@ class ConsoleColoring:
         formatted_msg : `str`
             string colored for console output
         """
-        if light:
-            return ConsoleColoring.LIGHT_YELLOW + msg + ConsoleColoring.RESET
-        else:
-            return ConsoleColoring.ORANGE + msg + ConsoleColoring.RESET
+        return ConsoleColoring.LIGHT_YELLOW + msg + ConsoleColoring.RESET if light \
+            else ConsoleColoring.ORANGE + msg + ConsoleColoring.RESET
 
     @staticmethod
     def red(msg, light=False):
@@ -84,10 +80,8 @@ class ConsoleColoring:
         formatted_msg : `str`
             string colored for console output
         """
-        if light:
-            return ConsoleColoring.LIGHT_RED + msg + ConsoleColoring.RESET
-        else:
-            return ConsoleColoring.RED + msg + ConsoleColoring.RESET
+        return ConsoleColoring.LIGHT_RED + msg + ConsoleColoring.RESET if light \
+            else ConsoleColoring.RED + msg + ConsoleColoring.RESET
 
     @staticmethod
     def green(msg, light=False):
@@ -105,10 +99,8 @@ class ConsoleColoring:
         formatted_msg : `str`
             string colored for console output
         """
-        if light:
-            return ConsoleColoring.LIGHT_GREEN + msg + ConsoleColoring.RESET
-        else:
-            return ConsoleColoring.GREEN + msg + ConsoleColoring.RESET
+        return ConsoleColoring.LIGHT_GREEN + msg + ConsoleColoring.RESET if light \
+            else ConsoleColoring.GREEN + msg + ConsoleColoring.RESET
 
     @staticmethod
     def blue(msg, light=False):
@@ -126,7 +118,5 @@ class ConsoleColoring:
         formatted_msg : `str`
             string colored for console output
         """
-        if light:
-            return ConsoleColoring.LIGHT_BLUE + msg + ConsoleColoring.RESET
-        else:
-            return ConsoleColoring.BLUE + msg + ConsoleColoring.RESET
+        return ConsoleColoring.LIGHT_BLUE + msg + ConsoleColoring.RESET if light \
+            else ConsoleColoring.BLUE + msg + ConsoleColoring.RESET
