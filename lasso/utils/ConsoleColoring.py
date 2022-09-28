@@ -61,7 +61,7 @@ class ConsoleColoring:
         formatted_msg : `str`
             string colored for console output
         """
-        return ConsoleColoring.LIGHT_RED + msg + ConsoleColoring.RESET if light \
+        return ConsoleColoring.LIGHT_YELLOW + msg + ConsoleColoring.RESET if light \
             else ConsoleColoring.ORANGE + msg + ConsoleColoring.RESET
 
     @staticmethod
