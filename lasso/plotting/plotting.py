@@ -2,10 +2,11 @@ import os
 import io
 import uuid
 import json
-import numpy as np
 from base64 import b64encode
 from zipfile import ZipFile, ZIP_DEFLATED
 from typing import Union, Tuple
+import numpy as np
+
 
 
 def _read_file(filepath: str):
@@ -21,8 +22,8 @@ def _read_file(filepath: str):
     file_content : str
     """
 
-    with open(filepath, "r") as fp:
-        return fp.read()
+    with open(filepath, "r", encoding="utf-8") as fp_filepath:
+        return fp_filepath.read()
 
 
 def plot_shell_mesh(
@@ -147,10 +148,10 @@ def plot_shell_mesh(
 
     # zip compression of data for HTML (reduces size)
     zdata = io.BytesIO()
-    with ZipFile(zdata, "w", compression=ZIP_DEFLATED) as zipFile:
-        zipFile.writestr("/intensities", node_fringe.tostring())
-        zipFile.writestr("/positions", nodes_xyz.tostring())
-        zipFile.writestr("/text", json.dumps(node_txt))
+    with ZipFile(zdata, "w", compression=ZIP_DEFLATED) as zipfile:
+        zipfile.writestr("/intensities", node_fringe.tostring())
+        zipfile.writestr("/positions", nodes_xyz.tostring())
+        zipfile.writestr("/text", json.dumps(node_txt))
     zdata = b64encode(zdata.getvalue()).decode("utf-8")
 
     # read html template
@@ -173,18 +174,20 @@ def plot_shell_mesh(
     )
 
     # wrap it up with all needed js libraries
-    _html_jszip_js = '<script type="text/javascript">%s</script>' % _read_file(
-        os.path.join(os.path.dirname(__file__), "resources", "jszip.min.js")
-    )
-    _html_three_js = '<script type="text/javascript">%s</script>' % _read_file(
-        os.path.join(os.path.dirname(__file__), "resources", "three.min.js")
-    )
-    _html_chroma_js = '<script type="text/javascript">%s</script>' % _read_file(
-        os.path.join(os.path.dirname(__file__), "resources", "chroma.min.js")
-    )
-    _html_jquery_js = '<script type="text/javascript">%s</script>' % _read_file(
-        os.path.join(os.path.dirname(__file__), "resources", "jquery.min.js")
-    )
+
+    script_string_js = '<script type="text/javascript">{js_name}</script>'
+    jszip_js_format = _read_file(os.path.join(os.path.dirname(__file__)
+                                              , "resources", "jszip.min.js"))
+    jszip_three_format = _read_file(os.path.join(os.path.dirname(__file__)
+                                                 , "resources", "three.min.js"))
+    jszip_chroma_format = _read_file(os.path.join(os.path.dirname(__file__)
+                                                  , "resources", "chroma.min.js"))
+    jszip_jquery_format = _read_file(os.path.join(os.path.dirname(__file__)
+                                                 , "resources", "jquery.min.js"))
+    _html_jszip_js = script_string_js.format(jszip_js_format)
+    _html_three_js = script_string_js.format(jszip_three_format)
+    _html_chroma_js = script_string_js.format(jszip_chroma_format)
+    _html_jquery_js = script_string_js.format(jszip_jquery_format)
 
     return """
 <!DOCTYPE html>
