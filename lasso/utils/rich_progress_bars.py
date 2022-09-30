@@ -28,7 +28,7 @@ class PlaceHolderBar:
         return len(self.tasks) - 1
 
     def advance(self, task_id):
-        """advanves the given task"""
+        """advances the given task"""
         prog = self.tasks[task_id][2]
         prog += 1
         self.tasks[task_id][2] = prog
@@ -43,7 +43,7 @@ class PlaceHolderBar:
 
 
 class WorkingDots(ProgressColumn):
-    """ *Description """
+    """ TODO: add description """
     max_refresh = 0.5
     is_silenced: bool = False
 
@@ -70,7 +70,7 @@ class WorkingDots(ProgressColumn):
 
 
 class SubsamplingWaitTime(ProgressColumn):
-    """ *add description? """
+    """ TODO: add description """
     max_refresh = 0.5
 
     def __init__(self, n_proc: int):
@@ -85,7 +85,7 @@ class SubsamplingWaitTime(ProgressColumn):
         self.t_rem = -1
 
     def render(self, task: Any) -> str:
-        """ *add description? """
+        """ TODO: add description? """
 
         if task.completed == task.total:
             return "Time remaining: 00:00"
@@ -114,7 +114,7 @@ class SubsamplingWaitTime(ProgressColumn):
             return "Time remaining: --:--"
 
     def update_avrg(self, new_time: float):
-        """*add description?"""
+        """TODO: add description"""
 
         self.cum_time += new_time
         self.last_time = time.time()

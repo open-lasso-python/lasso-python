@@ -40,8 +40,7 @@ class ArrayType:
     element_solid_effective_plastic_strain = (
         "element_solid_effective_plastic_strain"  #: shape: (n_states, n_solid_layers, n_solids)
     )
-    #: shape: (n_states, n_solids, n_solid_layers, n_solids_history_vars)
-    element_solid_history_variables = "element_solid_history_variables"
+    element_solid_history_variables = "element_solid_history_variables" #: shape: (n_states, n_solids, n_solid_layers, n_solids_history_vars)
     element_solid_strain = (
         "element_solid_strain"  #: shape: (n_states, n_solids, n_solid_layers, xx_yy_zz_xy_yz_xz)
     )
