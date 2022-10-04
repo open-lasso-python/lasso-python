@@ -3,6 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Mac specific files
+.DS_Store
+
+# Notepad++ backup file
+.bak
+
 # C extensions
 *.so
 
