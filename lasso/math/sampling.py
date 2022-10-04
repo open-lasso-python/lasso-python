@@ -15,6 +15,8 @@ def unique_subsamples(start: int, end: int, n_samples: int, seed=None) -> np.nda
         ending index of population (end <= start)
     n_samples: int
         number of samples to draw
+    seed: int
+        seed for random number generator
 
     Returns
     -------
@@ -39,7 +41,7 @@ def homogenize_density(
     n_neighbors: int = 18,
     seed=None,
 ) -> np.ndarray:
-    """homogenize a cloud density by probabilistics
+    """homogenize a cloud density by probabilities
 
     Parameters
     ----------
@@ -51,8 +53,8 @@ def homogenize_density(
         target distance to aim for
     n_neighbors: int
         neighbors used for computation of average neighborhood distance
-    rng: random
-        random number generator
+    seed: int
+        seed for random number generator
 
     Returns
     -------

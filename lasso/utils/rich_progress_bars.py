@@ -24,7 +24,7 @@ class PlaceHolderBar:
     def add_task(self, description: str, total: int) -> int:
         """Adds a new task"""
         self.tasks.append([description, total, 0])
-        # entry in list is tupel of description, total tasks, remaining tasks
+        # entry in list is tuple of description, total tasks, remaining tasks
         return len(self.tasks) - 1
 
     def advance(self, task_id):
@@ -78,7 +78,7 @@ class SubsamplingWaitTime(ProgressColumn):
 
         # Last time we updated
         self.last_time = time.time()
-        # Cummulated time of all completed supsampling processes
+        # Cumulative time of all completed sub-sampling processes
         self.cum_time = 0
         # Number of parallel running processes
         self.n_proc = n_proc

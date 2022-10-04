@@ -12,18 +12,18 @@ def delegates(to=None, keep=False):
         else:
             to_f, from_f = to, f_att
         sig = inspect.signature(from_f)
-        sigd = dict(sig.parameters)
-        k = sigd.pop("kwargs")
+        sig_dict = dict(sig.parameters)
+        k = sig_dict.pop("kwargs")
         s2_dict = {
             k: v
             for k, v in inspect.signature(to_f).parameters.items()
-            if v.default != inspect.Parameter.empty and k not in sigd
+            if v.default != inspect.Parameter.empty and k not in sig_dict
         }
-        sigd.update(s2_dict)
+        sig_dict.update(s2_dict)
         if keep:
-            sigd["kwargs"] = k
+            sig_dict["kwargs"] = k
         # noinspection PyTypeChecker
-        from_f.__signature__ = sig.replace(parameters=sigd.values())
+        from_f.__signature__ = sig.replace(parameters=sig_dict.values())
         return f_att
 
     return _f

@@ -47,8 +47,8 @@ def create_fake_d3plots(
 
     # fill in y coords
     for n in range(n_nodes_y):
-        node_coordinates[n * n_nodes_x : n_nodes_x + n * n_nodes_x, 1] = y_coords[n]
-        node_coordinates[n * n_nodes_x : n_nodes_x + n * n_nodes_x, 0] = x_coords
+        node_coordinates[n * n_nodes_x: n_nodes_x + n * n_nodes_x, 1] = y_coords[n]
+        node_coordinates[n * n_nodes_x: n_nodes_x + n * n_nodes_x, 0] = x_coords
     # fill in x coords
     # for n in range(n_nodes_x):
     # node_coordinates[n*n_nodes_y:n_nodes_y+n*n_nodes_y, 0] = x_coords[n]
@@ -101,7 +101,7 @@ def create_element_shell_node_indexes(n_nodes_x: int = 500, n_nodes_y: int = 10)
     )
     mod = np.full((4, n_nodes_x - 1), np.arange(n_nodes_x - 1))
     for i in range(n_nodes_y - 1):
-        new_shell_node_indexes[(n_nodes_x - 1) * i : (n_nodes_x - 1) + ((n_nodes_x - 1) * i)] += (
+        new_shell_node_indexes[(n_nodes_x - 1) * i: (n_nodes_x - 1) + ((n_nodes_x - 1) * i)] += (
             mod + i * n_nodes_x
         ).T
 
@@ -114,6 +114,8 @@ def create_2_fake_plots(folder: str, n_nodes_x: int, n_nodes_y: int, n_timesteps
 
     Parameters
     ----------
+    folder: str
+        folder path
     n_nodes_x: int
         how many nodes in x
     n_nodes_y: int
@@ -154,6 +156,8 @@ def create_50_fake_plots(folder: str, n_nodes_x: int, n_nodes_y: int, n_timestep
 
     Parameters
     ----------
+    folder: str
+        folder path
     n_nodes_x: int
         how many nodes in x
     n_nodes_y: int

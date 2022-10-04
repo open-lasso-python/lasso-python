@@ -65,4 +65,4 @@ class BinaryBufferTest(TestCase):
 
         bb.size = 192512
         self.assertEqual(bb.size, 192512)
-        self.assertEqual(bb.mv_[-1 : len(bb)].tobytes(), b"0")
+        self.assertEqual(bb.mv_[-1: len(bb)].tobytes(), b"0")

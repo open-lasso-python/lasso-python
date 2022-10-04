@@ -157,22 +157,22 @@ TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE: Dict[
         ArrayType.element_shell_internal_energy
     },
     # THICK SHELL
-    ((FemzipArrayType.stress_x, FemzipVariableCategory.THICK_SHELL)): {
+    (FemzipArrayType.stress_x, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_stress
     },
-    ((FemzipArrayType.stress_y, FemzipVariableCategory.THICK_SHELL)): {
+    (FemzipArrayType.stress_y, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_stress
     },
-    ((FemzipArrayType.stress_z, FemzipVariableCategory.THICK_SHELL)): {
+    (FemzipArrayType.stress_z, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_stress
     },
-    ((FemzipArrayType.stress_xy, FemzipVariableCategory.THICK_SHELL)): {
+    (FemzipArrayType.stress_xy, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_stress
     },
-    ((FemzipArrayType.stress_yz, FemzipVariableCategory.THICK_SHELL)): {
+    (FemzipArrayType.stress_yz, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_stress
     },
-    ((FemzipArrayType.stress_xz, FemzipVariableCategory.THICK_SHELL)): {
+    (FemzipArrayType.stress_xz, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_stress
     },
     (FemzipArrayType.eff_pstrain, FemzipVariableCategory.THICK_SHELL): {
@@ -445,7 +445,7 @@ class FemzipMapper:
     """
 
     # regex pattern for reading variables
-    name_separation_pattern = re.compile(r"(^[^\(\n]+)(\([^\)]+\))*")
+    name_separation_pattern = re.compile(r"(^[^(\n]+)(\([^\)]+\))*")
 
     FORTRAN_OFFSET: int = 1
 
@@ -516,10 +516,10 @@ class FemzipMapper:
 
     @staticmethod
     def _build(fz_arrays: List[FemzipArrayInfo]) -> Dict[str, Tuple[int, ...]]:
-        """Counts the occurence of all variables in the result array such as the
+        """Counts the occurrence of all variables in the result array such as the
         number of layers and stresses.
 
-        Paramters
+        Parameters
         ---------
         fz_arrays: List[FemzipArrayInfo]
             infos about femzip arrays
@@ -574,7 +574,7 @@ class FemzipMapper:
                 if arr_info.i_var is not None:
                     mapping.d3_var_slice = arr_info.i_var
                 # arrays to copy:
-                # - node displacement, veloctiy, acceleration
+                # - node displacement, velocity, acceleration
                 # - airbag integer vars (so we don't need to cast)
                 if (
                     arr_info.array.ndim == 3
@@ -622,16 +622,16 @@ class FemzipMapper:
         """Allocate a femzip variable to its correct position in
         the d3plot array dictionary.
 
-        Paramters
+        Parameters
         ---------
         array_infos: List[FemzipArrayInfo]
             femzip variables stored in a dictionary
-        d3plot_array: Dict[str, np.ndarray]
-            d3plot arrays preallocated
+        d3plot_arrays: Dict[str, np.ndarray]
+            d3plot arrays pre-allocated
 
         Notes
         -----
-            The keys are the femzip array name (unparsed)
+            The keys are the femzip array name (un-parsed)
             and the category of the variable as an enum.
         """
         for arr_info in array_infos:
@@ -668,7 +668,7 @@ class FemzipMapper:
         Returns
         -------
         d3plot_arrays: Dict[str, np.ndarray]
-            d3plot arrays preallocated
+            d3plot arrays pre-allocated
         """
         d3plot_arrays = {}
         for key, shape in array_shapes.items():
@@ -690,7 +690,7 @@ class FemzipMapper:
         fz_name:
             cryptic femzip variable name we need to parse
         var_type:
-            the category of this varialbe e.g. shells, parts, global etc.
+            the category of this variable e.g. shells, parts, global etc.
 
         Returns
         -------
@@ -729,7 +729,7 @@ class FemzipMapper:
         if i_history:
             i_history -= self.FORTRAN_OFFSET
 
-        # set var name to the unformatted femzip array type name
+        # set var name to the un-formatted femzip array type name
         if "Epsilon" in var_name:
             var_name = fz_name.strip()
             if "inner" in var_name:
@@ -800,7 +800,7 @@ def filter_femzip_variables(
             vars_to_copy.append(i_var)
         except Exception:
             trb_msg = traceback.format_exc()
-            err_msg = "An error ocurred while preprocessing femzip variable information: {0}"
+            err_msg = "An error occurred while preprocessing femzip variable information: {0}"
             logging.warning(err_msg.format(trb_msg))
 
     # copy filtered data

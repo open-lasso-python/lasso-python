@@ -155,7 +155,7 @@ class FemzipArrayType(enum.Enum):
 
     @staticmethod
     def from_string(femzip_name: str) -> "FemzipArrayType":
-        """Converts a variable name to a array type string
+        """Converts a variable name to an array type string
 
         Parameters
         ----------

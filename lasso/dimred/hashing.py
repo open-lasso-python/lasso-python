@@ -128,7 +128,7 @@ def _compute_mode_similarities(
     Returns
     -------
     mode_similarities : list(float)
-        similarities of the the matched modes
+        similarities of the matched modes
     """
 
     # TODO integrate functions with unequal sampling
@@ -305,7 +305,7 @@ def run_hash_comparison(
                 weights1 = result["weights1"]
                 n_weights1 = len(weights1)
                 ds_weights[i_run, :n_weights1] = weights1
-                weights1 = result["weights2"]
+                weights2 = result["weights2"]
                 n_weights2 = len(weights2)
                 ds_weights[j_run, :n_weights2] = weights2
 
@@ -528,7 +528,7 @@ def is_mode_match(
     # number of bins for probability distribution
     nBins = 25
 
-    # (1) match subsamples in xyz
+    # (1) match sub-samples in xyz
     # tree = KDTree(xyz1)
     # indexes = tree.query(xyz2, return_distance=False, k=1)
 

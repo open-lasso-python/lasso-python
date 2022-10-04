@@ -154,7 +154,7 @@ class BinaryBuffer:
         ----------
         start: int
             at which byte to start reading
-        len: int
+        length: int
             length in bytes to read
         step: int
             byte step size (how many bytes to skip)
@@ -163,10 +163,10 @@ class BinaryBuffer:
 
         Returns
         -------
-        array: np.andrray
+        array: np.ndarray
         """
 
-        return np.frombuffer(self.mv_[start : start + length : step], dtype=dtype)
+        return np.frombuffer(self.mv_[start: start + length: step], dtype=dtype)
 
     def write_ndarray(self, array: np.ndarray, start: int, step: int):
         """Write a numpy array to the buffer
@@ -199,7 +199,7 @@ class BinaryBuffer:
         encoding: str
             encoding used
         """
-        return self.mv_[start : start + length : step].tobytes().decode(encoding)
+        return self.mv_[start: start + length: step].tobytes().decode(encoding)
 
     def save(self, filepath: Union[str, None] = None):
         """Save the binary buffer to a file
@@ -266,9 +266,9 @@ class BinaryBuffer:
             with open(path, "br") as fp:
                 if n_bytes:
                     mm = mmap.mmap(fp.fileno(), sizes[i_path], access=mmap.ACCESS_READ)
-                    buffer[sizes_tmp[i_path] :] = mm[: sizes[i_path]]
+                    buffer[sizes_tmp[i_path]:] = mm[: sizes[i_path]]
                 else:
-                    fp.readinto(buffer[sizes_tmp[i_path] :])
+                    fp.readinto(buffer[sizes_tmp[i_path]:])
 
         self.filepath_ = filepath_parsed
         self.sizes_ = sizes

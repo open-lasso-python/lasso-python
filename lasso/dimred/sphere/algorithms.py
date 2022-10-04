@@ -7,7 +7,7 @@ from scipy.stats._binned_statistic import BinnedStatistic2dResult
 
 
 def to_spherical_coordinates(points: np.ndarray, centroid: np.ndarray, axis: str = "Z"):
-    """Converts the points to spherical coordinatess.
+    """Converts the points to spherical coordinates.
 
     Parameters
     ----------
@@ -27,22 +27,22 @@ def to_spherical_coordinates(points: np.ndarray, centroid: np.ndarray, axis: str
 
     Notes
     -----
-    The local x axis is set as the zero marker for azimuthal angles.
+    The local x-axis is set as the zero marker for azimuthal angles.
     """
     indexes = [0, 1, 2]
     # set the correct indexes for swapping if the sphere
     # axis is not aligned with the global z axis
     if axis == "Y":
-        indexes = [0, 2, 1]  # sphere z axis aligned with global y axis
+        indexes = [0, 2, 1]  # sphere z axis aligned with global y-axis
     elif axis == "X":
-        indexes = [2, 1, 0]  # sphere z axis aligned with global x axis
+        indexes = [2, 1, 0]  # sphere z axis aligned with global x-axis
 
     # vectors from centroid to points
     vec = points - centroid
     vec = normalize(vec, axis=1, norm="l2")
 
     # azimuthal angles on the local xy plane
-    # x axis is the zero marker and we correct
+    # x-axis is the zero marker, and we correct
     # all negative angles
     az = np.arctan2(vec[:, indexes[1]], vec[:, indexes[0]])
     neg_indexes = np.where(az < 0)
@@ -55,15 +55,16 @@ def to_spherical_coordinates(points: np.ndarray, centroid: np.ndarray, axis: str
 
 
 def sphere_hashing(histo: BinnedStatistic2dResult, field: np.ndarray):
-    """Compute the hash of each bucket in the historgram by mapping
+    """Compute the hash of each bucket in the histogram by mapping
     the bin numbers to the field values and scaling the field values
     by the number of counts in each bin.
 
     Parameters
     ----------
     histo: BinnedStatistic2dResult
-        3D historgram containing the indexes of all points of a simulation
+        3D histogram containing the indexes of all points of a simulation
         mapped to their projected bins.
+    field: ndarray
 
     Returns
     -------
@@ -188,7 +189,7 @@ def create_historgram(
     cloud: np.ndarray
         Point cloud around which we create an embedding.
     sphere_axis: str
-        Axis of the sphere. This is alogined with the global axis system.
+        Axis of the sphere. This is aligned with the global axis system.
     planar: bool
         Set to true for planar point clouds and false for higher dimensions.
 
@@ -207,9 +208,9 @@ def create_historgram(
     hull = ConvexHull(cloud, qhull_options=qhull_options)
 
     # we need to determine the largest distance in this point
-    # cloud so we can give the sphere a dimension
+    # cloud, so we can give the sphere a dimension
     # we can also create a sphere of random size but this could
-    # scew the results
+    # skew the results
     dist = np.linalg.norm(hull.max_bound - hull.min_bound)
 
     bins_a, bins_b = create_sphere(dist)
