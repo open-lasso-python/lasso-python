@@ -28,7 +28,7 @@ def get_digit(number: int, i_digit: int) -> int:
     Notes
     -----
         `i_digit` does refer to a digit from the
-        lowest position counting. Thus
+        lowest position counting. Thus,
         123 with `i_digit=0` is `3`.
     """
     digit_list = []
@@ -277,7 +277,7 @@ class D3plotHeader:
         -----
             This class does not load the entire memory of a d3plot
             but merely what is required to parse the header information.
-            Thus it is safe to use on big files.
+            Thus, it is safe to use on big files.
         """
 
         if filepath is not None:
@@ -312,7 +312,7 @@ class D3plotHeader:
         # check if single or double
         self.wordsize, self.itype, self.ftype = self._determine_file_settings(bb)
 
-        # oops seems other wordsize is used
+        # Oops, seems other wordsize is used
         if self.wordsize != D3plotHeader.wordsize:
             bb = BinaryBuffer(filepath, n_words_header * self.wordsize)
 
@@ -851,6 +851,7 @@ class D3plotHeader:
 
         Parameters
         ----------
+        bb: BinaryBuffer
         words_to_read: dict
             this dict describes the words to be read. One entry
             must be a tuple of len two (byte position and dtype)
@@ -913,7 +914,7 @@ class D3plotHeader:
 
         LOGGER.debug("_determine_file_settings")
 
-        wordsize = 4
+        word_size = 4
         itype = np.int32
         ftype = np.float32
 
@@ -930,14 +931,14 @@ class D3plotHeader:
                 or value == D3plotFiletype.D3PART.value
                 or value == D3plotFiletype.D3EIGV.value
             ):
-                wordsize = 4
+                word_size = 4
                 itype = np.int32
                 ftype = np.float32
 
-                LOGGER.debug(f"wordsize={wordsize} itype={itype} ftype={ftype}")
+                LOGGER.debug(f"wordsize={word_size} itype={itype} ftype={ftype}")
                 LOGGER.debug("_determine_file_settings end")
 
-                return wordsize, itype, ftype
+                return word_size, itype, ftype
 
             # double precision
             value = bb.read_number(88, np.int64)
@@ -948,21 +949,21 @@ class D3plotHeader:
                 or value == D3plotFiletype.D3PART.value
                 or value == D3plotFiletype.D3EIGV.value
             ):
-                wordsize = 8
+                word_size = 8
                 itype = np.int64
                 ftype = np.float64
 
-                LOGGER.debug(f"wordsize={wordsize} itype={itype} ftype={ftype}")
+                LOGGER.debug(f"wordsize={word_size} itype={itype} ftype={ftype}")
                 LOGGER.debug("_determine_file_settings end")
 
-                return wordsize, itype, ftype
+                return word_size, itype, ftype
 
             raise RuntimeError("Unknown file type '{0}'.".format(value))
 
-        LOGGER.debug(f"wordsize={wordsize} itype={itype} ftype={ftype}")
+        LOGGER.debug(f"wordsize={word_size} itype={itype} ftype={ftype}")
         LOGGER.debug("_determine_file_settings end")
 
-        return wordsize, itype, ftype
+        return word_size, itype, ftype
 
     def compare(self, other: "D3plotHeader") -> Dict[str, Tuple[Any, Any]]:
         """Compare two headers and get the differences

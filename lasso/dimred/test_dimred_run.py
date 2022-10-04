@@ -107,7 +107,7 @@ class TestDimredRun(TestCase):
                 # a small error margin is inevitable
                 self.assertTrue((verify_displ_stacked - recalc_displ_stacked).max() <= 1e-5)
 
-                # checking clustering and html output makes little sense here
+                # checking clustering and html output makes little sense here,
                 # but we know how the created plots are laid out: 25 bending up, 25 bending down
                 # this should be presented in the betas
                 # We will only look at the last timestep

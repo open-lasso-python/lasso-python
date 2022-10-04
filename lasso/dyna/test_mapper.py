@@ -259,7 +259,7 @@ class MapperTest(TestCase):
         data_index_positions: Union[tuple, slice] = slice(None),
     ):
         """Validate that the arrays have the same shape and that the
-        raw data has been allocated to the correct postions in the
+        raw data has been allocated to the correct positions in the
         d3plot arrays.
 
         Parameters
@@ -269,7 +269,7 @@ class MapperTest(TestCase):
         d3plot_shape:
             shape of the d3plot array
         data_index_positions:
-            postions of the raw data in the d3plot array
+            positions of the raw data in the d3plot array
         """
         d3plot_name = []
 
@@ -387,10 +387,10 @@ class MapperTest(TestCase):
         strain1 = np.random.randn(1, 2)
         strain2 = np.random.randn(1, 2)
 
-        hisotry_vars = np.array([[1, 2], [0, 3], [12, 2]], dtype=np.float)
+        history_vars = np.array([[1, 2], [0, 3], [12, 2]], dtype=np.float)
 
-        hisotry_vars1 = np.random.randn(3, 2)
-        hisotry_vars2 = np.random.randn(3, 2)
+        history_vars1 = np.random.randn(3, 2)
+        history_vars2 = np.random.randn(3, 2)
 
         fz: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray] = {
             # stress
@@ -398,9 +398,9 @@ class MapperTest(TestCase):
             (2, "Sigma-y (IP 3)", FemzipVariableCategory.SOLID): stress_2,
             (3, "Sigma-x (IP 3)", FemzipVariableCategory.SOLID): stress_3,
             # history
-            (4, "extra_value_per_element  2 (IP 2)", FemzipVariableCategory.SOLID): hisotry_vars,
-            (5, "extra_value_per_element  21 (IP 15)", FemzipVariableCategory.SOLID): hisotry_vars1,
-            (6, "extra_value_per_element  4 (IP 3)", FemzipVariableCategory.SOLID): hisotry_vars2,
+            (4, "extra_value_per_element  2 (IP 2)", FemzipVariableCategory.SOLID): history_vars,
+            (5, "extra_value_per_element  21 (IP 15)", FemzipVariableCategory.SOLID): history_vars1,
+            (6, "extra_value_per_element  4 (IP 3)", FemzipVariableCategory.SOLID): history_vars2,
             # strain
             (7, "Epsilon-xy (outer)", FemzipVariableCategory.SHELL): strain1,
             (8, "Epsilon-z (outer)", FemzipVariableCategory.SHELL): strain2,
@@ -421,15 +421,15 @@ class MapperTest(TestCase):
         self.assertEqual(r[ArrayType.element_solid_history_variables].shape, (3, 2, 15, 21))
 
         self.assertTrue(
-            np.allclose(hisotry_vars, r[ArrayType.element_solid_history_variables][:, :, 1, 1])
+            np.allclose(history_vars, r[ArrayType.element_solid_history_variables][:, :, 1, 1])
         )
 
         self.assertTrue(
-            np.allclose(hisotry_vars1, r[ArrayType.element_solid_history_variables][:, :, 14, 20])
+            np.allclose(history_vars1, r[ArrayType.element_solid_history_variables][:, :, 14, 20])
         )
 
         self.assertTrue(
-            np.allclose(hisotry_vars2, r[ArrayType.element_solid_history_variables][:, :, 2, 3])
+            np.allclose(history_vars2, r[ArrayType.element_solid_history_variables][:, :, 2, 3])
         )
 
         self.assertEqual(r[ArrayType.element_shell_strain].shape, (1, 2, 2, 4))
@@ -464,7 +464,7 @@ class MapperTest(TestCase):
         self.assertEqual(r[ArrayType.element_beam_bending_moment].shape, (3, 123, 2))
         self.assertTrue(np.allclose(r[ArrayType.element_beam_bending_moment][:, :, 1], bending))
 
-        # torion
+        # torsion
         self.assertEqual(r[ArrayType.element_beam_torsion_moment].shape, (2, 5))
         self.assertTrue(np.allclose(r[ArrayType.element_beam_torsion_moment], torsion))
 

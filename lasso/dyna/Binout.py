@@ -206,7 +206,7 @@ class Binout:
 
         Parameters
         ----------
-        path: Union[Tuple[str, ...], List[str], str]
+        *args: Union[Tuple[str, ...], List[str], str]
             internal path in the folder structure of the binout
 
         Returns
@@ -309,7 +309,7 @@ class Binout:
         Returns
         -------
         ret: Union[List[str], np.ndarray]
-            either subfolder list or data array
+            either sub folder list or data array
         """
 
         iLevel = len(path)
@@ -457,7 +457,7 @@ class Binout:
 
         Parameters
         ----------
-        data: Union[int, np.ndarray]
+        data_array: Union[int, np.ndarray]
             some data array
 
         Returns
@@ -478,7 +478,7 @@ class Binout:
 
         Parameters
         ----------
-        string: Union[str, bytes]
+        arg: Union[str, bytes]
 
         Returns
         -------

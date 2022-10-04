@@ -26,7 +26,7 @@ def get_var(name, context, default=None):
 
 def set_var(name, value, context):
     """
-    Set a viarble in a dict context
+    Set a variable in a dict context
 
     Parameters
     ----------

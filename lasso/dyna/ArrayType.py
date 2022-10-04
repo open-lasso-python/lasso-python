@@ -5,7 +5,7 @@ class ArrayType:
     """Specifies the names for specific arrays
 
     Enums from this class shall be used as a preferred practice
-    instead of the string array names to ensure compatability.
+    instead of the string array names to ensure compatibility.
     """
 
     # global
@@ -40,6 +40,7 @@ class ArrayType:
     element_solid_effective_plastic_strain = (
         "element_solid_effective_plastic_strain"  #: shape: (n_states, n_solid_layers, n_solids)
     )
+
     #: shape: (n_states, n_solids, n_solid_layers, n_solids_history_vars)
     element_solid_history_variables = "element_solid_history_variables"
     element_solid_strain = (
@@ -101,11 +102,13 @@ class ArrayType:
     element_tshell_part_indexes = "element_tshell_part_indexes"  #: shape: (n_tshells)
     element_tshell_node_indexes = "element_tshell_node_indexes"  #: shape: (n_tshells, 8)
     element_tshell_ids = "element_tshell_ids"  #: shape: (n_tshells)
-    element_tshell_stress = "element_tshell_stress"  #: shape: (n_states, n_tshells, n_tshells_layers, xx_yy_zz_xy_yz_xz)
+    #: shape: (n_states, n_tshells, n_tshells_layers, xx_yy_zz_xy_yz_xz)
+    element_tshell_stress = "element_tshell_stress"
     element_tshell_effective_plastic_strain = (
         "element_tshell_effective_plastic_strain"  #: shape: (n_states, n_tshells, n_tshells_layers)
     )
-    element_tshell_history_variables = "element_tshell_history_variables"  #: shape: (n_states, n_tshells, n_tshells_layers, xx_yy_zz_xy_yz_xz)
+    #: shape: (n_states, n_tshells, n_tshells_layers, xx_yy_zz_xy_yz_xz)
+    element_tshell_history_variables = "element_tshell_history_variables"
     element_tshell_is_alive = "element_tshell_is_alive"  #: shape: (n_states, n_tshells)
     element_tshell_strain = (
         "element_tshell_strain"  #: shape: (n_states, n_tshells, upper_lower, xx_yy_zz_xy_yz_xz)
@@ -131,16 +134,19 @@ class ArrayType:
     element_beam_axial_strain = (
         "element_beam_axial_strain"  #: shape: (n_states, n_beams, n_beams_layers)
     )
-    element_beam_history_vars = "element_beam_history_vars"  # : shape: (n_states, n_beams, n_beams_layers+3,
-                                                             # n_beams_history_vars)
+    # : shape: (n_states, n_beams, n_beams_layers+3, n_beams_history_vars)
+    element_beam_history_vars = "element_beam_history_vars"
     element_beam_is_alive = "element_beam_is_alive"  #: shape: (n_states, n_beams)
     # shells
     element_shell_part_indexes = "element_shell_part_indexes"  #: shape (n_shells, 4)
     element_shell_node_indexes = "element_shell_node_indexes"  #: shape (n_shells)
     element_shell_ids = "element_shell_ids"  #: shape (n_shells)
-    element_shell_stress = "element_shell_stress"  #: shape (n_states, n_shells_non_rigid, n_shell_layers, xx_yy_zz_xy_yz_xz)
-    element_shell_effective_plastic_strain = "element_shell_effective_plastic_strain"  #: shape (n_states, n_shells_non_rigid, n_shell_layers)
-    element_shell_history_vars = "element_shell_history_vars"  #: shape (n_states, n_shells_non_rigid, n_shell_layers, n_shell_history_vars)
+    #: shape (n_states, n_shells_non_rigid, n_shell_layers, xx_yy_zz_xy_yz_xz)
+    element_shell_stress = "element_shell_stress"
+    #: shape (n_states, n_shells_non_rigid, n_shell_layers)
+    element_shell_effective_plastic_strain = "element_shell_effective_plastic_strain"
+    #: shape (n_states, n_shells_non_rigid, n_shell_layers, n_shell_history_vars)
+    element_shell_history_vars = "element_shell_history_vars"
     element_shell_bending_moment = (
         "element_shell_bending_moment"  #: shape (n_states, n_shells_non_rigid, mx_my_mxy)
     )
@@ -157,7 +163,8 @@ class ArrayType:
     element_shell_internal_energy = (
         "element_shell_internal_energy"  #: shape (n_states, n_shells_non_rigid)
     )
-    element_shell_strain = "element_shell_strain"  #: shape (n_states, n_shells_non_rigid, upper_lower, xx_yy_zz_xy_yz_xz)
+    #: shape (n_states, n_shells_non_rigid, upper_lower, xx_yy_zz_xy_yz_xz)
+    element_shell_strain = "element_shell_strain"
     element_shell_is_alive = "element_shell_is_alive"  #: shape (n_states, n_shells_non_rigid)
     element_shell_node8_extra_node_indexes = (
         "element_shell_node8_extra_node_indexes"  #: shape (n_shells, 4)
@@ -243,7 +250,7 @@ class ArrayType:
     rigid_road_segment_node_ids = (
         "rigid_road_segment_node_ids"  #: list!: (n_roads, 4*n_road_segments)
     )
-    rigid_road_segment_road_id = "rigid_road_segment_road_id"  #: list!: (n_raods, n_road_segments)
+    rigid_road_segment_road_id = "rigid_road_segment_road_id"  #: list!: (n_roads, n_road_segments)
 
     rigid_road_displacement = "rigid_road_displacement"  #: shape: (n_states, n_roads, x_y_z)
     rigid_road_velocity = "rigid_road_velocity"  #: shape: (n_states, n_roads, x_y_z)
