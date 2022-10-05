@@ -26,11 +26,11 @@ def _read_file(filepath: str):
 
 
 def plot_shell_mesh(
-        node_coordinates: np.ndarray,
-        shell_node_indexes: np.ndarray,
-        field: Union[np.ndarray, None] = None,
-        is_element_field: bool = True,
-        fringe_limits: Union[Tuple[float, float], None] = None,
+    node_coordinates: np.ndarray,
+    shell_node_indexes: np.ndarray,
+    field: Union[np.ndarray, None] = None,
+    is_element_field: bool = True,
+    fringe_limits: Union[Tuple[float, float], None] = None,
 ):
     """Plot a mesh
 
@@ -118,13 +118,13 @@ def plot_shell_mesh(
             node_fringe[:n_tria, 1] = field_tria
             node_fringe[:n_tria, 2] = field_tria
 
-            node_fringe[n_tria: n_tria + n_quads, 0] = field_quad
-            node_fringe[n_tria: n_tria + n_quads, 1] = field_quad
-            node_fringe[n_tria: n_tria + n_quads, 2] = field_quad
+            node_fringe[n_tria : n_tria + n_quads, 0] = field_quad
+            node_fringe[n_tria : n_tria + n_quads, 1] = field_quad
+            node_fringe[n_tria : n_tria + n_quads, 2] = field_quad
 
-            node_fringe[n_tria + n_quads: n_tria + 2 * n_quads, 0] = field_quad
-            node_fringe[n_tria + n_quads: n_tria + 2 * n_quads, 1] = field_quad
-            node_fringe[n_tria + n_quads: n_tria + 2 * n_quads, 2] = field_quad
+            node_fringe[n_tria + n_quads : n_tria + 2 * n_quads, 0] = field_quad
+            node_fringe[n_tria + n_quads : n_tria + 2 * n_quads, 1] = field_quad
+            node_fringe[n_tria + n_quads : n_tria + 2 * n_quads, 2] = field_quad
 
             # flatty paddy
             node_fringe = node_fringe.flatten()
@@ -175,14 +175,18 @@ def plot_shell_mesh(
     # wrap it up with all needed js libraries
 
     script_string_js = '<script type="text/javascript">{js_name}</script>'
-    jszip_js_format = _read_file(os.path.join(os.path.dirname(__file__),
-                                              "resources", "jszip.min.js"))
-    jszip_three_format = _read_file(os.path.join(os.path.dirname(__file__),
-                                                 "resources", "three.min.js"))
-    jszip_chroma_format = _read_file(os.path.join(os.path.dirname(__file__),
-                                                  "resources", "chroma.min.js"))
-    jszip_jquery_format = _read_file(os.path.join(os.path.dirname(__file__),
-                                                  "resources", "jquery.min.js"))
+    jszip_js_format = _read_file(
+        os.path.join(os.path.dirname(__file__), "resources", "jszip.min.js")
+    )
+    jszip_three_format = _read_file(
+        os.path.join(os.path.dirname(__file__), "resources", "three.min.js")
+    )
+    jszip_chroma_format = _read_file(
+        os.path.join(os.path.dirname(__file__), "resources", "chroma.min.js")
+    )
+    jszip_jquery_format = _read_file(
+        os.path.join(os.path.dirname(__file__), "resources", "jquery.min.js")
+    )
     _html_jszip_js = script_string_js.format(jszip_js_format)
     _html_three_js = script_string_js.format(jszip_three_format)
     _html_chroma_js = script_string_js.format(jszip_chroma_format)

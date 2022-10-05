@@ -1026,7 +1026,9 @@ class DimredRun:
             # we have no clusters -> we claim all is in one cluster
 
             # Create and load ids
-            id_cluster = [np.stack([key for key in betas_group.keys() if key not in excluded_entries])]
+            id_cluster = [
+                np.stack([key for key in betas_group.keys() if key not in excluded_entries])
+            ]
 
             # Create and load betas
             beta_cluster = [np.stack([betas_group[entry][-1] for entry in id_cluster[0]])]

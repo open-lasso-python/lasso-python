@@ -152,8 +152,8 @@ def _laplacian(L: csgraph, n_eigenmodes: int = 5):
         n_nonzero_eigenvalues = len(eigen_vals) - iStart
 
         if n_nonzero_eigenvalues >= n_eigenmodes:
-            eigen_vecs = eigen_vecs[:, iStart: iStart + n_eigenmodes]
-            eigen_vals = eigen_vals[iStart: iStart + n_eigenmodes]
+            eigen_vecs = eigen_vecs[:, iStart : iStart + n_eigenmodes]
+            eigen_vals = eigen_vals[iStart : iStart + n_eigenmodes]
 
         n_eigenvalues = int(n_eigenvalues * 1.5)
 
