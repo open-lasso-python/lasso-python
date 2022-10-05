@@ -19,16 +19,14 @@ def get_var(name, context, default=None):
         if current_name in current_context:
             current_context = current_context[current_name]
         else:
-            if callable(default):
-                return default()
-            else:
-                return default
+            return default() if callable(default) else default
 
     return current_context
 
 
 def set_var(name, value, context):
-    """Set a viarble in a dict context
+    """
+    Set a variable in a dict context
 
     Parameters
     ----------

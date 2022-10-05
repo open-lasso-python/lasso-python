@@ -2,10 +2,10 @@ import os
 import io
 import uuid
 import json
-import numpy as np
 from base64 import b64encode
 from zipfile import ZipFile, ZIP_DEFLATED
 from typing import Union, Tuple
+import numpy as np
 
 
 def _read_file(filepath: str):
@@ -13,7 +13,7 @@ def _read_file(filepath: str):
 
     Parameters
     ----------
-    filename : str
+    filepath : str
         filepath of the file to read as string
 
     Returns
@@ -21,16 +21,16 @@ def _read_file(filepath: str):
     file_content : str
     """
 
-    with open(filepath, "r") as fp:
-        return fp.read()
+    with open(filepath, "r", encoding="utf-8") as fp_filepath:
+        return fp_filepath.read()
 
 
 def plot_shell_mesh(
-    node_coordinates: np.ndarray,
-    shell_node_indexes: np.ndarray,
-    field: Union[np.ndarray, None] = None,
-    is_element_field: bool = True,
-    fringe_limits: Union[Tuple[float, float], None] = None,
+        node_coordinates: np.ndarray,
+        shell_node_indexes: np.ndarray,
+        field: Union[np.ndarray, None] = None,
+        is_element_field: bool = True,
+        fringe_limits: Union[Tuple[float, float], None] = None,
 ):
     """Plot a mesh
 
@@ -74,7 +74,7 @@ def plot_shell_mesh(
     is_quad = shell_node_indexes[:, 2] != shell_node_indexes[:, 3]
     is_tria = np.logical_not(is_quad)
 
-    # seperate tria and quads ... I know its sad :(
+    # separate tria and quads ... I know its sad :(
     tria_node_indexes = shell_node_indexes[is_tria][:, :3]
     quad_node_indexes = shell_node_indexes[is_quad]
 
@@ -85,7 +85,7 @@ def plot_shell_mesh(
     quad_node_indexes_tria2 = quad_node_indexes[:, [0, 2, 3]]
 
     # assemble elements for plotting
-    # This seems to take a lot of memory and you are right thinking this,
+    # This seems to take a lot of memory, and you are right, thinking this,
     # the issue is just in order to plot fringe values, we need to output
     # the element values at the 3 corner nodes. Since elements share nodes
     # we can not use the same nodes, thus we need to create multiple nodes
@@ -118,13 +118,13 @@ def plot_shell_mesh(
             node_fringe[:n_tria, 1] = field_tria
             node_fringe[:n_tria, 2] = field_tria
 
-            node_fringe[n_tria : n_tria + n_quads, 0] = field_quad
-            node_fringe[n_tria : n_tria + n_quads, 1] = field_quad
-            node_fringe[n_tria : n_tria + n_quads, 2] = field_quad
+            node_fringe[n_tria: n_tria + n_quads, 0] = field_quad
+            node_fringe[n_tria: n_tria + n_quads, 1] = field_quad
+            node_fringe[n_tria: n_tria + n_quads, 2] = field_quad
 
-            node_fringe[n_tria + n_quads : n_tria + 2 * n_quads, 0] = field_quad
-            node_fringe[n_tria + n_quads : n_tria + 2 * n_quads, 1] = field_quad
-            node_fringe[n_tria + n_quads : n_tria + 2 * n_quads, 2] = field_quad
+            node_fringe[n_tria + n_quads: n_tria + 2 * n_quads, 0] = field_quad
+            node_fringe[n_tria + n_quads: n_tria + 2 * n_quads, 1] = field_quad
+            node_fringe[n_tria + n_quads: n_tria + 2 * n_quads, 2] = field_quad
 
             # flatty paddy
             node_fringe = node_fringe.flatten()
@@ -146,12 +146,12 @@ def plot_shell_mesh(
         node_txt = [""] * len(nodes_xyz)
 
     # zip compression of data for HTML (reduces size)
-    zdata = io.BytesIO()
-    with ZipFile(zdata, "w", compression=ZIP_DEFLATED) as zipFile:
-        zipFile.writestr("/intensities", node_fringe.tostring())
-        zipFile.writestr("/positions", nodes_xyz.tostring())
-        zipFile.writestr("/text", json.dumps(node_txt))
-    zdata = b64encode(zdata.getvalue()).decode("utf-8")
+    zip_data = io.BytesIO()
+    with ZipFile(zip_data, "w", compression=ZIP_DEFLATED) as zipfile:
+        zipfile.writestr("/intensities", node_fringe.tostring())
+        zipfile.writestr("/positions", nodes_xyz.tostring())
+        zipfile.writestr("/text", json.dumps(node_txt))
+    zip_data = b64encode(zip_data.getvalue()).decode("utf-8")
 
     # read html template
     _html_template = _read_file(
@@ -169,22 +169,24 @@ def plot_shell_mesh(
         max_value = field.max()
 
     _html_div = _html_template.format(
-        div_id=uuid.uuid4(), lowIntensity=min_value, highIntensity=max_value, zdata=zdata
+        div_id=uuid.uuid4(), lowIntensity=min_value, highIntensity=max_value, zdata=zip_data
     )
 
     # wrap it up with all needed js libraries
-    _html_jszip_js = '<script type="text/javascript">%s</script>' % _read_file(
-        os.path.join(os.path.dirname(__file__), "resources", "jszip.min.js")
-    )
-    _html_three_js = '<script type="text/javascript">%s</script>' % _read_file(
-        os.path.join(os.path.dirname(__file__), "resources", "three.min.js")
-    )
-    _html_chroma_js = '<script type="text/javascript">%s</script>' % _read_file(
-        os.path.join(os.path.dirname(__file__), "resources", "chroma.min.js")
-    )
-    _html_jquery_js = '<script type="text/javascript">%s</script>' % _read_file(
-        os.path.join(os.path.dirname(__file__), "resources", "jquery.min.js")
-    )
+
+    script_string_js = '<script type="text/javascript">{js_name}</script>'
+    jszip_js_format = _read_file(os.path.join(os.path.dirname(__file__),
+                                              "resources", "jszip.min.js"))
+    jszip_three_format = _read_file(os.path.join(os.path.dirname(__file__),
+                                                 "resources", "three.min.js"))
+    jszip_chroma_format = _read_file(os.path.join(os.path.dirname(__file__),
+                                                  "resources", "chroma.min.js"))
+    jszip_jquery_format = _read_file(os.path.join(os.path.dirname(__file__),
+                                                  "resources", "jquery.min.js"))
+    _html_jszip_js = script_string_js.format(jszip_js_format)
+    _html_three_js = script_string_js.format(jszip_three_format)
+    _html_chroma_js = script_string_js.format(jszip_chroma_format)
+    _html_jquery_js = script_string_js.format(jszip_jquery_format)
 
     return """
 <!DOCTYPE html>

@@ -22,14 +22,14 @@ def _create_sphere_mesh(diameter: np.ndarray) -> typing.Tuple[np.ndarray, np.nda
     Returns
     -------
     bin_alpha : np.ndarray
-        alpha bin boundairies
+        alpha bin boundaries
     bin_beta : np.ndarray
-        beta bin boundairies
+        beta bin boundaries
     """
 
     assert diameter.dtype == np.float
 
-    # partion latitude
+    # partition latitude
     n_alpha = 145
 
     # sphere radius
@@ -54,7 +54,7 @@ def _create_sphere_mesh(diameter: np.ndarray) -> typing.Tuple[np.ndarray, np.nda
     tmp /= r**2 * delt_alpha
     bin_beta = 1 - tmp
 
-    # incase of trailing floats (-1.00000004 for example)
+    # In case of trailing floats (-1.00000004 for example)
     if bin_beta[-1] < -1:
         bin_beta[-1] = -1
 
@@ -89,11 +89,11 @@ def _project_to_sphere(
 
     # correct the indexes based on user input
     if AXIS == "Z":
-        indexes = [0, 1, 2]  # z axis aligned with global z axis
+        indexes = [0, 1, 2]  # z axis aligned with global z-axis
     elif AXIS == "Y":
-        indexes = [0, 2, 1]  # z axis aligned with global y axis
+        indexes = [0, 2, 1]  # z axis aligned with global y-axis
     elif AXIS == "X":
-        indexes = [2, 1, 0]  # z axis aligned with global x axis
+        indexes = [2, 1, 0]  # z axis aligned with global x-axis
 
     # projection
     vec = points - centroid
@@ -101,10 +101,10 @@ def _project_to_sphere(
     # normalize
     vec = normalize(vec, axis=1, norm="l2")
 
-    # alpha based on sphere axis aligment
+    # alpha based on sphere axis alignment
     ang = np.arctan2(vec[:, indexes[1]], vec[:, indexes[0]])
 
-    # atan2 retrns neg angles for values greater that 180
+    # atan2 returns neg angles for values greater than 180
     neg_indexes = np.where(ang < 0)
     ang[neg_indexes] += 2 * np.pi
 
@@ -122,7 +122,7 @@ def sphere_hashing(
     Parameters
     ----------
     bin_numbers : np.ndarray
-        bin numbers for the respective index for the x and y axis
+        bin numbers for the respective index for the x and y-axis
     bin_counts : np.ndarray
         number of points that fall into each bin
     field : np.ndarray
@@ -183,11 +183,11 @@ def compute_hashes(
     source_path : str
         path to source directory from which the displacements/strains are
         loaded, this directory should contain HDF5 files of the data
-    target_path(optional) : str
+    target_path : str (optional)
         directory in which the hashes are to be written to
-    n_files(optional) : int
+    n_files : int (optional)
         number of files to process, useful for verification and quick visualization
-    ret_vals(optional) : bool
+    ret_vals : bool (optional)
         return the hashes, setting this to true, be aware that the hash list can
         take up a lot of ram
 

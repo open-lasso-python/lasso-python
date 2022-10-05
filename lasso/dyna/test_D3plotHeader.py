@@ -29,7 +29,7 @@ class D3plotHeaderTest(TestCase):
 
         number = 1234567890
 
-        # the numbers are sorted from lowest importance
+        # the numbers are sorted from the lowest importance
         # upwards
         # 0 -> 0
         # 1 -> 9
@@ -83,14 +83,14 @@ class D3plotHeaderTest(TestCase):
                 bb.memoryview = memoryview(bytearray(256))
                 bb.write_number(position, filetype.value, np.int32)
 
-                wordsize, itype, ftype = D3plotHeader._determine_file_settings(bb)
+                word_size, itype, ftype = D3plotHeader._determine_file_settings(bb)
 
                 if position == 44:
-                    self.assertEqual(wordsize, 4)
+                    self.assertEqual(word_size, 4)
                     self.assertEqual(itype, np.int32)
                     self.assertEqual(ftype, np.float32)
                 else:
-                    self.assertEqual(wordsize, 8)
+                    self.assertEqual(word_size, 8)
                     self.assertEqual(itype, np.int64)
                     self.assertEqual(ftype, np.float64)
 

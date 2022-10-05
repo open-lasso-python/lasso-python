@@ -177,7 +177,7 @@ def parse_dimred_args():
         "--outlier-args",
         type=str,
         nargs="*",
-        help="Optional. Arguments for outlier detection befor clustering.",
+        help="Optional. Arguments for outlier detection before clustering.",
     )
 
     if len(sys.argv) < 2:
@@ -271,11 +271,11 @@ class DimredRun:
         end_stage: str
             where to stop
         project_dir : Union[None, str]
-            required project directory for creation of buffer files. Allows restarts inbetween.
+            required project directory for creation of buffer files. Allows restart in between.
         html_name: str
             Name of the output .html file
-        thml_set_timestamp: bool
-            If true, the ouput .html will include a timstamp (hh_mm_ss) at the end of the filename
+        html_set_timestamp: bool
+            If true, the output .html will include a timestamp (hh_mm_ss) at the end of the filename
         reference_run : str
             filepath to the reference run.
             If not set, first entry in simulation_runs will be used as reference run.
@@ -283,7 +283,7 @@ class DimredRun:
             Console for information printing and logging.
             Rich offers pretty text printing, syntax highlighting etc.
         img_path: Union[None, str]
-            optional image directory to show images in visualizion.
+            optional image directory to show images in visualization.
         exclude_runs: Union[Sequence[str], None]
             optional list of runs to exclude from processing
         logfile_filepath : Union[str, None]
@@ -293,9 +293,9 @@ class DimredRun:
         part_id_filter: Union[Sequence[int], None]
             which part ids to process
         timestep: int, default: -1
-            specifies timestep to analyse in clustering and show in output visualization
+            specifies timestep to analyze in clustering and show in output visualization
         show_output: bool, default: True
-            Set to false to not show the ouput html in the browser
+            Set to false not to show the output html in the browser
         cluster_args: Union[None, [str]], default: None
             Arguments for cluster algorithm
         outlier_args: Union[None, [str]], default: None
@@ -388,7 +388,7 @@ class DimredRun:
         if self.console:
             self.console.print(timestamp() + msg, style=style, highlight=highlight)
 
-    def raise_error(self, err_msg: str, traceback: Union[None, str] = None):
+    def raise_error(self, err_msg: str):
         """
         Parameters
         ----------
@@ -398,7 +398,7 @@ class DimredRun:
         Raises
         ------
         RuntimeError
-            raises a x with error msg
+            raises an exception with error msg
 
         Notes
         -----
@@ -642,7 +642,7 @@ class DimredRun:
 
     def _parse_html_name(self, html_name_string: str) -> str:
 
-        html_name, replace_count = re.subn(r"[!§$%&/()=?\"\[\]{}\\.,;:<>\|]", "", html_name_string)
+        html_name, replace_count = re.subn(r"[!§$%&/()=?\"\[\]{}\\.,;:<>|]", "", html_name_string)
         html_name = html_name.replace(" ", "-")
 
         if replace_count > 0:
@@ -663,9 +663,9 @@ class DimredRun:
         # Process pool automatically shuts down upon exiting.
         # Calling pool.shutdown() leads to an Error
         # OSError: handle is closed
-        # when python programm has finished.
+        # when python program has finished.
 
-        # TODO: Add rich logging if exception occured
+        # TODO: Add rich logging if exception occurred
 
         self.pool = None
         self.h5file.close()
@@ -729,8 +729,8 @@ class DimredRun:
         h5_ref.attrs[HDF5FileNames.subsample_process_time.value] = reference_sample[1]
 
         # log time and success
-        self.log("Loadtime Reference subample: " + str(reference_sample[2])[:5])
-        self.log("Total time for Reference subample: " + str(reference_sample[1])[:5])
+        self.log("Loadtime Reference subsample: " + str(reference_sample[2])[:5])
+        self.log("Total time for Reference subsample: " + str(reference_sample[1])[:5])
         self.log("Reference subsample completed", style="success")
 
     def subsample_to_reference_run(self):
@@ -782,12 +782,12 @@ class DimredRun:
                 except Exception:
                     break
 
-            # check if an error occured
+            # check if an error occurred
             if self.pool._broken and "entry" in locals():  # type: ignore
                 msg = "Failed to load file: {}".format(entry)  # type: ignore
                 self.raise_error(msg)
 
-            # we mesaure required time here
+            # we measure required time here
             t_cum = 0
             t_cum_io = 0
 
@@ -826,20 +826,18 @@ class DimredRun:
 
         self.log("Subsampling completed", style="success")
 
-        # Finished: We either have all subsampled runs in the project_dir,
-        # or a list containing all subsampled runs
-        # Problem: we might be running into issues with avaiable RAM?
-        # 1000 runs, 30 timesteps, subsampled onto 2000 points -> 1,34GB
+        # Finished: We either have all sub-sampled runs in the project_dir,
+        # or a list containing all sub-sampled runs
+        # Problem: we might be running into issues with available RAM?
+        # 1000 runs, 30 timesteps, sub-sampled onto 2000 points -> 1,34GB
 
     def dimension_reduction_svd(self):
-        """Calcualte V_ROB and Betas"""
+        """Calculate V_ROB and Betas"""
 
         # applying pod_functions.py
         # (TODO: lots of stuff in the pod_functions.py has to be overhauled)
         # save if appropriate into project_dir
         self.log("Dimension Reduction")
-
-        warn_msg: Union[None, str] = None
 
         if self.console:
             # prog = Progress("", WorkingDots())
@@ -1026,16 +1024,12 @@ class DimredRun:
 
             # plotfunction expects list of cluster
             # we have no clusters -> we claim all is in one cluster
-            beta_cluster = []
-            id_cluster = []
 
-            # load ids
-            id_cluster.append(
-                np.stack([key for key in betas_group.keys() if key not in excluded_entries])
-            )
+            # Create and load ids
+            id_cluster = [np.stack([key for key in betas_group.keys() if key not in excluded_entries])]
 
-            # load betas
-            beta_cluster.append(np.stack([betas_group[entry][-1] for entry in id_cluster[0]]))
+            # Create and load betas
+            beta_cluster = [np.stack([betas_group[entry][-1] for entry in id_cluster[0]])]
 
         else:
             # check if outlier where detected

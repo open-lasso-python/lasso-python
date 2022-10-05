@@ -30,6 +30,8 @@ def run_graph_laplacian(
     sigma : float
         The standard deviation of the gaussian normal distribution function used to
         transform the distances for the inverse distance based weighting.
+    search_radius:
+
 
     Returns
     -------
@@ -56,7 +58,7 @@ def _laplacian_gauss_idw(
 ):
     """
     Calculates the laplacian matrix for the sample points of a manifold. The inverse
-    of the the gauss-transformed distance is used as weighting of the neighbors.
+    of the gauss-transformed distance is used as weighting of the neighbors.
 
     Parameters
     ----------
@@ -100,9 +102,7 @@ def _laplacian_gauss_idw(
         )
     ):
         # Always search for k neighbors, this prevents strongly connected local areas
-        # a little bit, attracting the eigenfield
-        if len(j) < 1 + min_neighbors:
-            d, j = e, k
+        # a little, attracting the eigenfield
 
         d, j = e, k
         k = j != i
@@ -117,7 +117,7 @@ def _laplacian_gauss_idw(
     return csgraph.laplacian(graph, normed=True)
 
 
-def _laplacian(L: csgraph, points: np.ndarray, n_eigenmodes: int = 5):
+def _laplacian(L: csgraph, n_eigenmodes: int = 5):
     """
     Compute the laplacian of a graph L
 
@@ -152,8 +152,8 @@ def _laplacian(L: csgraph, points: np.ndarray, n_eigenmodes: int = 5):
         n_nonzero_eigenvalues = len(eigen_vals) - iStart
 
         if n_nonzero_eigenvalues >= n_eigenmodes:
-            eigen_vecs = eigen_vecs[:, iStart : iStart + n_eigenmodes]
-            eigen_vals = eigen_vals[iStart : iStart + n_eigenmodes]
+            eigen_vecs = eigen_vecs[:, iStart: iStart + n_eigenmodes]
+            eigen_vals = eigen_vals[iStart: iStart + n_eigenmodes]
 
         n_eigenvalues = int(n_eigenvalues * 1.5)
 

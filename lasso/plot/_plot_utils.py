@@ -95,7 +95,7 @@ _PLOTLY_BUTTON = """            {{
 def array2str(arr: np.ndarray) -> str:
     entries_per_row = 100
     return ",\n            ".join(
-        ", ".join(map(str, arr[i : i + entries_per_row]))
+        ", ".join(map(str, arr[i: i + entries_per_row]))
         for i in range(0, len(arr), entries_per_row)
     )
 
@@ -130,7 +130,7 @@ def plotly_3d(x, y, z, fringe=None, fringe_names=None, filepath=None, title=""):
     z_range = "range: %s" % str(z_range)
 
     if not isinstance(fringe, (np.ndarray, list, tuple)):
-        fringe = fringe = np.zeros(len(x))
+        fringe = np.zeros(len(x))
     scatter_hover_labels = []
     color_range = "'red'"
 

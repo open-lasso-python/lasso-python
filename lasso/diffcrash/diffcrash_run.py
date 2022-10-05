@@ -203,7 +203,7 @@ class DiffcrashRun(object):
         Parameters
         ----------
         project_dir : `str`
-            directory to put all buffer files etc in
+            directory to put all buffer files etc., in
         crash_code : `str`
             crash code to use.
         reference_run : `str`
@@ -1117,7 +1117,7 @@ class DiffcrashRun(object):
         Parameters
         ----------
         logfile : `str`
-            filepath to the logile
+            filepath to the logfile
 
         Returns
         -------
@@ -1130,7 +1130,7 @@ class DiffcrashRun(object):
                     return True
         return False
 
-    def _create_merge_input_file(self, directory: str, dataname="default") -> str:
+    def _create_merge_input_file(self, directory: str) -> str:
         """Create an input file for the merge executable
 
         Notes
@@ -1306,7 +1306,7 @@ class DiffcrashRun(object):
                         POSTVAL = POSTVAL.strip("_")
 
                         # hotfix
-                        # sometimes the engine writes 'Geometry' instread of 'geomtry'
+                        # sometimes the engine writes 'Geometry' instead of 'geometry'
                         POSTVAL = POSTVAL.lower()
 
                         items[k] = items[k].strip()

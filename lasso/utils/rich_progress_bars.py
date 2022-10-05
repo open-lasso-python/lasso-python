@@ -11,10 +11,12 @@ class PlaceHolderBar:
     finished: bool
     tasks: list = []
 
+# noinspection PyUnusedLocal
     def __init__(self, **kwargs):
         """This is a placeholder to not clutter console during testing"""
         self.finished: False
 
+# noinspection PyUnusedLocal
     def render(self, task: Any) -> str:
         """returns the planned output: empty string"""
         return ""
@@ -22,11 +24,11 @@ class PlaceHolderBar:
     def add_task(self, description: str, total: int) -> int:
         """Adds a new task"""
         self.tasks.append([description, total, 0])
-        # entry in list is tupel of description, total tasks, remaining tasks
+        # entry in list is tuple of description, total tasks, remaining tasks
         return len(self.tasks) - 1
 
     def advance(self, task_id):
-        """advanves the given task"""
+        """advances the given task"""
         prog = self.tasks[task_id][2]
         prog += 1
         self.tasks[task_id][2] = prog
@@ -41,6 +43,7 @@ class PlaceHolderBar:
 
 
 class WorkingDots(ProgressColumn):
+    """ TODO: add description """
     max_refresh = 0.5
     is_silenced: bool = False
 
@@ -67,6 +70,7 @@ class WorkingDots(ProgressColumn):
 
 
 class SubsamplingWaitTime(ProgressColumn):
+    """ TODO: add description """
     max_refresh = 0.5
 
     def __init__(self, n_proc: int):
@@ -74,14 +78,14 @@ class SubsamplingWaitTime(ProgressColumn):
 
         # Last time we updated
         self.last_time = time.time()
-        # Cummulated time of all completed supsampling processes
+        # Cumulative time of all completed sub-sampling processes
         self.cum_time = 0
         # Number of parallel running processes
         self.n_proc = n_proc
         self.t_rem = -1
 
     def render(self, task: Any) -> str:
-        """?"""
+        """ TODO: add description? """
 
         if task.completed == task.total:
             return "Time remaining: 00:00"
@@ -110,7 +114,7 @@ class SubsamplingWaitTime(ProgressColumn):
             return "Time remaining: --:--"
 
     def update_avrg(self, new_time: float):
-        """?"""
+        """TODO: add description"""
 
         self.cum_time += new_time
         self.last_time = time.time()

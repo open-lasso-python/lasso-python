@@ -336,7 +336,7 @@ class FemzipAPI:
             setattr(dest, field_name, getattr(src, field_name))
 
     def get_part_titles(
-        self, filepath: str, buffer_info: Union[None, FemzipBufferInfo] = None
+            self, filepath: str, buffer_info: Union[None, FemzipBufferInfo] = None
     ) -> memoryview:
         """Get the part title section
 
@@ -371,7 +371,7 @@ class FemzipAPI:
         return memoryview(buffer).cast("B")
 
     def read_state_deletion_info(
-        self, buffer_info: FemzipBufferInfo, state_filter: Union[Set[int], None] = None
+            self, buffer_info: FemzipBufferInfo, state_filter: Union[Set[int], None] = None
     ) -> np.ndarray:
         """Get information which elements are alive
 
@@ -449,10 +449,10 @@ class FemzipAPI:
         # return memoryview(buffer_c).cast('B')
 
     def read_single_state(
-        self,
-        i_timestep: int,
-        buffer_info: FemzipBufferInfo,
-        state_buffer: Union[None, memoryview] = None,
+            self,
+            i_timestep: int,
+            buffer_info: FemzipBufferInfo,
+            state_buffer: Union[None, memoryview] = None,
     ) -> memoryview:
         """Read a single state
 
@@ -660,10 +660,10 @@ class FemzipAPI:
         return buffer_info_2
 
     def read_geometry(
-        self,
-        filepath: str,
-        buffer_info: Union[FemzipBufferInfo, None] = None,
-        close_file: bool = True,
+            self,
+            filepath: str,
+            buffer_info: Union[FemzipBufferInfo, None] = None,
+            close_file: bool = True,
     ) -> memoryview:
         """Read the geometry buffer from femzip
 
@@ -712,10 +712,10 @@ class FemzipAPI:
         return memoryview(buffer).cast("B")
 
     def read_states(
-        self,
-        filepath: str,
-        buffer_info: Union[FemzipBufferInfo, None] = None,
-        state_filter: Union[Set[int], None] = None,
+            self,
+            filepath: str,
+            buffer_info: Union[FemzipBufferInfo, None] = None,
+            state_filter: Union[Set[int], None] = None,
     ) -> np.ndarray:
         """Reads all femzip state information
 
@@ -821,13 +821,13 @@ class FemzipAPI:
         return file_metadata2
 
     def _get_variables_state_buffer_size(
-        self,
-        n_parts: int,
-        n_rigid_walls: int,
-        n_rigid_wall_vars: int,
-        n_airbag_particles: int,
-        n_airbags: int,
-        file_metadata: FemzipFileMetadata,
+            self,
+            n_parts: int,
+            n_rigid_walls: int,
+            n_rigid_wall_vars: int,
+            n_airbag_particles: int,
+            n_airbags: int,
+            file_metadata: FemzipFileMetadata,
     ) -> int:
 
         buffer_size_state = 0
@@ -840,9 +840,9 @@ class FemzipAPI:
 
                 variable_multiplier = 1
                 if (
-                    FemzipArrayType.node_displacement.value in variable_name
-                    or FemzipArrayType.node_velocities.value in variable_name
-                    or FemzipArrayType.node_accelerations.value in variable_name
+                        FemzipArrayType.node_displacement.value in variable_name
+                        or FemzipArrayType.node_velocities.value in variable_name
+                        or FemzipArrayType.node_accelerations.value in variable_name
                 ):
                     variable_multiplier = 3
 
@@ -852,8 +852,8 @@ class FemzipAPI:
 
             elif variable_category == FemzipVariableCategory.SHELL:
                 array_size = (
-                    file_metadata.number_of_shell_elements
-                    - file_metadata.number_of_rigid_shell_elements
+                        file_metadata.number_of_shell_elements
+                        - file_metadata.number_of_rigid_shell_elements
                 )
                 file_metadata.variable_infos[i_var].var_size = array_size
                 buffer_size_state += array_size
@@ -901,15 +901,15 @@ class FemzipAPI:
         return buffer_size_state
 
     def _decompose_read_variables_array(
-        self,
-        n_parts: int,
-        n_rigid_walls: int,
-        n_rigid_wall_vars: int,
-        n_airbag_particles: int,
-        n_airbags: int,
-        all_vars_array: np.ndarray,
-        n_timesteps_read: int,
-        file_metadata: FemzipFileMetadata,
+            self,
+            n_parts: int,
+            n_rigid_walls: int,
+            n_rigid_wall_vars: int,
+            n_airbag_particles: int,
+            n_airbags: int,
+            all_vars_array: np.ndarray,
+            n_timesteps_read: int,
+            file_metadata: FemzipFileMetadata,
     ) -> Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray]:
 
         # decompose array
@@ -925,12 +925,12 @@ class FemzipAPI:
 
             if variable_category == FemzipVariableCategory.NODE:
                 if (
-                    variable_type.value == FemzipArrayType.node_displacement.value
-                    or variable_type.value == FemzipArrayType.node_velocities.value
-                    or variable_type.value == FemzipArrayType.node_accelerations.value
+                        variable_type.value == FemzipArrayType.node_displacement.value
+                        or variable_type.value == FemzipArrayType.node_velocities.value
+                        or variable_type.value == FemzipArrayType.node_accelerations.value
                 ):
                     array_size = file_metadata.number_of_nodes * 3
-                    var_array = all_vars_array[:, var_pos : var_pos + array_size].reshape(
+                    var_array = all_vars_array[:, var_pos: var_pos + array_size].reshape(
                         (n_timesteps_read, file_metadata.number_of_nodes, 3)
                     )
                     var_pos += array_size
@@ -939,7 +939,7 @@ class FemzipAPI:
                     ] = var_array
                 else:
                     array_size = file_metadata.number_of_nodes
-                    var_array = all_vars_array[:, var_pos : var_pos + array_size]
+                    var_array = all_vars_array[:, var_pos: var_pos + array_size]
                     var_pos += array_size
                     result_arrays[
                         (variable_index, variable_name, FemzipVariableCategory.NODE)
@@ -947,63 +947,63 @@ class FemzipAPI:
 
             elif variable_category == FemzipVariableCategory.SHELL:
                 array_size = (
-                    file_metadata.number_of_shell_elements
-                    - file_metadata.number_of_rigid_shell_elements
+                        file_metadata.number_of_shell_elements
+                        - file_metadata.number_of_rigid_shell_elements
                 )
-                var_array = all_vars_array[:, var_pos : var_pos + array_size]
+                var_array = all_vars_array[:, var_pos: var_pos + array_size]
                 var_pos += array_size
                 result_arrays[
                     (variable_index, variable_name, FemzipVariableCategory.SHELL)
                 ] = var_array
             elif variable_category == FemzipVariableCategory.SOLID:
                 array_size = file_metadata.number_of_solid_elements
-                var_array = all_vars_array[:, var_pos : var_pos + array_size]
+                var_array = all_vars_array[:, var_pos: var_pos + array_size]
                 var_pos += array_size
                 result_arrays[
                     (variable_index, variable_name, FemzipVariableCategory.SOLID)
                 ] = var_array
             elif variable_category == FemzipVariableCategory.BEAM:
                 array_size = file_metadata.number_of_1D_elements
-                var_array = all_vars_array[:, var_pos : var_pos + array_size]
+                var_array = all_vars_array[:, var_pos: var_pos + array_size]
                 var_pos += array_size
                 result_arrays[
                     variable_index, variable_name, FemzipVariableCategory.BEAM
                 ] = var_array
             elif variable_category == FemzipVariableCategory.THICK_SHELL:
                 array_size = file_metadata.number_of_thick_shell_elements
-                var_array = all_vars_array[:, var_pos : var_pos + array_size]
+                var_array = all_vars_array[:, var_pos: var_pos + array_size]
                 var_pos += array_size
                 result_arrays[
                     variable_index, variable_name, FemzipVariableCategory.THICK_SHELL
                 ] = var_array
             elif variable_category == FemzipVariableCategory.GLOBAL:
                 array_size = 6
-                var_array = all_vars_array[:, var_pos : var_pos + array_size]
+                var_array = all_vars_array[:, var_pos: var_pos + array_size]
                 var_pos += array_size
                 result_arrays[
                     variable_index, variable_name, FemzipVariableCategory.GLOBAL
                 ] = var_array
             elif variable_category == FemzipVariableCategory.PART:
                 array_size = n_parts * 7 + n_rigid_walls * n_rigid_wall_vars
-                var_array = all_vars_array[:, var_pos : var_pos + array_size]
+                var_array = all_vars_array[:, var_pos: var_pos + array_size]
                 var_pos += array_size
                 result_arrays[
                     variable_index, variable_name, FemzipVariableCategory.PART
                 ] = var_array
             elif variable_category == FemzipVariableCategory.CPM_FLOAT_VAR:
                 array_size = n_airbag_particles
-                var_array = all_vars_array[:, var_pos : var_pos + array_size]
+                var_array = all_vars_array[:, var_pos: var_pos + array_size]
                 var_pos += array_size
                 result_arrays[variable_index, variable_name, variable_category] = var_array
             elif variable_category == FemzipVariableCategory.CPM_INT_VAR:
                 array_size = n_airbag_particles
-                var_array = all_vars_array[:, var_pos : var_pos + array_size].view(np.int32)
+                var_array = all_vars_array[:, var_pos: var_pos + array_size].view(np.int32)
                 var_pos += array_size
                 result_arrays[variable_index, variable_name, variable_category] = var_array
             elif variable_category == FemzipVariableCategory.CPM_AIRBAG:
                 n_airbag_vars = 2
                 array_size = n_airbags * n_airbag_vars
-                var_array = all_vars_array[:, var_pos : var_pos + array_size]
+                var_array = all_vars_array[:, var_pos: var_pos + array_size]
                 var_array = var_array.reshape((var_array.shape[0], n_airbags, n_airbag_vars))
                 var_pos += array_size
                 result_arrays[variable_index, variable_name, variable_category] = var_array
@@ -1014,14 +1014,14 @@ class FemzipAPI:
         return result_arrays
 
     def read_variables(
-        self,
-        file_metadata: FemzipFileMetadata,
-        n_parts: int,
-        n_rigid_walls: int,
-        n_rigid_wall_vars: int,
-        n_airbag_particles: int,
-        n_airbags: int,
-        state_filter: Union[Set[int], None] = None,
+            self,
+            file_metadata: FemzipFileMetadata,
+            n_parts: int,
+            n_rigid_walls: int,
+            n_rigid_wall_vars: int,
+            n_airbag_particles: int,
+            n_airbags: int,
+            state_filter: Union[Set[int], None] = None,
     ) -> Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray]:
         """Read specific variables from Femzip
 
@@ -1037,6 +1037,7 @@ class FemzipAPI:
             number of rigid wall variables
         n_airbag_particles: int
             number of airbag particles in the file
+        n_airbags: int
         state_filter: Union[Set[int], None]
             used to read specific arrays
 
@@ -1174,11 +1175,11 @@ class FemzipD3plotArrayMapping:
     fz_array_slices = Tuple[slice]
 
     def __init__(
-        self,
-        d3plot_array_type: str,
-        fz_array_slices: Tuple[slice] = (slice(None),),
-        i_integration_point: Union[int, None] = None,
-        i_var_index: Union[int, None] = None,
+            self,
+            d3plot_array_type: str,
+            fz_array_slices: Tuple[slice] = (slice(None),),
+            i_integration_point: Union[int, None] = None,
+            i_var_index: Union[int, None] = None,
     ):
         self.d3plot_array_type = d3plot_array_type
         self.fz_array_slices = fz_array_slices
@@ -1194,10 +1195,10 @@ class FemzipArrayMetadata:
     fz_var_index: Union[int, None] = None
 
     def __init__(
-        self,
-        array_type: FemzipArrayType,
-        category: FemzipVariableCategory,
-        d3plot_mappings: List[FemzipD3plotArrayMapping],
+            self,
+            array_type: FemzipArrayType,
+            category: FemzipVariableCategory,
+            d3plot_mappings: List[FemzipD3plotArrayMapping],
     ):
         self.array_type = array_type
         self.category = category

@@ -359,7 +359,7 @@ class D3plotTest(TestCase):
         with tempfile.TemporaryDirectory() as dirpath:
 
             for d3plot_kwargs in d3plot_kwargs_list:
-                for d3plot_filepath, d3plot_kwargs in zip(filepaths, d3plot_kwargs_list):
+                for d3plot_filepath, _ in zip(filepaths, d3plot_kwargs_list):
 
                     print(d3plot_filepath)
 
