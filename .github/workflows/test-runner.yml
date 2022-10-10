@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      # If either the tests for 3.7 or 3.10 fail all workflows
+      # If either the tests for 3.8 or 3.10 fail all workflows
       # are terminated to safe computing resources.
       fail-fast: true
       # To safe runtime least and latest version supported are
