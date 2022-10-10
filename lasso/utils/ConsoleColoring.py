@@ -42,8 +42,11 @@ class ConsoleColoring:
         formatted_msg : `str`
             string colored for console output
         """
-        return ConsoleColoring.LIGHT_PURPLE + msg + ConsoleColoring.RESET if light \
+        return (
+            ConsoleColoring.LIGHT_PURPLE + msg + ConsoleColoring.RESET
+            if light
             else ConsoleColoring.PURPLE + msg + ConsoleColoring.RESET
+        )
 
     @staticmethod
     def yellow(msg, light=False):
@@ -61,8 +64,11 @@ class ConsoleColoring:
         formatted_msg : `str`
             string colored for console output
         """
-        return ConsoleColoring.LIGHT_YELLOW + msg + ConsoleColoring.RESET if light \
+        return (
+            ConsoleColoring.LIGHT_YELLOW + msg + ConsoleColoring.RESET
+            if light
             else ConsoleColoring.ORANGE + msg + ConsoleColoring.RESET
+        )
 
     @staticmethod
     def red(msg, light=False):
@@ -80,8 +86,11 @@ class ConsoleColoring:
         formatted_msg : `str`
             string colored for console output
         """
-        return ConsoleColoring.LIGHT_RED + msg + ConsoleColoring.RESET if light \
+        return (
+            ConsoleColoring.LIGHT_RED + msg + ConsoleColoring.RESET
+            if light
             else ConsoleColoring.RED + msg + ConsoleColoring.RESET
+        )
 
     @staticmethod
     def green(msg, light=False):
@@ -99,8 +108,11 @@ class ConsoleColoring:
         formatted_msg : `str`
             string colored for console output
         """
-        return ConsoleColoring.LIGHT_GREEN + msg + ConsoleColoring.RESET if light \
+        return (
+            ConsoleColoring.LIGHT_GREEN + msg + ConsoleColoring.RESET
+            if light
             else ConsoleColoring.GREEN + msg + ConsoleColoring.RESET
+        )
 
     @staticmethod
     def blue(msg, light=False):
@@ -118,5 +130,8 @@ class ConsoleColoring:
         formatted_msg : `str`
             string colored for console output
         """
-        return ConsoleColoring.LIGHT_BLUE + msg + ConsoleColoring.RESET if light \
+        return (
+            ConsoleColoring.LIGHT_BLUE + msg + ConsoleColoring.RESET
+            if light
             else ConsoleColoring.BLUE + msg + ConsoleColoring.RESET
+        )

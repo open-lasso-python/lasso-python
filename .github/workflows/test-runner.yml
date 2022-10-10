@@ -1,48 +1,187 @@
-name: Run Tests
+name: Python Linting, Test and Upload
 
 on:
   push:
-    branches:
-      - main
-      - develop
   pull_request:
-    branches:
-      - main
-      - develop
+  workflow_dispatch:
 
 jobs:
-  build:
+  # JOB
+  # This job runs unit tests, linting and format checks
+  tests:
     runs-on: ubuntu-latest
+
     strategy:
-      # If one matrix job fails, all should fail to save compute
+      # If either the tests for 3.8 or 3.10 fail all workflows
+      # are terminated to safe computing resources.
       fail-fast: true
+      # To safe runtime least and latest version supported are
+      # chosen. We go for 3.8 due to some dependencies. For more
+      # info see the pyproject.toml
       matrix:
-        os: [ubuntu-latest, windows-latest]
         python-version: ["3.8", "3.10"]
 
     steps:
       - uses: actions/checkout@v2
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
+      - name: Install Task
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-          python setup.py install
+          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
 
-      - name: Lint with flake8
-        run: |
-          pip install flake8
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 lasso --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          # flake8 lasso --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      # Cache dependencies from poetry to speed things up
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
 
-      - name: Test with pytest
+      - name: Install and upgrade pip and poetry
+        run: python -m pip install --upgrade pip poetry
+
+      - name: Install Dependencies
+        run: ./bin/task setup
+
+      - name: Lint code
+        run: ./bin/task lint
+
+      - name: Test code
+        run: ./bin/task test
+
+  # JOB
+  # This job publishes the package to test-pipy.
+  test-publish:
+    # Will run after the job 'tests'
+    needs: [tests]
+
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+
+    # Required for installation of the test package in the
+    # next job.
+    outputs:
+      version: ${{ steps.extract_version.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Remember version
+        id: extract_version
         run: |
-          pip install pytest
-          pytest
+          VERSION=$(cat pyproject.toml | grep -oE -m 1 "version = \"(.*)\"" | cut -f2 -d '"')
+          echo "Version: $VERSION"
+          echo "::set-output name=version::$VERSION"
+
+      # For publishing any version will do
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+
+      - name: Install Task
+        run: |
+          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip poetry
+          ./bin/task setup
+
+      - name: Build packages for release
+        run: ./bin/task build
+
+      - name: Publish distribution to Test PyPI
+        env:
+          TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
+          TWINE_USERNAME: __token__
+          TWINE_NON_INTERACTIVE: 1
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        run: poetry run twine upload --skip-existing --verbose 'dist/*'
+
+  # JOB
+  # Test install from pypi to see if we have any installation bugs.
+  test-install:
+    needs: [test-publish]
+    if: startsWith(github.ref, 'refs/tags/')
+
+    runs-on: ubuntu-latest
+
+    # Use the version from the previous job
+    env:
+      VERSION: ${{ needs.test-publish.outputs.version }}
+
+    steps:
+      # Install python (be aware NO checkout action)
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+
+      # Check if it installs without errors
+      - name: Install package
+        run: |
+          python -m pip install \
+            --index-url https://test.pypi.org/simple/ \
+            --extra-index-url https://pypi.org/simple \
+            lasso-python=="$VERSION"
+  # JOB
+  # Finally publish the code to pypi
+  publish:
+    needs: [test-install]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+
+      - name: Install Task
+        run: |
+          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade poetry pip
+          ./bin/task setup
+
+      - name: Build packages for release
+        run: ./bin/task build
+
+      # Not required but this saves the distribution files
+      # with the package upload for debugging purposes.
+      - name: Save packages as artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: dist
+          if-no-files-found: error
+
+      - name: Publish distribution to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_NON_INTERACTIVE: 1
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: poetry run twine upload --skip-existing --verbose 'dist/*'

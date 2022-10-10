@@ -95,7 +95,7 @@ _PLOTLY_BUTTON = """            {{
 def array2str(arr: np.ndarray) -> str:
     entries_per_row = 100
     return ",\n            ".join(
-        ", ".join(map(str, arr[i: i + entries_per_row]))
+        ", ".join(map(str, arr[i : i + entries_per_row]))
         for i in range(0, len(arr), entries_per_row)
     )
 

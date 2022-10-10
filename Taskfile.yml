@@ -4,7 +4,7 @@ tasks:
   setup:
     desc: Setup the development environment.
     cmds:
-      - poetry setup
+      - poetry install
 
   lint:
     desc: Lints the code and reports on issues.

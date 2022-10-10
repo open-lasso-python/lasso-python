@@ -3,6 +3,7 @@ import inspect
 
 # Source: https://www.fast.ai/2019/08/06/delegation/
 
+
 def delegates(to=None, keep=False):
     """Decorator: replace `**kwargs` in signature with params from `to`"""
 
@@ -30,7 +31,7 @@ def delegates(to=None, keep=False):
 
 
 def custom_dir(custom_c, add):
-    """ Custom dir *add description? """
+    """Custom dir *add description?"""
     return dir(type(custom_c)) + list(custom_c.__dict__.keys()) + add
 
 

@@ -11,12 +11,12 @@ class PlaceHolderBar:
     finished: bool
     tasks: list = []
 
-# noinspection PyUnusedLocal
+    # noinspection PyUnusedLocal
     def __init__(self, **kwargs):
         """This is a placeholder to not clutter console during testing"""
         self.finished: False
 
-# noinspection PyUnusedLocal
+    # noinspection PyUnusedLocal
     def render(self, task: Any) -> str:
         """returns the planned output: empty string"""
         return ""
@@ -43,7 +43,8 @@ class PlaceHolderBar:
 
 
 class WorkingDots(ProgressColumn):
-    """ TODO: add description """
+    """TODO: add description"""
+
     max_refresh = 0.5
     is_silenced: bool = False
 
@@ -70,7 +71,8 @@ class WorkingDots(ProgressColumn):
 
 
 class SubsamplingWaitTime(ProgressColumn):
-    """ TODO: add description """
+    """TODO: add description"""
+
     max_refresh = 0.5
 
     def __init__(self, n_proc: int):
@@ -85,7 +87,7 @@ class SubsamplingWaitTime(ProgressColumn):
         self.t_rem = -1
 
     def render(self, task: Any) -> str:
-        """ TODO: add description? """
+        """TODO: add description?"""
 
         if task.completed == task.total:
             return "Time remaining: 00:00"
