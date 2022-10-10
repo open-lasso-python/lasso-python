@@ -1,7 +1,7 @@
 import logging
 import platform
 
-from lasso.utils.ConsoleColoring import ConsoleColoring
+from lasso.utils.console_coloring import ConsoleColoring
 
 # settings
 MARKER_INFO = "[/]"

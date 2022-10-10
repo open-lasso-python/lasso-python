@@ -8,7 +8,7 @@ import struct
 import numpy as np
 
 from lasso.dyna.D3plot import D3plot, FilterType, _negative_to_positive_state_indexes
-from lasso.dyna.ArrayType import ArrayType
+from lasso.dyna.array_type import ArrayType
 
 
 class D3plotTest(TestCase):

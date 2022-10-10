@@ -49,7 +49,13 @@ build-backend = "poetry.core.masonry.api"
 disable = [
     # Disable missing module docstring since we provide docs through the
     # docstrings of classes and functions.
-    "missing-module-docstring"
+    "missing-module-docstring",
+    # We have a lot of classes just holding information so we are not bothered
+    # by them having less than two public methods.
+    "too-few-public-methods",
+    # A lot can go wrong under the hood so we catch broadly in multiple places
+    # to report nice errors and skip failing parts if possible.
+    "broad-except",
 ]
 
 [tool.pylint.basic]

@@ -4,7 +4,7 @@ import traceback
 from typing import Dict, List, Set, Tuple, Union
 
 import numpy as np
-from lasso.dyna.ArrayType import ArrayType
+from lasso.dyna.array_type import ArrayType
 from lasso.femzip.femzip_api import FemzipAPI, FemzipFileMetadata, VariableInfo
 from lasso.femzip.fz_config import FemzipArrayType, FemzipVariableCategory, get_last_int_of_line
 
@@ -350,13 +350,15 @@ def femzip_to_d3plot(
     result_arrays:
         femzip arrays
     """
-    a = FemzipMapper()
-    a.map(result_arrays)
+    mapper = FemzipMapper()
+    mapper.map(result_arrays)
 
-    return a.d3plot_arrays
+    return mapper.d3plot_arrays
 
 
 class ArrayShapeInfo:
+    """ArrayShapeInfo describes the shape of arrays"""
+
     n_layers: Union[int, None] = None
     n_vars: Union[int, None] = None
     n_entries: Union[int, None] = None
@@ -393,6 +395,8 @@ class ArrayShapeInfo:
 
 
 class D3plotArrayMapping:
+    """D3plotArrayMapping maps femzip arrays to d3plot arrays"""
+
     d3plot_array_type: str
     d3_layer_slice: Union[slice, int, None] = None
     d3_var_slice: Union[slice, int, None] = None
@@ -412,6 +416,8 @@ class D3plotArrayMapping:
 
 
 class FemzipArrayInfo:
+    """FemzipArrayInfo contains information about the femzip array"""
+
     full_name: str = ""
     short_name: str = ""
     index: int = -1
@@ -439,10 +445,7 @@ class FemzipArrayInfo:
 
 
 class FemzipMapper:
-    """Class for mapping femzip variable data to d3plots.
-
-    Takes no arguments.
-    """
+    """Class for mapping femzip variable data to d3plots."""
 
     # regex pattern for reading variables
     name_separation_pattern = re.compile(r"(^[^(\n]+)(\([^\)]+\))*")

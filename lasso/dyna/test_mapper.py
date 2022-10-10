@@ -4,8 +4,8 @@ from unittest import TestCase
 import numpy as np
 
 from ..femzip.fz_config import FemzipArrayType, FemzipVariableCategory
-from .ArrayType import ArrayType
-from .FemzipMapper import FemzipMapper
+from .array_type import ArrayType
+from .femzip_mapper import FemzipMapper
 
 part_global_femzip_translations: Dict[Tuple[FemzipArrayType, FemzipVariableCategory], Set[str]] = {
     # GLOBAL
