@@ -2128,8 +2128,8 @@ class D3plot:
 
             if test_nummat != self.header.n_parts:
                 raise RuntimeError(
-                    "nmmat (header) != nmmat (material type data): %d != %d"
-                    % (self.header.n_parts, test_nummat)
+                    "nmmat (header) != nmmat (material type data): "
+                    f"{self.header.n_parts} != {test_nummat}",
                 )
 
             self.arrays[ArrayType.part_material_type] = self._buffer.read_ndarray(
@@ -2140,14 +2140,13 @@ class D3plot:
         except Exception:
             # print info
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_material_section", trb_msg))
+            LOGGER.warning("A failure in %s was caught:\n%s", "_read_material_section", trb_msg)
 
             # fix position
             position = original_position + blocksize
 
         self.geometry_section_size = position
-        LOGGER.debug("_read_material_section end at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_material_section end at byte %d", self.geometry_section_size)
 
     def _read_fluid_material_data(self):
         """Read the fluid material data"""
@@ -2158,9 +2157,7 @@ class D3plot:
         if self.header.n_ale_materials == 0:
             return
 
-        LOGGER.debug(
-            "_read_fluid_material_data start at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_fluid_material_data start at byte %d", self.geometry_section_size)
 
         position = self.geometry_section_size
 
@@ -2180,15 +2177,15 @@ class D3plot:
 
             # print info
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_fluid_material_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_fluid_material_data", trb_msg)
 
             # fix position
             position = original_position + blocksize
 
         # remember position
         self.geometry_section_size = position
-        LOGGER.debug("_read_fluid_material_data end at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_fluid_material_data end at byte %d", self.geometry_section_size)
 
     def _read_sph_element_data_flags(self):
         """Read the sph element data flags"""
@@ -2199,9 +2196,7 @@ class D3plot:
         if not self.header.n_sph_nodes:
             return
 
-        LOGGER.debug(
-            "_read_sph_element_data_flags start at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_sph_element_data_flags start at byte %d", self.geometry_section_size)
 
         position = self.geometry_section_size
 
@@ -2235,8 +2230,11 @@ class D3plot:
         self._sph_info.n_sph_history_vars = sph_header_data["isphfg11"]
 
         if self._sph_info.n_sph_array_length != 11:
-            msg = "Detected inconsistency: isphfg = {0} but must be 11."
-            raise RuntimeError(msg.format(self._sph_info.n_sph_array_length))
+            msg = (
+                "Detected inconsistency: "
+                f"isphfg = {self._sph_info.n_sph_array_length} but must be 11."
+            )
+            raise RuntimeError(msg)
 
         self._sph_info.n_sph_vars = (
             sph_header_data["isphfg2"]
@@ -2253,9 +2251,7 @@ class D3plot:
         )  # material number
 
         self.geometry_section_size += sph_header_data["isphfg1"] * self.header.wordsize
-        LOGGER.debug(
-            "_read_sph_element_data_flags end at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_sph_element_data_flags end at byte %d", self.geometry_section_size)
 
     def _read_particle_data(self):
         """Read the geometry section for particle data (airbags)"""
@@ -2271,7 +2267,7 @@ class D3plot:
         if npefg <= 0 or npefg > 10000000:
             return
 
-        LOGGER.debug("_read_particle_data start at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_particle_data start at byte %d", self.geometry_section_size)
 
         position = self.geometry_section_size
 
@@ -2342,23 +2338,24 @@ class D3plot:
 
             # print info
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_particle_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_particle_data", trb_msg)
 
             # fix position
             position = original_position + blocksize
 
         # update position marker
         self.geometry_section_size = position
-        LOGGER.debug("_read_particle_data start at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_particle_data start at byte %d", self.geometry_section_size)
 
+    # pylint: disable = too-many-branches
     def _read_geometry_data(self):
         """Read the data from the geometry section"""
 
         if not self._buffer:
             return
 
-        LOGGER.debug("_read_geometry_data start at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_geometry_data start at byte %d", self.geometry_section_size)
 
         # not sure but I think never used by LS-Dyna
         # anyway needs to be detected in the header and not here,
@@ -2382,8 +2379,8 @@ class D3plot:
             self.arrays[ArrayType.node_coordinates] = node_coordinates
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_geometry_data, node_coordinates", trb_msg))
+            msg = "A failure in %d was caught:\n%s"
+            LOGGER.warning(msg, "_read_geometry_data, node_coordinates", trb_msg)
         finally:
             position += section_word_length * self.header.wordsize
 
@@ -2400,8 +2397,8 @@ class D3plot:
             self.arrays[ArrayType.element_solid_part_indexes] = solid_part_indexes - FORTRAN_OFFSET
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_geometry_data, solids_geometry", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_geometry_data, solids_geometry", trb_msg)
         finally:
             position += section_word_length * self.header.wordsize
 
@@ -2418,8 +2415,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_geometry_data, ten_node_solids", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_geometry_data, ten_node_solids", trb_msg)
             finally:
                 position += section_word_length * self.header.wordsize
 
@@ -2438,8 +2435,8 @@ class D3plot:
             )
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_geometry_data, tshells_geometry", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_geometry_data, tshells_geometry", trb_msg)
         finally:
             position += section_word_length * self.header.wordsize
 
@@ -2456,8 +2453,8 @@ class D3plot:
             )
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_geometry_data, beams_geometry", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_geometry_data, beams_geometry", trb_msg)
         finally:
             position += section_word_length * self.header.wordsize
 
@@ -2476,15 +2473,15 @@ class D3plot:
             )
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_geometry_data, shells_geometry", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_geometry_data, shells_geometry", trb_msg)
         finally:
             position += section_word_length * self.header.wordsize
 
         # update word position
         self.geometry_section_size = position
 
-        LOGGER.debug("_read_geometry_data end at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_geometry_data end at byte %d", self.geometry_section_size)
 
     def _read_user_ids(self):
 
@@ -2512,7 +2509,7 @@ class D3plot:
             )
             return
 
-        LOGGER.debug("_read_user_ids start at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_user_ids start at byte %d", self.geometry_section_size)
 
         position = self.geometry_section_size
 
@@ -2591,12 +2588,10 @@ class D3plot:
             if n_words_computed != self.header.n_numbering_section_words:
                 warn_msg = (
                     "ID section: The computed word count does "
-                    "not match the header word count: {0} != {1}."
+                    "not match the header word count: %d != %d."
                     " The ID arrays might contain errors."
                 )
-                LOGGER.warning(
-                    warn_msg.format(n_words_computed, self.header.n_numbering_section_words)
-                )
+                LOGGER.warning(warn_msg, n_words_computed, self.header.n_numbering_section_words)
             # node ids
             array_length = info.n_nodes * self.header.wordsize
             self.arrays[ArrayType.node_ids] = self._buffer.read_ndarray(
@@ -2643,10 +2638,10 @@ class D3plot:
 
                 if info.n_parts != self.header.n_parts:
                     err_msg = (
-                        "nmmat in the file header ({}) and in the "
-                        "numbering header ({}) are inconsistent."
+                        "nmmat in the file header (%d) and in the "
+                        "numbering header (%d) are inconsistent."
                     )
-                    raise RuntimeError(err_msg.format(self.header.n_parts, info.n_parts))
+                    raise RuntimeError(err_msg, self.header.n_parts, info.n_parts)
 
                 array_length = info.n_parts * self.header.wordsize
 
@@ -2671,15 +2666,15 @@ class D3plot:
         except Exception:
             # print info
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_user_ids", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_user_ids", trb_msg)
 
             # fix position
             position = original_position + blocksize
 
         # update position
         self.geometry_section_size = position
-        LOGGER.debug("_read_user_ids end at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_user_ids end at byte %d", self.geometry_section_size)
 
     def _read_rigid_body_description(self):
         """Read the rigid body description section"""
@@ -2690,9 +2685,7 @@ class D3plot:
         if not self.header.has_rigid_body_data:
             return
 
-        LOGGER.debug(
-            "_read_rigid_body_description start at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_rigid_body_description start at byte %d", self.geometry_section_size)
 
         position = self.geometry_section_size
 
@@ -2780,9 +2773,7 @@ class D3plot:
 
         # update position
         self.geometry_section_size = position
-        LOGGER.debug(
-            "_read_rigid_body_description end at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_rigid_body_description end at byte %d", self.geometry_section_size)
 
     def _read_sph_node_and_material_list(self):
         """Read SPH node and material list"""
@@ -2794,7 +2785,7 @@ class D3plot:
             return
 
         LOGGER.debug(
-            "_read_sph_node_and_material_list start at byte {}".format(self.geometry_section_size)
+            "_read_sph_node_and_material_list start at byte %d", self.geometry_section_size
         )
 
         position = self.geometry_section_size
@@ -2813,16 +2804,14 @@ class D3plot:
         except Exception:
             # print info
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_sph_node_and_material_list", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_sph_node_and_material_list", trb_msg)
 
         finally:
             # update position
             self.geometry_section_size += array_length
 
-        LOGGER.debug(
-            "_read_sph_node_and_material_list end at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_sph_node_and_material_list end at byte %d", self.geometry_section_size)
 
     def _read_particle_geometry_data(self):
         """Read the particle geometry data"""
@@ -2836,9 +2825,7 @@ class D3plot:
         if self.header.raw_header["npefg"] <= 0:
             return
 
-        LOGGER.debug(
-            "_read_particle_geometry_data start at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_particle_geometry_data start at byte %d", self.geometry_section_size)
 
         info = self._airbag_info
 
@@ -2871,8 +2858,8 @@ class D3plot:
         except Exception:
             # print info
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_particle_geometry_data", trb_msg))
+            msg = "A failure in %d was caught:\n%s"
+            LOGGER.warning(msg, "_read_particle_geometry_data", trb_msg)
 
             # fix position
             position = original_position + blocksize
@@ -2880,9 +2867,7 @@ class D3plot:
         # update position
         self.geometry_section_size = position
 
-        LOGGER.debug(
-            "_read_particle_geometry_data end at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_particle_geometry_data end at byte %d", self.geometry_section_size)
 
     def _read_rigid_road_surface(self):
         """Read rigid road surface data"""
@@ -2893,7 +2878,7 @@ class D3plot:
         if not self.header.has_rigid_road_surface:
             return
 
-        LOGGER.debug("_read_rigid_road_surface start at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_rigid_road_surface start at byte %d", self.geometry_section_size)
 
         position = self.geometry_section_size
 
@@ -2985,17 +2970,16 @@ class D3plot:
 
         # update position
         self.geometry_section_size = position
-        LOGGER.debug("_read_rigid_road_surface end at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_rigid_road_surface end at byte %d", self.geometry_section_size)
 
+    # pylint: disable = too-many-branches
     def _read_extra_node_connectivity(self):
         """Read the extra node data for creepy elements"""
 
         if not self._buffer:
             return
 
-        LOGGER.debug(
-            "_read_extra_node_connectivity start at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_extra_node_connectivity start at byte %d", self.geometry_section_size)
 
         position = self.geometry_section_size
 
@@ -3011,8 +2995,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid10", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid10", trb_msg)
             finally:
                 position += array_length
 
@@ -3031,8 +3015,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, shell8", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, shell8", trb_msg)
             finally:
                 position += array_length
 
@@ -3051,8 +3035,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid20", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid20", trb_msg)
             finally:
                 position += array_length
 
@@ -3074,8 +3058,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid27", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid27", trb_msg)
             finally:
                 position += array_length
 
@@ -3097,8 +3081,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid21p", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid21p", trb_msg)
             finally:
                 position += array_length
 
@@ -3121,8 +3105,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid15t", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid15t", trb_msg)
             finally:
                 position += array_length
 
@@ -3141,8 +3125,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid20t", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid20t", trb_msg)
             finally:
                 position += array_length
 
@@ -3161,8 +3145,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid40t", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid40t", trb_msg)
             finally:
                 position += array_length
 
@@ -3181,23 +3165,22 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid64t", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid64t", trb_msg)
             finally:
                 position += array_length
 
         # update position
         self.geometry_section_size = position
 
-        LOGGER.debug(
-            "_read_extra_node_connectivity end at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_extra_node_connectivity end at byte %d", self.geometry_section_size)
 
+    # pylint: disable = too-many-branches
     @classmethod
     def _read_header_part_contact_interface_titles(
         cls,
         header: D3plotHeader,
-        bb: Union[BinaryBuffer, None],
+        buffer: Union[BinaryBuffer, None],
         geometry_section_size: int,
         arrays: dict,
     ) -> int:
@@ -3220,7 +3203,7 @@ class D3plot:
             new size of the geometry section
         """
 
-        if not bb:
+        if not buffer:
             return geometry_section_size
 
         if header.filetype not in (
@@ -3231,9 +3214,7 @@ class D3plot:
             return geometry_section_size
 
         LOGGER.debug(
-            "_read_header_part_contact_interface_titles start at byte {}".format(
-                geometry_section_size
-            )
+            "_read_header_part_contact_interface_titles start at byte %d", geometry_section_size
         )
 
         position = geometry_section_size
@@ -3248,7 +3229,7 @@ class D3plot:
         try:
             # there is only output if there is an eof marker
             # at least I think I fixed such a bug in the past
-            if not cls._is_end_of_file_marker(bb, position, header.ftype):
+            if not cls._is_end_of_file_marker(buffer, position, header.ftype):
                 return geometry_section_size
 
             position += header.wordsize
@@ -3257,7 +3238,7 @@ class D3plot:
             ntypes = []
 
             # read first ntype
-            current_ntype = bb.read_number(position, header.itype)
+            current_ntype = buffer.read_number(position, header.itype)
 
             while current_ntype in [90000, 90001, 90002, 90020]:
 
@@ -3273,7 +3254,7 @@ class D3plot:
                     titles_wordsize = 4
 
                     array_length = 18 * titles_wordsize
-                    header.title2 = bb.read_text(position, array_length)
+                    header.title2 = buffer.read_text(position, array_length)
                     position += array_length
 
                 # some title output
@@ -3283,7 +3264,7 @@ class D3plot:
                     position += header.wordsize
 
                     # number of parts
-                    entry_count = bb.read_number(position, header.itype)
+                    entry_count = buffer.read_number(position, header.itype)
                     position += header.wordsize
 
                     # Bugfix:
@@ -3296,7 +3277,7 @@ class D3plot:
                         [("ids", header.itype), ("titles", "S" + str(18 * titles_wordsize))]
                     )
                     array_length = (header.wordsize + 18 * titles_wordsize) * int(entry_count)
-                    tmp_arrays = bb.read_ndarray(position, array_length, 1, array_type)
+                    tmp_arrays = buffer.read_ndarray(position, array_length, 1, array_type)
                     position += array_length
 
                     # save stuff
@@ -3317,7 +3298,7 @@ class D3plot:
                     position += header.wordsize
 
                     # number of keywords
-                    nline = bb.read_number(position, header.itype)
+                    nline = buffer.read_number(position, header.itype)
                     position += header.wordsize
 
                     # Bugfix:
@@ -3327,7 +3308,7 @@ class D3plot:
 
                     # keywords
                     array_length = 20 * titles_wordsize * int(nline)
-                    d3prop_keywords = bb.read_ndarray(
+                    d3prop_keywords = buffer.read_ndarray(
                         position, array_length, 1, np.dtype("S" + str(titles_wordsize * 20))
                     )
                     position += array_length
@@ -3337,27 +3318,25 @@ class D3plot:
 
                 # not sure whether there is an eof file here
                 # do not have a test file to check ...
-                if cls._is_end_of_file_marker(bb, position, header.ftype):
+                if cls._is_end_of_file_marker(buffer, position, header.ftype):
                     position += header.wordsize
 
                 # next one
-                if bb.size <= position:
+                if buffer.size <= position:
                     break
-                current_ntype = bb.read_number(position, header.itype)
+                current_ntype = buffer.read_number(position, header.itype)
 
             header.n_types = tuple(ntypes)
 
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_header_part_contact_interface_titles", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_header_part_contact_interface_titles", trb_msg)
 
         # remember position
         geometry_section_size = position
         LOGGER.debug(
-            "_read_header_part_contact_interface_titles end at byte {}".format(
-                geometry_section_size
-            )
+            "_read_header_part_contact_interface_titles end at byte %d", geometry_section_size
         )
 
         return geometry_section_size
@@ -3404,10 +3383,6 @@ class D3plot:
         # (1) ARRAY SHAPES
         # general
         n_dim = header.n_dimensions
-        # parts
-        n_parts = n_parts
-        # rigid walls
-        n_rigid_walls = n_rigid_walls
         # nodes
         n_nodes = header.n_nodes
         # solids
@@ -3614,9 +3589,8 @@ class D3plot:
                 array_dict[array_name] = np.empty(state_array_shapes[array_name], dtype=array_dtype)
             else:
                 raise ValueError(
-                    "Array '{0}' is not a state array. Please try one of: {1}".format(
-                        array_name, list(state_array_shapes.keys())
-                    )
+                    f"Array '{array_name}' is not a state array. "
+                    f"Please try one of: {list(state_array_shapes.keys())}",
                 )
 
     @staticmethod
@@ -3788,11 +3762,11 @@ class D3plot:
             return
 
         LOGGER.debug("-------- S T A T E S --------")
-        LOGGER.debug("_read_states with geom offset {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_states with geom offset %d", self.geometry_section_size)
 
         # (0) OFFSETS
         bytes_per_state = self._compute_n_bytes_per_state()
-        LOGGER.debug("bytes_per_state: {}".format(bytes_per_state))
+        LOGGER.debug("bytes_per_state: %d", bytes_per_state)
 
         # load the memory from the files
         if self._femzip_info.use_femzip:
@@ -3922,7 +3896,7 @@ class D3plot:
             updated variable index after reading the section
         """
 
-        LOGGER.debug("_read_states_global_section start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_global_section start at var_index %d", var_index)
 
         # we wrap globals, parts and rigid walls into a single try
         # catch block since in the header the global section is
@@ -3946,13 +3920,13 @@ class D3plot:
         except Exception:
             # print
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_global_section", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_global_section", trb_msg)
         finally:
             timestep_var_size = 1
             var_index = original_var_index + self.header.n_global_vars + timestep_var_size
 
-        LOGGER.debug("_read_states_global_section end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_global_section end at var_index %d", var_index)
 
         return var_index
 
@@ -4132,7 +4106,7 @@ class D3plot:
         if self.header.n_nodes <= 0:
             return var_index
 
-        LOGGER.debug("_read_states_nodes start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_nodes start at var_index %d", var_index)
 
         n_dim = self.header.n_dimensions
         n_states = state_data.shape[0]
@@ -4147,8 +4121,8 @@ class D3plot:
                 array_dict[ArrayType.node_displacement] = tmp_array
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_displacement", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_displacement", trb_msg)
             finally:
                 var_index += n_dim * n_nodes
 
@@ -4163,8 +4137,8 @@ class D3plot:
                     ]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_nodes, node_temperatures", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_nodes, node_temperatures", trb_msg)
                 finally:
                     var_index += n_nodes
             # node temperature layers
@@ -4176,10 +4150,8 @@ class D3plot:
                     array_dict[ArrayType.node_temperature] = tmp_array
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(
-                        msg.format("_read_states_nodes, node_temperatures_layers", trb_msg)
-                    )
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_nodes, node_temperatures_layers", trb_msg)
                 finally:
                     var_index += 3 * n_nodes
 
@@ -4192,8 +4164,8 @@ class D3plot:
                 array_dict[ArrayType.node_heat_flux] = tmp_array
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_heat_flux", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_heat_flux", trb_msg)
             finally:
                 var_index += 3 * n_nodes
 
@@ -4205,8 +4177,8 @@ class D3plot:
                 ]
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_mass_scaling", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_mass_scaling", trb_msg)
             finally:
                 var_index += n_nodes
 
@@ -4219,8 +4191,8 @@ class D3plot:
                 ]
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_temperature_gradient", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_temperature_gradient", trb_msg)
             finally:
                 var_index += n_nodes
 
@@ -4233,8 +4205,8 @@ class D3plot:
                 ].reshape((n_states, n_nodes, 3))
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_residual_forces", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_residual_forces", trb_msg)
             finally:
                 var_index += n_nodes * 3
 
@@ -4245,8 +4217,8 @@ class D3plot:
                 ].reshape((n_states, n_nodes, 3))
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_residual_moments", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_residual_moments", trb_msg)
             finally:
                 var_index += n_nodes * 3
 
@@ -4259,8 +4231,8 @@ class D3plot:
                 array_dict[ArrayType.node_velocity] = tmp_array
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_velocity", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_velocity", trb_msg)
             finally:
                 var_index += n_dim * n_nodes
 
@@ -4273,12 +4245,12 @@ class D3plot:
                 array_dict[ArrayType.node_acceleration] = tmp_array
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_acceleration", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_acceleration", trb_msg)
             finally:
                 var_index += n_dim * n_nodes
 
-        LOGGER.debug("_read_states_nodes end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_nodes end at var_index %d", var_index)
 
         return var_index
 
@@ -4305,7 +4277,7 @@ class D3plot:
         if self.header.n_solid_thermal_vars <= 0:
             return var_index
 
-        LOGGER.debug("_read_states_solids_thermal start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_solids_thermal start at var_index %d", var_index)
 
         n_states = state_data.shape[0]
         n_solids = self.header.n_solids
@@ -4318,12 +4290,12 @@ class D3plot:
             )
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_solids_thermal", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_solids_thermal", trb_msg)
         finally:
             var_index += n_thermal_vars * n_solids
 
-        LOGGER.debug("_read_states_solids_thermal end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_solids_thermal end at var_index %d", var_index)
 
         return var_index
 
@@ -4348,7 +4320,7 @@ class D3plot:
         if self.header.n_solids <= 0 or self.header.n_solid_vars <= 0:
             return var_index
 
-        LOGGER.debug("_read_states_solids start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_solids start at var_index %d", var_index)
 
         n_solid_vars = self.header.n_solid_vars
         n_solids = self.header.n_solids
@@ -4386,8 +4358,8 @@ class D3plot:
                     array_dict[ArrayType.element_solid_stress] = solid_state_data[:, :, :, :6]
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_solids, stress", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_solids, stress", trb_msg)
             finally:
                 i_solid_var += 6 * self.header.has_solid_stress
 
@@ -4400,8 +4372,8 @@ class D3plot:
                     ].reshape((n_states, n_solids, n_solid_layers))
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_solids, eff_plastic_strain", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_solids, eff_plastic_strain", trb_msg)
             finally:
                 i_solid_var += 1 * self.header.has_solid_pstrain
 
@@ -4413,8 +4385,8 @@ class D3plot:
                     ]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_solids, history_variables", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_solids, history_variables", trb_msg)
                 finally:
                     i_solid_var += n_history_vars
 
@@ -4434,8 +4406,8 @@ class D3plot:
                         del array_dict[ArrayType.element_solid_history_variables]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_solids, strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_solids, strain", trb_msg)
 
             # plastic strain tensor
             if self.header.has_solid_shell_plastic_strain_tensor:
@@ -4445,11 +4417,9 @@ class D3plot:
                     ]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
+                    msg = "A failure in %s was caught:\n%s"
                     LOGGER.warning(
-                        msg.format(
-                            "_read_states_solids, element_solid_plastic_strain_tensor", trb_msg
-                        )
+                        msg, "_read_states_solids, element_solid_plastic_strain_tensor", trb_msg
                     )
                 finally:
                     i_solid_var += 6
@@ -4462,11 +4432,9 @@ class D3plot:
                     ]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
+                    msg = "A failure in %s was caught:\n%s"
                     LOGGER.warning(
-                        msg.format(
-                            "_read_states_solids, element_solid_thermal_strain_tensor", trb_msg
-                        )
+                        msg, "_read_states_solids, element_solid_thermal_strain_tensor", trb_msg
                     )
                 finally:
                     i_solid_var += 6
@@ -4474,13 +4442,13 @@ class D3plot:
         # catch formatting in solid_state_datra
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_solids, solid_state_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_solids, solid_state_data", trb_msg)
         # always increment variable count
         finally:
             var_index += n_solids * n_solid_vars
 
-        LOGGER.debug("_read_states_solids end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_solids end at var_index %d", var_index)
 
         return var_index
 
@@ -4505,7 +4473,7 @@ class D3plot:
         if self.header.n_thick_shells <= 0 or self.header.n_thick_shell_vars <= 0:
             return var_index
 
-        LOGGER.debug("_read_states_tshell start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_tshell start at var_index %d", var_index)
 
         n_states = state_data.shape[0]
         n_tshells = self.header.n_thick_shells
@@ -4527,10 +4495,10 @@ class D3plot:
 
             if n_tshell_vars2 != n_thsell_vars:
                 msg = (
-                    "n_tshell_vars != n_tshell_vars_computed: {} != {}."
-                    + " Thick shell variables might be wrong."
+                    "n_tshell_vars != n_tshell_vars_computed: %d != %d."
+                    " Thick shell variables might be wrong."
                 )
-                LOGGER.warning(msg.format(n_thsell_vars, n_tshell_vars2))
+                LOGGER.warning(msg, n_thsell_vars, n_tshell_vars2)
 
             # thick shell element data
             tshell_data = state_data[:, var_index : var_index + n_thsell_vars * n_tshells]
@@ -4550,8 +4518,8 @@ class D3plot:
                     ].reshape((n_states, n_tshells, n_layers, 6))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_tshell, stress", trb_msg))
+                    msg = "A failure in %d was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_tshell, stress", trb_msg)
                 finally:
                     i_tshell_layer_var += 6
 
@@ -4565,8 +4533,8 @@ class D3plot:
                     )
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_tshell, eff_plastic_strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_tshell, eff_plastic_strain", trb_msg)
                 finally:
                     i_tshell_layer_var += 1
 
@@ -4578,8 +4546,8 @@ class D3plot:
                     ].reshape((n_states, n_tshells, n_layers, n_history_vars))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_tshell, history_variables", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_tshell, history_variables", trb_msg)
 
             # STRAIN (only non layer data for tshells)
             if n_strain_vars:
@@ -4590,17 +4558,17 @@ class D3plot:
                     )
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_tshell, strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_tshell, strain", trb_msg)
 
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_tshell, tshell_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_tshell, tshell_data", trb_msg)
         finally:
             var_index += n_thsell_vars * n_tshells
 
-        LOGGER.debug("_read_states_tshell end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_tshell end at var_index %d", var_index)
 
         return var_index
 
@@ -4625,11 +4593,13 @@ class D3plot:
         if self.header.n_beams <= 0 or self.header.n_beam_vars <= 0:
             return var_index
 
-        LOGGER.debug("_read_states_beams start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_beams start at var_index %d", var_index)
 
         # usual beam vars
+        # pylint: disable = invalid-name
         N_BEAM_BASIC_VARS = 6
         # beam intergration point vars
+        # pylint: disable = invalid-name
         N_BEAM_IP_VARS = 5
 
         n_states = state_data.shape[0]
@@ -4660,8 +4630,8 @@ class D3plot:
                 ].reshape((n_states, n_beams))
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_beams, axial_force", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_beams, axial_force", trb_msg)
 
             # shear force
             try:
@@ -4670,8 +4640,8 @@ class D3plot:
                 ].reshape((n_states, n_beams, 2))
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_beams, shear_force", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_beams, shear_force", trb_msg)
 
             # bending moment
             try:
@@ -4680,8 +4650,8 @@ class D3plot:
                 ].reshape((n_states, n_beams, 2))
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_beams, bending_moment", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_beams, bending_moment", trb_msg)
 
             # torsion moment
             try:
@@ -4690,8 +4660,8 @@ class D3plot:
                 ].reshape((n_states, n_beams))
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_beams, torsion_moment", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_beams, torsion_moment", trb_msg)
 
             if n_layers:
 
@@ -4706,32 +4676,32 @@ class D3plot:
                     array_dict[ArrayType.element_beam_axial_stress] = beam_layer_data[:, :, :, 0]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_beams, axial_stress", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_beams, axial_stress", trb_msg)
 
                 # shear stress
                 try:
                     array_dict[ArrayType.element_beam_shear_stress] = beam_layer_data[:, :, :, 1:3]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_beams, shear_stress", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_beams, shear_stress", trb_msg)
 
                 # eff. plastic strain
                 try:
                     array_dict[ArrayType.element_beam_plastic_strain] = beam_layer_data[:, :, :, 3]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_beams, eff_plastic_strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_beams, eff_plastic_strain", trb_msg)
 
                 # axial strain
                 try:
                     array_dict[ArrayType.element_beam_axial_strain] = beam_layer_data[:, :, :, 4]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_beams, axial_strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_beams, axial_strain", trb_msg)
 
             # history vars
             if n_history_vars:
@@ -4741,19 +4711,19 @@ class D3plot:
                     ].reshape((n_states, n_beams, 3 + n_layers, n_history_vars))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_beams, history_variables", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_beams, history_variables", trb_msg)
 
         # failure of formatting beam state data
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_beams, beam_state_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_beams, beam_state_data", trb_msg)
         # always increment variable index
         finally:
             var_index += n_beams * n_beam_vars
 
-        LOGGER.debug("_read_states_beams end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_beams end at var_index %d", var_index)
 
         return var_index
 
@@ -4789,7 +4759,7 @@ class D3plot:
         if self.header.n_shell_vars <= 0 or n_reduced_shells <= 0:
             return var_index
 
-        LOGGER.debug("_read_states_shell start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_shell start at var_index %d", var_index)
 
         n_states = state_data.shape[0]
         n_shells = n_reduced_shells
@@ -4819,10 +4789,10 @@ class D3plot:
 
             if n_shell_vars != n_shell_vars2:
                 msg = (
-                    "n_shell_vars != n_shell_vars_computed: {} != {}."
-                    + " Shell variables might be wrong."
+                    "n_shell_vars != n_shell_vars_computed: %d != %d."
+                    " Shell variables might be wrong."
                 )
-                LOGGER.warning(msg.format(n_shell_vars, n_shell_vars2))
+                LOGGER.warning(msg, n_shell_vars, n_shell_vars2)
 
             n_layer_vars = n_layers * (n_stress_vars + n_pstrain_vars + n_history_vars)
 
@@ -4845,8 +4815,8 @@ class D3plot:
                     ].reshape((n_states, n_shells, n_layers, n_stress_vars))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_shells, stress", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_shells, stress", trb_msg)
                 finally:
                     layer_var_index += n_stress_vars
 
@@ -4858,8 +4828,8 @@ class D3plot:
                     ].reshape((n_states, n_shells, n_layers))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_shells, stress", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_shells, stress", trb_msg)
                 finally:
                     layer_var_index += 1
 
@@ -4871,8 +4841,8 @@ class D3plot:
                     ].reshape((n_states, n_shells, n_layers, n_history_vars))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_shells, history_variables", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_shells, history_variables", trb_msg)
                 finally:
                     layer_var_index += n_history_vars
 
@@ -4892,8 +4862,8 @@ class D3plot:
                     ].reshape((n_states, n_shells, 3))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_shells, forces", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_shells, forces", trb_msg)
                 finally:
                     nonlayer_var_index += n_force_variables
 
@@ -4908,8 +4878,8 @@ class D3plot:
                     ].reshape((n_states, n_shells, 2))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_shells, history_variables", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_shells, history_variables", trb_msg)
                 finally:
                     nonlayer_var_index += 3
 
@@ -4924,8 +4894,8 @@ class D3plot:
                     )
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_shells, strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_shells, strain", trb_msg)
                 finally:
                     nonlayer_var_index += n_strain_vars
 
@@ -4937,8 +4907,8 @@ class D3plot:
                     ].reshape((n_states, n_shells))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_shells, internal_energy", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_shells, internal_energy", trb_msg)
 
             # PLASTIC STRAIN TENSOR
             if n_plastic_strain_tensor:
@@ -4951,11 +4921,9 @@ class D3plot:
                     ] = pstrain_tensor.reshape((n_states, n_shells, n_layers, 6))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
+                    msg = "A failure in %s was caught:\n%s"
                     LOGGER.warning(
-                        msg.format(
-                            "_read_states_shells, element_shell_plastic_strain_tensor", trb_msg
-                        )
+                        msg, "_read_states_shells, element_shell_plastic_strain_tensor", trb_msg
                     )
                 finally:
                     nonlayer_var_index += n_plastic_strain_tensor
@@ -4971,11 +4939,9 @@ class D3plot:
                     ] = thermal_tensor.reshape((n_states, n_shells, 6))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
+                    msg = "A failure in %s was caught:\n%s"
                     LOGGER.warning(
-                        msg.format(
-                            "_read_states_shells, element_shell_thermal_strain_tensor", trb_msg
-                        )
+                        msg, "_read_states_shells, element_shell_thermal_strain_tensor", trb_msg
                     )
                 finally:
                     nonlayer_var_index += n_thermal_strain_tensor
@@ -4983,14 +4949,14 @@ class D3plot:
         # error in formatting shell state data
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_shell, shell_state_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_shell, shell_state_data", trb_msg)
 
         # always increment variable index
         finally:
             var_index += n_shell_vars * n_shells
 
-        LOGGER.debug("_read_states_shell end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_shell end at var_index %d", var_index)
 
         return var_index
 
@@ -5017,7 +4983,7 @@ class D3plot:
         if not self.header.has_node_deletion_data and not self.header.has_element_deletion_data:
             return var_index
 
-        LOGGER.debug("_read_states_is_alive start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_is_alive start at var_index %s", var_index)
 
         n_states = state_data.shape[0]
 
@@ -5032,8 +4998,8 @@ class D3plot:
                     ]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_is_alive, nodes", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_is_alive, nodes", trb_msg)
                 finally:
                     var_index += n_nodes
 
@@ -5053,8 +5019,8 @@ class D3plot:
                     ].reshape((n_states, n_solids))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_is_alive, solids", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_is_alive, solids", trb_msg)
                 finally:
                     var_index += n_solids
 
@@ -5066,8 +5032,8 @@ class D3plot:
                     ].reshape((n_states, n_tshells))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_is_alive, solids", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_is_alive, solids", trb_msg)
                 finally:
                     var_index += n_tshells
 
@@ -5079,8 +5045,8 @@ class D3plot:
                     ].reshape((n_states, n_shells))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_is_alive, shells", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_is_alive, shells", trb_msg)
                 finally:
                     var_index += n_shells
 
@@ -5092,12 +5058,12 @@ class D3plot:
                     ].reshape((n_states, n_beams))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_is_alive, beams", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_is_alive, beams", trb_msg)
                 finally:
                     var_index += n_beams
 
-        LOGGER.debug("_read_states_is_alive end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_is_alive end at var_index %d", var_index)
 
         return var_index
 
@@ -5122,7 +5088,7 @@ class D3plot:
         if self.header.n_sph_nodes <= 0:
             return var_index
 
-        LOGGER.debug("_read_states_sph start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_sph start at var_index %d", var_index)
 
         info = self._sph_info
         n_states = state_data.shape[0]
@@ -5140,8 +5106,8 @@ class D3plot:
                 array_dict[ArrayType.sph_deletion] = sph_data[:, 0] < 0
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_sph, deletion", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_sph, deletion", trb_msg)
 
             # particle radius
             if info.has_influence_radius:
@@ -5149,8 +5115,8 @@ class D3plot:
                     array_dict[ArrayType.sph_radius] = sph_data[:, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, radius", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, radius", trb_msg)
                 finally:
                     i_var += 1
 
@@ -5160,8 +5126,8 @@ class D3plot:
                     array_dict[ArrayType.sph_pressure] = sph_data[:, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, pressure", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, pressure", trb_msg)
                 finally:
                     i_var += 1
 
@@ -5173,8 +5139,8 @@ class D3plot:
                     ].reshape((n_states, n_particles, 6))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, pressure", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, pressure", trb_msg)
                 finally:
                     i_var += 6 * n_particles
 
@@ -5184,8 +5150,8 @@ class D3plot:
                     array_dict[ArrayType.sph_effective_plastic_strain] = sph_data[:, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, eff_plastic_strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, eff_plastic_strain", trb_msg)
                 finally:
                     i_var += 1
 
@@ -5195,8 +5161,8 @@ class D3plot:
                     array_dict[ArrayType.sph_density] = sph_data[:, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, density", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, density", trb_msg)
                 finally:
                     i_var += 1
 
@@ -5206,8 +5172,8 @@ class D3plot:
                     array_dict[ArrayType.sph_internal_energy] = sph_data[:, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, internal_energy", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, internal_energy", trb_msg)
                 finally:
                     i_var += 1
 
@@ -5217,8 +5183,8 @@ class D3plot:
                     array_dict[ArrayType.sph_n_neighbors] = sph_data[:, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, n_neighbors", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, n_neighbors", trb_msg)
                 finally:
                     i_var += 1
 
@@ -5231,8 +5197,8 @@ class D3plot:
                     ].reshape((n_states, n_particles, 6))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, strain", trb_msg)
                 finally:
                     i_var += 6 * n_particles
 
@@ -5242,8 +5208,8 @@ class D3plot:
                     ].reshape((n_states, n_particles, 6))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, strainrate", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, strainrate", trb_msg)
                 finally:
                     i_var += 6 * n_particles
 
@@ -5253,19 +5219,19 @@ class D3plot:
                     array_dict[ArrayType.sph_mass] = sph_data[:, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, pressure", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, pressure", trb_msg)
                 finally:
                     i_var += 1
 
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_sph, sph_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_sph, sph_data", trb_msg)
         finally:
             var_index += n_particles * n_variables
 
-        LOGGER.debug("_read_states_sph end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_sph end at var_index %d", var_index)
 
         return var_index
 
