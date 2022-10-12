@@ -5,7 +5,7 @@ import random
 import numpy as np
 import plotly.graph_objects as go
 
-from lasso.dyna.D3plot import ArrayType, D3plot
+from lasso.dyna.d3plot import ArrayType, D3plot
 
 
 def create_fake_d3plots(

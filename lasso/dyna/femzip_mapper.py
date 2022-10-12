@@ -8,6 +8,7 @@ from lasso.dyna.array_type import ArrayType
 from lasso.femzip.femzip_api import FemzipAPI, FemzipFileMetadata, VariableInfo
 from lasso.femzip.fz_config import FemzipArrayType, FemzipVariableCategory, get_last_int_of_line
 
+
 TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE: Dict[
     Tuple[FemzipArrayType, FemzipVariableCategory], Set[str]
 ] = {
@@ -373,18 +374,54 @@ class ArrayShapeInfo:
                 setattr(self, attr_name, max(self_attr_value, value))
 
     def set_n_layers(self, n_layers: Union[int, None]) -> None:
+        """Set the number of layers
+
+        Parameters
+        ----------
+        n_layers : Union[int, None]
+            number of layers
+        """
         self._set_attr("n_layers", n_layers)
 
     def set_n_vars(self, n_vars: Union[int, None]) -> None:
+        """Set the number of variables
+
+        Parameters
+        ----------
+        n_vars : Union[int, None]
+            number of variables
+        """
         self._set_attr("n_vars", n_vars)
 
     def set_n_entries(self, n_entries: Union[int, None]) -> None:
+        """Set the number of entries
+
+        Parameters
+        ----------
+        n_vars : Union[int, None]
+            number of entries
+        """
         self._set_attr("n_entries", n_entries)
 
     def set_n_timesteps(self, n_timesteps: Union[int, None]) -> None:
+        """Set the number of timesteps
+
+        Parameters
+        ----------
+        n_vars : Union[int, None]
+            number of timesteps
+        """
         self._set_attr("n_timesteps", n_timesteps)
 
     def to_shape(self) -> Tuple[int, ...]:
+        """Set the number of variables
+
+        Returns
+        ----------
+        shape : Tuple[int, ...]
+            total shape
+        """
+
         shape = [self.n_timesteps, self.n_entries]
         fortran_offset = 1
         if self.n_layers is not None:
@@ -407,6 +444,12 @@ class D3plotArrayMapping:
     just_assign: bool = False
 
     def to_slice(self) -> Tuple[Union[int, slice], ...]:
+        """Get the slices mapping a femzip array to a d3plot array
+
+        Returns
+        -------
+        slices: Tuple[Union[int, slice], ...]
+        """
         slices: List[Union[slice, int]] = [slice(None), slice(None)]
         if self.d3_layer_slice is not None:
             slices.append(self.d3_layer_slice)
@@ -417,6 +460,8 @@ class D3plotArrayMapping:
 
 class FemzipArrayInfo:
     """FemzipArrayInfo contains information about the femzip array"""
+
+    # pylint: disable = too-many-instance-attributes
 
     full_name: str = ""
     short_name: str = ""
@@ -453,6 +498,7 @@ class FemzipMapper:
     FORTRAN_OFFSET: int = 1
 
     _d3plot_arrays: Dict[str, np.ndarray] = {}
+    _fz_array_slices = {}
 
     def __init__(self):
         pass
@@ -766,8 +812,10 @@ def filter_femzip_variables(
         filtered array according to array types
     """
 
+    # pylint: disable = too-many-locals
+
     # find out which arrays we need and
-    vars_to_copy: List[int] = list()
+    vars_to_copy: List[int] = []
 
     for i_var in range(file_metadata.number_of_variables):
         try:
@@ -776,7 +824,7 @@ def filter_femzip_variables(
             var_index: int = var_info.var_index
             var_name: str = var_info.name.decode("utf-8")
 
-            logging.debug(f"{var_type}, {var_index}, {var_name.strip()}")
+            logging.debug("%d, %d, %s", var_type, var_index, var_name.strip())
 
             if var_type == FemzipVariableCategory.GEOMETRY.value:
                 continue
@@ -787,9 +835,9 @@ def filter_femzip_variables(
             except ValueError:
                 warn_msg = (
                     "Warning: lasso-python does not support femzip result"
-                    " field '{0}' category type '{1}'."
+                    f" field '{var_name.strip()}' category type '{var_type}'."
                 )
-                logging.warning(warn_msg.format(var_name.strip(), var_type))
+                logging.warning(warn_msg)
                 continue
 
             # check if we asked for the array
@@ -803,14 +851,15 @@ def filter_femzip_variables(
             vars_to_copy.append(i_var)
         except Exception:
             trb_msg = traceback.format_exc()
-            err_msg = "An error occurred while preprocessing femzip variable information: {0}"
-            logging.warning(err_msg.format(trb_msg))
+            err_msg = "An error occurred while preprocessing femzip variable information: %s"
+            logging.warning(err_msg, trb_msg)
 
     # copy filtered data
     filtered_file_metadata = FemzipFileMetadata()
     FemzipAPI.copy_struct(file_metadata, filtered_file_metadata)
     filtered_file_metadata.number_of_variables = len(vars_to_copy)
 
+    # pylint: disable = invalid-name
     FilteredVariableInfoArrayType = len(vars_to_copy) * VariableInfo
     filtered_info_array_data = FilteredVariableInfoArrayType()
 

@@ -7,7 +7,7 @@ from unittest import TestCase
 import struct
 import numpy as np
 
-from lasso.dyna.D3plot import D3plot, FilterType, _negative_to_positive_state_indexes
+from lasso.dyna.d3plot import D3plot, FilterType, _negative_to_positive_state_indexes
 from lasso.dyna.array_type import ArrayType
 
 

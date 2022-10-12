@@ -61,6 +61,8 @@ disable = [
 [tool.pylint.basic]
 # Test files and classes don't need linting
 ignore-pattern="^(_|test_|Test)"
+# Allow single or double char variable names
+good-names-rgxs="^[_a-z][_a-z0-9]?$"
 
 [tool.flake8]
 ignore = "E203"

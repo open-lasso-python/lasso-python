@@ -1,4 +1,4 @@
-from .D3plot import D3plot
+from .d3plot import D3plot
 from .Binout import Binout
 from .array_type import ArrayType
 from .filter_type import FilterType
