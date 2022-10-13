@@ -7,96 +7,6 @@ import pandas as pd
 
 from .lsda_py3 import Lsda
 
-"""
-# Recoded stuff from lsda from LSTC, but much more readable and quoted ...
-#
-class Diskfile:
-
-    # symbol = binary variable / python translation
-    # note: bolded means unsigned
-    #
-    # b = char / int
-    # h = short / int
-    # i = int   / int
-    # q = long long / int
-    # f = float  / float
-    # d = double / float
-    # s = char[] / string
-
-    packsize = [0,"b","h",0,"i",0,0,0,"q"]
-    packtype = [0,"b","h","i","q","B","H","I","Q","f","d","s"]
-    sizeof = [0,1,2,4,8,1,2,4,8,4,8,1] # packtype
-
-    ##
-    #
-    #
-    def __init__(self,filepath,mode="r"):
-
-        # This opens a file and mainly treats the header
-        #
-        # header[0] == header length & header offset ?!? | default=8 byte
-        # header[1] == lengthsize  | default = 8 byte
-        # header[2] == offsetsize  | default = 8 byte
-        # header[3] == commandsize | default = 1 byte
-        # header[4] == typesize    | default = 1 byte
-        # header[5] == file endian | default = 1 byte
-        # header[6] == ?           | default = 0 byte
-        # header[7] == ?           | default = 0 byte
-
-        # start init
-        self.filepath = filepath
-        self.mode = mode
-        self.file_ends = False
-
-        # open file ...
-        self.fp = open(filepath,mode+"b")
-        # ... in read mode yay
-        if mode == "r":
-            header = struct.unpack("BBBBBBBB",self.fp.read(8))
-            if header[0] > 8: #?!? some kind of header offset ?!?
-                self.fp.seek(header[0])
-        # ... in write mode
-        else:
-            header = [8,8,8,1,1,0,0,0]
-            if sys.byteorder == "big":
-                header[5] = 0
-            else:
-                header[5] = 1
-
-        # fetch byte length of several ... I honestly don't know what exactly
-        self.lengthsize    = header[1]
-        self.offsetsize    = header[2]
-        self.commandsize   = header[3]
-        self.typesize      = header[4]
-        self.ordercode = ">" if header[5] == 0 else '<' # endian
-
-        # again I have no idea what is going on ...
-        # these are some data unpacking format codes
-        self.ounpack  =  self.ordercode+Diskfile.packsize[self.offsetsize]
-        self.lunpack  =  self.ordercode+Diskfile.packsize[self.lengthsize]
-        self.lcunpack = (self.ordercode+
-                        Diskfile.packsize[self.lengthsize]+
-                        Diskfile.packsize[self.commandsize])
-        self.tolunpack = (self.ordercode+
-                        Diskfile.packsize[self.typesize]+
-                        Diskfile.packsize[self.offsetsize]+
-                        Diskfile.packsize[self.lengthsize])
-        self.comp1 = self.typesize+self.offsetsize+self.lengthsize
-        self.comp2 = self.lengthsize+self.commandsize+self.typesize+1
-
-        # write header if write mode
-        if mode == "w":
-            header_str = ''
-            for value in header:
-                s += struct.pack("B",value) # convert to unsigned char
-            self.fp.write(s)
-            # self.writecommand(17,Lsda.SYMBOLTABLEOFFSET)
-            # self.writeoffset(17,0)
-            # self.lastoffset = 17
-
-    # UNFINISHED
-"""
-
 
 class Binout:
     """This class is meant to read binouts from LS-Dyna
@@ -312,29 +222,25 @@ class Binout:
             either sub folder list or data array
         """
 
-        iLevel = len(path)
+        i_level = len(path)
 
-        if iLevel == 0:  # root subfolders
+        if i_level == 0:  # root subfolders
             return self._bstr_to_str(list(self.lsda_root.children.keys()))
 
         # some subdir
-        else:
+        # try if path can be resolved (then it's a dir)
+        # in this case print the subfolders or subvars
+        try:
+            dir_symbol = self._get_symbol(self.lsda_root, path)
 
-            # try if path can be resolved (then it's a dir)
-            # in this case print the subfolders or subvars
-            try:
+            if "metadata" in dir_symbol.children:
+                return self._collect_variables(dir_symbol)
+            return self._bstr_to_str(list(dir_symbol.children.keys()))
 
-                dir_symbol = self._get_symbol(self.lsda_root, path)
-
-                if "metadata" in dir_symbol.children:
-                    return self._collect_variables(dir_symbol)
-                else:
-                    return self._bstr_to_str(list(dir_symbol.children.keys()))
-
-            # an error is risen, if the path is not resolvable
-            # this could be, because we want to read a var
-            except ValueError:
-                return self._get_variable(path)
+        # an error is risen, if the path is not resolvable
+        # this could be, because we want to read a var
+        except ValueError:
+            return self._get_variable(path)
 
     def _get_symbol(self, symbol, path):
         """Get a symbol from a path via lsda
@@ -357,17 +263,16 @@ class Binout:
         # no further path, return current symbol
         if len(path) == 0:
             return symbol
+
         # more subsymbols to search for
-        else:
+        sub_path = list(path)  # copy
+        next_symbol_name = sub_path.pop(0)
 
-            sub_path = list(path)  # copy
-            next_symbol_name = sub_path.pop(0)
+        next_symbol = symbol.get(next_symbol_name)
+        if next_symbol is None:
+            raise ValueError(f"Cannot find: {next_symbol_name}")
 
-            next_symbol = symbol.get(next_symbol_name)
-            if next_symbol is None:
-                raise ValueError("Cannot find: %s" % next_symbol_name)
-
-            return self._get_symbol(next_symbol, sub_path)
+        return self._get_symbol(next_symbol, sub_path)
 
     def _get_variable(self, path):
         """Read a variable from a given path
@@ -396,39 +301,36 @@ class Binout:
             # symbol is a string
             if var_type == 1:
                 return self._to_string(var_symbol.read())
+
             # symbol is numeric data
-            else:
-                return np.asarray(var_symbol.read())
+            return np.asarray(var_symbol.read())
 
         # var in state data ... hopefully
-        else:
+        time = []
+        data = []
+        for subdir_name, subdir_symbol in dir_symbol.children.items():
 
-            time = []
-            data = []
-            for subdir_name, subdir_symbol in dir_symbol.children.items():
+            # skip metadata
+            if subdir_name == "metadata":
+                continue
 
-                # skip metadata
-                if subdir_name == "metadata":
-                    continue
+            # read data
+            if variable_name in subdir_symbol.children:
+                state_data = subdir_symbol.get(variable_name).read()
+                if len(state_data) == 1:
+                    data.append(state_data[0])
+                else:  # more than one data entry
+                    data.append(state_data)
 
-                # read data
-                if variable_name in subdir_symbol.children:
-                    state_data = subdir_symbol.get(variable_name).read()
-                    if len(state_data) == 1:
-                        data.append(state_data[0])
-                    else:  # more than one data entry
-                        data.append(state_data)
+                time_symbol = subdir_symbol.get(b"time")
+                if time_symbol:
+                    time += time_symbol.read()
 
-                    time_symbol = subdir_symbol.get(b"time")
-                    if time_symbol:
-                        time += time_symbol.read()
-                    # data += subdir_symbol.get(variable_name).read()
+        # return sorted by time
+        if len(time) == len(data):
+            return np.array(data)[np.argsort(time)]
 
-            # return sorted by time
-            if len(time) == len(data):
-                return np.array(data)[np.argsort(time)]
-            else:
-                return np.array(data)
+        return np.array(data)
 
     def _collect_variables(self, symbol):
         """Collect all variables from a symbol
@@ -493,8 +395,8 @@ class Binout:
         # convert a string (dependent on python version)
         if not isinstance(arg, str):
             return arg.decode("utf-8")
-        else:
-            return arg
+
+        return arg
 
     def _str_to_bstr(self, string):
         """Convert a string to a binary string python version independent
@@ -510,8 +412,8 @@ class Binout:
 
         if not isinstance(string, bytes):
             return string.encode("utf-8")
-        else:
-            return string
+
+        return string
 
     def save_hdf5(self, filepath, compression="gzip"):
         """Save a binout as HDF5

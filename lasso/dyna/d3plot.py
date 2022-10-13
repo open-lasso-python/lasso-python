@@ -15,12 +15,12 @@ from typing import Any, BinaryIO, Dict, Iterable, List, Set, Tuple, Union
 import numpy as np
 
 from ..femzip.femzip_api import FemzipAPI, FemzipBufferInfo, FemzipVariableCategory
-from ..io.BinaryBuffer import BinaryBuffer
+from ..io.binary_buffer import BinaryBuffer
 from ..io.files import open_file_or_filepath
 from ..logging import get_logger
 from ..plotting import plot_shell_mesh
 from .array_type import ArrayType
-from .D3plotHeader import D3plotFiletype, D3plotHeader
+from .d3plot_header import D3plotFiletype, D3plotHeader
 from .femzip_mapper import FemzipMapper, filter_femzip_variables
 from .filter_type import FilterType
 
@@ -9488,7 +9488,7 @@ class D3plot:
         # dynamic dimensions
         else:
             if dimension_size_dict:
-                unique_sizes = np.unique([size for size in dimension_size_dict.values()])
+                unique_sizes = np.unique(list(dimension_size_dict.values()))
                 if len(unique_sizes) > 1:
                     msg = "Inconsistency in array dim '%d' detected:\n%s"
                     size_list = [

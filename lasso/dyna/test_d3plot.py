@@ -1,6 +1,6 @@
 import os
 import tempfile
-from lasso.io.BinaryBuffer import BinaryBuffer
+from lasso.io.binary_buffer import BinaryBuffer
 from lasso.femzip.femzip_api import FemzipAPI
 from unittest import TestCase
 

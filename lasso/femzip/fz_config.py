@@ -25,6 +25,8 @@ def get_last_int_of_line(line: str) -> Tuple[str, Union[None, int]]:
 
 
 class FemzipVariableCategory(enum.Enum):
+    """Enum for femzip variable categories"""
+
     GEOMETRY = -5
     # REST_OF_HEADER_AND_GEOMETRY_UNCOMPRESSED = -3
     # ALL_STATE_EXCEPT_GEOMETRY_POSITION = -2
@@ -59,9 +61,20 @@ class FemzipVariableCategory(enum.Enum):
 
     @staticmethod
     def from_int(number: int) -> "FemzipVariableCategory":
+        """Deserializes an integer into an enum
+
+        Parameters
+        ----------
+        number: int
+            number to turn into an enum
+
+        Returns
+        -------
+        enum_value: FemzipVariableCategory
+        """
         if number not in FEMZIP_CATEGORY_TRANSL_DICT:
-            err_msg = "Error: Unknown femzip variable category: '{0}'"
-            raise RuntimeError(err_msg.format(number))
+            err_msg = f"Error: Unknown femzip variable category: '{number}'"
+            raise RuntimeError(err_msg)
 
         return FEMZIP_CATEGORY_TRANSL_DICT[number]
 
@@ -72,86 +85,88 @@ FEMZIP_CATEGORY_TRANSL_DICT: Dict[int, FemzipVariableCategory] = {
 
 
 class FemzipArrayType(enum.Enum):
-    global_data = "global"
-    part_results = "Parts: Energies and others"
+    """Enum for femzip array types"""
+
+    GLOBAL_DATA = "global"
+    PART_RESULTS = "Parts: Energies and others"
     # nodes
-    node_displacement = "coordinates"
-    node_temperatures = "temperatures"
-    node_accelerations = "accelerations"
-    node_heat_flux = "heat_flux"
-    node_mass_scaling = "mass_scaling"
-    node_temperature_gradient = "dtdt"
-    node_velocities = "velocities"
+    NODE_DISPLACEMENT = "coordinates"
+    NODE_TEMPERATURES = "temperatures"
+    NODE_ACCELERATIONS = "accelerations"
+    NODE_HEAT_FLUX = "heat_flux"
+    NODE_MASS_SCALING = "mass_scaling"
+    NODE_TEMPERATURE_GRADIENT = "dtdt"
+    NODE_VELOCITIES = "velocities"
 
     # beam
-    beam_s_shear_resultant = "s_shear_resultant"
-    beam_t_shear_resultant = "t_shear_resultant"
-    beam_s_bending_moment = "s_bending_moment"
-    beam_t_bending_moment = "t_bending_moment"
-    beam_axial_force = "axial_force"
-    beam_torsional_moment = "torsional_resultant"
-    beam_axial_stress = "axial_stress"
-    beam_shear_stress_rs = "RS_shear_stress"
-    beam_shear_stress_tr = "TR_shear_stress"
-    beam_plastic_strain = "plastic_strain"
-    beam_axial_strain = "axial_strain"
+    BEAM_S_SHEAR_RESULTANT = "s_shear_resultant"
+    BEAM_T_SHEAR_RESULTANT = "t_shear_resultant"
+    BEAM_S_BENDING_MOMENT = "s_bending_moment"
+    BEAM_T_BENDING_MOMENT = "t_bending_moment"
+    BEAM_AXIAL_FORCE = "axial_force"
+    BEAM_TORSIONAL_MOMENT = "torsional_resultant"
+    BEAM_AXIAL_STRESS = "axial_stress"
+    BEAM_SHEAR_STRESS_RS = "RS_shear_stress"
+    BEAM_SHEAR_STRESS_TR = "TR_shear_stress"
+    BEAM_PLASTIC_STRAIN = "plastic_strain"
+    BEAM_AXIAL_STRAIN = "axial_strain"
 
     # airbag
-    airbag_state_geom = "CPMs_state_geometry"
-    airbag_particle_pos_x = "Pos x"
-    airbag_particle_pos_y = "Pos y"
-    airbag_particle_pos_z = "Pos z"
-    airbag_particle_vel_x = "Vel x"
-    airbag_particle_vel_y = "Vel y"
-    airbag_particle_vel_z = "Vel z"
-    airbag_particle_mass = "Mass"
-    airbag_particle_radius = "Radius"
-    airbag_particle_spin_energy = "Spin En"
-    airbag_particle_tran_energy = "Tran En"
-    airbag_particle_neighbor_dist = "NS dist"
-    airbag_particle_gas_chamber_id = "GasC ID"
-    airbag_particle_chamber_id = "Cham ID"
-    airbag_particle_leakage = "Leakage"
+    AIRBAG_STATE_GEOM = "CPMs_state_geometry"
+    AIRBAG_PARTICLE_POS_X = "Pos x"
+    AIRBAG_PARTICLE_POS_Y = "Pos y"
+    AIRBAG_PARTICLE_POS_Z = "Pos z"
+    AIRBAG_PARTICLE_VEL_X = "Vel x"
+    AIRBAG_PARTICLE_VEL_Y = "Vel y"
+    AIRBAG_PARTICLE_VEL_Z = "Vel z"
+    AIRBAG_PARTICLE_MASS = "Mass"
+    AIRBAG_PARTICLE_RADIUS = "Radius"
+    AIRBAG_PARTICLE_SPIN_ENERGY = "Spin En"
+    AIRBAG_PARTICLE_TRAN_ENERGY = "Tran En"
+    AIRBAG_PARTICLE_NEIGHBOR_DIST = "NS dist"
+    AIRBAG_PARTICLE_GAS_CHAMBER_ID = "GasC ID"
+    AIRBAG_PARTICLE_CHAMBER_ID = "Cham ID"
+    AIRBAG_PARTICLE_LEAKAGE = "Leakage"
 
-    stress_x = "Sigma-x"
-    stress_y = "Sigma-y"
-    stress_z = "Sigma-z"
-    stress_xy = "Sigma-xy"
-    stress_yz = "Sigma-yz"
-    stress_xz = "Sigma-zx"
-    eff_pstrain = "Effective plastic strain"
-    history_vars = "extra_value_per_element"
-    bending_moment_mx = "bending_moment Mx"
-    bending_moment_my = "bending_moment My"
-    bending_moment_mxy = "bending_moment Mxy"
-    shear_force_x = "shear_resultant Qx"
-    shear_force_y = "shear_resultant Qy"
-    normal_force_x = "normal_resultant Nx"
-    normal_force_y = "normal_resultant Ny"
-    normal_force_xy = "normal_resultant Nxy"
-    thickness = "thickness"
-    unknown_1 = "element_dependent_variable_1"
-    unknown_2 = "element_dependent_variable_2"
-    strain_inner_x = "Epsilon-x  (inner)"
-    strain_inner_y = "Epsilon-y  (inner)"
-    strain_inner_z = "Epsilon-z  (inner)"
-    strain_inner_xy = "Epsilon-xy (inner)"
-    strain_inner_yz = "Epsilon-yz (inner)"
-    strain_inner_xz = "Epsilon-zx (inner)"
-    strain_outer_x = "Epsilon-x (outer)"
-    strain_outer_y = "Epsilon-y (outer)"
-    strain_outer_z = "Epsilon-z (outer)"
-    strain_outer_xy = "Epsilon-xy (outer)"
-    strain_outer_yz = "Epsilon-yz (outer)"
-    strain_outer_xz = "Epsilon-zx (outer)"
-    internal_energy = "internal_energy"
+    STRESS_X = "Sigma-x"
+    STRESS_Y = "Sigma-y"
+    STRESS_Z = "Sigma-z"
+    STRESS_XY = "Sigma-xy"
+    STRESS_YZ = "Sigma-yz"
+    STRESS_XZ = "Sigma-zx"
+    EFF_PSTRAIN = "Effective plastic strain"
+    HISTORY_VARS = "extra_value_per_element"
+    BENDING_MOMENT_MX = "bending_moment Mx"
+    BENDING_MOMENT_MY = "bending_moment My"
+    BENDING_MOMENT_MXY = "bending_moment Mxy"
+    SHEAR_FORCE_X = "shear_resultant Qx"
+    SHEAR_FORCE_Y = "shear_resultant Qy"
+    NORMAL_FORCE_X = "normal_resultant Nx"
+    NORMAL_FORCE_Y = "normal_resultant Ny"
+    NORMAL_FORCE_XY = "normal_resultant Nxy"
+    THICKNESS = "thickness"
+    UNKNOWN_1 = "element_dependent_variable_1"
+    UNKNOWN_2 = "element_dependent_variable_2"
+    STRAIN_INNER_X = "Epsilon-x  (inner)"
+    STRAIN_INNER_Y = "Epsilon-y  (inner)"
+    STRAIN_INNER_Z = "Epsilon-z  (inner)"
+    STRAIN_INNER_XY = "Epsilon-xy (inner)"
+    STRAIN_INNER_YZ = "Epsilon-yz (inner)"
+    STRAIN_INNER_XZ = "Epsilon-zx (inner)"
+    STRAIN_OUTER_X = "Epsilon-x (outer)"
+    STRAIN_OUTER_Y = "Epsilon-y (outer)"
+    STRAIN_OUTER_Z = "Epsilon-z (outer)"
+    STRAIN_OUTER_XY = "Epsilon-xy (outer)"
+    STRAIN_OUTER_YZ = "Epsilon-yz (outer)"
+    STRAIN_OUTER_XZ = "Epsilon-zx (outer)"
+    INTERNAL_ENERGY = "internal_energy"
 
-    strain_x = "Epsilon-x (IP    1)"
-    strain_y = "Epsilon-y (IP    1)"
-    strain_z = "Epsilon-z (IP    1)"
-    strain_xy = "Epsilon-xy (IP    1)"
-    strain_yz = "Epsilon-yz (IP    1)"
-    strain_xz = "Epsilon-zx (IP    1)"
+    STRAIN_X = "Epsilon-x (IP    1)"
+    STRAIN_Y = "Epsilon-y (IP    1)"
+    STRAIN_Z = "Epsilon-z (IP    1)"
+    STRAIN_XY = "Epsilon-xy (IP    1)"
+    STRAIN_YZ = "Epsilon-yz (IP    1)"
+    STRAIN_XZ = "Epsilon-zx (IP    1)"
 
     @staticmethod
     def from_string(femzip_name: str) -> "FemzipArrayType":

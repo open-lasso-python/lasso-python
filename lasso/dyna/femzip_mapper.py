@@ -13,7 +13,7 @@ TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE: Dict[
     Tuple[FemzipArrayType, FemzipVariableCategory], Set[str]
 ] = {
     # GLOBAL
-    (FemzipArrayType.global_data, FemzipVariableCategory.GLOBAL): {
+    (FemzipArrayType.GLOBAL_DATA, FemzipVariableCategory.GLOBAL): {
         # ArrayType.global_timesteps,
         ArrayType.global_internal_energy,
         ArrayType.global_kinetic_energy,
@@ -21,7 +21,7 @@ TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE: Dict[
         ArrayType.global_velocity,
     },
     # PART
-    (FemzipArrayType.part_results, FemzipVariableCategory.PART): {
+    (FemzipArrayType.PART_RESULTS, FemzipVariableCategory.PART): {
         ArrayType.part_hourglass_energy,
         ArrayType.part_internal_energy,
         ArrayType.part_kinetic_energy,
@@ -29,315 +29,315 @@ TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE: Dict[
         ArrayType.part_velocity,
     },
     # NODE
-    (FemzipArrayType.node_displacement, FemzipVariableCategory.NODE): {ArrayType.node_displacement},
-    (FemzipArrayType.node_accelerations, FemzipVariableCategory.NODE): {
+    (FemzipArrayType.NODE_DISPLACEMENT, FemzipVariableCategory.NODE): {ArrayType.node_displacement},
+    (FemzipArrayType.NODE_ACCELERATIONS, FemzipVariableCategory.NODE): {
         ArrayType.node_acceleration
     },
-    (FemzipArrayType.node_velocities, FemzipVariableCategory.NODE): {ArrayType.node_velocity},
-    (FemzipArrayType.node_temperatures, FemzipVariableCategory.NODE): {ArrayType.node_temperature},
-    (FemzipArrayType.node_heat_flux, FemzipVariableCategory.NODE): {ArrayType.node_heat_flux},
-    (FemzipArrayType.node_mass_scaling, FemzipVariableCategory.NODE): {ArrayType.node_mass_scaling},
-    (FemzipArrayType.node_temperature_gradient, FemzipVariableCategory.NODE): {
+    (FemzipArrayType.NODE_VELOCITIES, FemzipVariableCategory.NODE): {ArrayType.node_velocity},
+    (FemzipArrayType.NODE_TEMPERATURES, FemzipVariableCategory.NODE): {ArrayType.node_temperature},
+    (FemzipArrayType.NODE_HEAT_FLUX, FemzipVariableCategory.NODE): {ArrayType.node_heat_flux},
+    (FemzipArrayType.NODE_MASS_SCALING, FemzipVariableCategory.NODE): {ArrayType.node_mass_scaling},
+    (FemzipArrayType.NODE_TEMPERATURE_GRADIENT, FemzipVariableCategory.NODE): {
         ArrayType.node_temperature_gradient
     },
     # BEAM
-    (FemzipArrayType.beam_axial_force, FemzipVariableCategory.BEAM): {
+    (FemzipArrayType.BEAM_AXIAL_FORCE, FemzipVariableCategory.BEAM): {
         ArrayType.element_beam_axial_force
     },
-    (FemzipArrayType.beam_s_bending_moment, FemzipVariableCategory.BEAM): {
+    (FemzipArrayType.BEAM_S_BENDING_MOMENT, FemzipVariableCategory.BEAM): {
         ArrayType.element_beam_bending_moment
     },
-    (FemzipArrayType.beam_t_bending_moment, FemzipVariableCategory.BEAM): {
+    (FemzipArrayType.BEAM_T_BENDING_MOMENT, FemzipVariableCategory.BEAM): {
         ArrayType.element_beam_bending_moment
     },
-    (FemzipArrayType.beam_s_shear_resultant, FemzipVariableCategory.BEAM): {
+    (FemzipArrayType.BEAM_S_SHEAR_RESULTANT, FemzipVariableCategory.BEAM): {
         ArrayType.element_beam_shear_force
     },
-    (FemzipArrayType.beam_t_shear_resultant, FemzipVariableCategory.BEAM): {
+    (FemzipArrayType.BEAM_T_SHEAR_RESULTANT, FemzipVariableCategory.BEAM): {
         ArrayType.element_beam_shear_force
     },
-    (FemzipArrayType.beam_torsional_moment, FemzipVariableCategory.BEAM): {
+    (FemzipArrayType.BEAM_TORSIONAL_MOMENT, FemzipVariableCategory.BEAM): {
         ArrayType.element_beam_torsion_moment
     },
-    (FemzipArrayType.beam_axial_stress, FemzipVariableCategory.BEAM): {
+    (FemzipArrayType.BEAM_AXIAL_STRESS, FemzipVariableCategory.BEAM): {
         ArrayType.element_beam_axial_stress
     },
-    (FemzipArrayType.beam_shear_stress_rs, FemzipVariableCategory.BEAM): {
+    (FemzipArrayType.BEAM_SHEAR_STRESS_RS, FemzipVariableCategory.BEAM): {
         ArrayType.element_beam_shear_stress
     },
-    (FemzipArrayType.beam_shear_stress_tr, FemzipVariableCategory.BEAM): {
+    (FemzipArrayType.BEAM_SHEAR_STRESS_TR, FemzipVariableCategory.BEAM): {
         ArrayType.element_beam_shear_stress
     },
-    (FemzipArrayType.beam_plastic_strain, FemzipVariableCategory.BEAM): {
+    (FemzipArrayType.BEAM_PLASTIC_STRAIN, FemzipVariableCategory.BEAM): {
         ArrayType.element_beam_plastic_strain
     },
-    (FemzipArrayType.beam_axial_strain, FemzipVariableCategory.BEAM): {
+    (FemzipArrayType.BEAM_AXIAL_STRAIN, FemzipVariableCategory.BEAM): {
         ArrayType.element_beam_axial_strain
     },
     # SHELL
-    (FemzipArrayType.stress_x, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
-    (FemzipArrayType.stress_y, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
-    (FemzipArrayType.stress_z, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
-    (FemzipArrayType.stress_xy, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
-    (FemzipArrayType.stress_yz, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
-    (FemzipArrayType.stress_xz, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
-    (FemzipArrayType.eff_pstrain, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.STRESS_X, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
+    (FemzipArrayType.STRESS_Y, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
+    (FemzipArrayType.STRESS_Z, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
+    (FemzipArrayType.STRESS_XY, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
+    (FemzipArrayType.STRESS_YZ, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
+    (FemzipArrayType.STRESS_XZ, FemzipVariableCategory.SHELL): {ArrayType.element_shell_stress},
+    (FemzipArrayType.EFF_PSTRAIN, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_effective_plastic_strain
     },
-    (FemzipArrayType.history_vars, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.HISTORY_VARS, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_history_vars
     },
-    (FemzipArrayType.bending_moment_mx, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.BENDING_MOMENT_MX, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_bending_moment
     },
-    (FemzipArrayType.bending_moment_my, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.BENDING_MOMENT_MY, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_bending_moment
     },
-    (FemzipArrayType.bending_moment_mxy, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.BENDING_MOMENT_MXY, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_bending_moment
     },
-    (FemzipArrayType.shear_force_x, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.SHEAR_FORCE_X, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_shear_force
     },
-    (FemzipArrayType.shear_force_y, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.SHEAR_FORCE_Y, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_shear_force
     },
-    (FemzipArrayType.normal_force_x, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.NORMAL_FORCE_X, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_normal_force
     },
-    (FemzipArrayType.normal_force_y, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.NORMAL_FORCE_Y, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_normal_force
     },
-    (FemzipArrayType.normal_force_xy, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.NORMAL_FORCE_XY, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_normal_force
     },
-    (FemzipArrayType.thickness, FemzipVariableCategory.SHELL): {ArrayType.element_shell_thickness},
-    (FemzipArrayType.unknown_1, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.THICKNESS, FemzipVariableCategory.SHELL): {ArrayType.element_shell_thickness},
+    (FemzipArrayType.UNKNOWN_1, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_unknown_variables
     },
-    (FemzipArrayType.unknown_2, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.UNKNOWN_2, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_unknown_variables
     },
-    (FemzipArrayType.strain_inner_x, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.STRAIN_INNER_X, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_strain
     },
-    (FemzipArrayType.strain_inner_y, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.STRAIN_INNER_Y, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_strain
     },
-    (FemzipArrayType.strain_inner_z, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.STRAIN_INNER_Z, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_strain
     },
-    (FemzipArrayType.strain_inner_xy, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.STRAIN_INNER_XY, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_strain
     },
-    (FemzipArrayType.strain_inner_yz, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.STRAIN_INNER_YZ, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_strain
     },
-    (FemzipArrayType.strain_inner_xz, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.STRAIN_INNER_XZ, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_strain
     },
-    (FemzipArrayType.strain_outer_x, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.STRAIN_OUTER_X, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_strain
     },
-    (FemzipArrayType.strain_outer_y, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.STRAIN_OUTER_Y, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_strain
     },
-    (FemzipArrayType.strain_outer_z, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.STRAIN_OUTER_Z, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_strain
     },
-    (FemzipArrayType.strain_outer_xy, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.STRAIN_OUTER_XY, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_strain
     },
-    (FemzipArrayType.strain_outer_yz, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.STRAIN_OUTER_YZ, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_strain
     },
-    (FemzipArrayType.strain_outer_xz, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.STRAIN_OUTER_XZ, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_strain
     },
-    (FemzipArrayType.internal_energy, FemzipVariableCategory.SHELL): {
+    (FemzipArrayType.INTERNAL_ENERGY, FemzipVariableCategory.SHELL): {
         ArrayType.element_shell_internal_energy
     },
     # THICK SHELL
-    (FemzipArrayType.stress_x, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRESS_X, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_stress
     },
-    (FemzipArrayType.stress_y, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRESS_Y, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_stress
     },
-    (FemzipArrayType.stress_z, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRESS_Z, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_stress
     },
-    (FemzipArrayType.stress_xy, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRESS_XY, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_stress
     },
-    (FemzipArrayType.stress_yz, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRESS_YZ, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_stress
     },
-    (FemzipArrayType.stress_xz, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRESS_XZ, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_stress
     },
-    (FemzipArrayType.eff_pstrain, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.EFF_PSTRAIN, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_effective_plastic_strain
     },
-    (FemzipArrayType.strain_outer_x, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRAIN_OUTER_X, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_strain
     },
-    (FemzipArrayType.strain_outer_y, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRAIN_OUTER_Y, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_strain
     },
-    (FemzipArrayType.strain_outer_z, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRAIN_OUTER_Z, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_strain
     },
-    (FemzipArrayType.strain_outer_xy, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRAIN_OUTER_XY, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_strain
     },
-    (FemzipArrayType.strain_outer_yz, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRAIN_OUTER_YZ, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_strain
     },
-    (FemzipArrayType.strain_outer_xz, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRAIN_OUTER_XZ, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_strain
     },
-    (FemzipArrayType.strain_inner_x, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRAIN_INNER_X, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_strain
     },
-    (FemzipArrayType.strain_inner_y, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRAIN_INNER_Y, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_strain
     },
-    (FemzipArrayType.strain_inner_z, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRAIN_INNER_Z, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_strain
     },
-    (FemzipArrayType.strain_inner_xy, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRAIN_INNER_XY, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_strain
     },
-    (FemzipArrayType.strain_inner_yz, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRAIN_INNER_YZ, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_strain
     },
-    (FemzipArrayType.strain_inner_xz, FemzipVariableCategory.THICK_SHELL): {
+    (FemzipArrayType.STRAIN_INNER_XZ, FemzipVariableCategory.THICK_SHELL): {
         ArrayType.element_tshell_strain
     },
     # SOLID
-    (FemzipArrayType.stress_x, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
-    (FemzipArrayType.stress_y, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
-    (FemzipArrayType.stress_z, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
-    (FemzipArrayType.stress_xy, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
-    (FemzipArrayType.stress_yz, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
-    (FemzipArrayType.stress_xz, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
-    (FemzipArrayType.eff_pstrain, FemzipVariableCategory.SOLID): {
+    (FemzipArrayType.STRESS_X, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
+    (FemzipArrayType.STRESS_Y, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
+    (FemzipArrayType.STRESS_Z, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
+    (FemzipArrayType.STRESS_XY, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
+    (FemzipArrayType.STRESS_YZ, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
+    (FemzipArrayType.STRESS_XZ, FemzipVariableCategory.SOLID): {ArrayType.element_solid_stress},
+    (FemzipArrayType.EFF_PSTRAIN, FemzipVariableCategory.SOLID): {
         ArrayType.element_solid_effective_plastic_strain
     },
-    (FemzipArrayType.history_vars, FemzipVariableCategory.SOLID): {
+    (FemzipArrayType.HISTORY_VARS, FemzipVariableCategory.SOLID): {
         ArrayType.element_solid_history_variables
     },
-    (FemzipArrayType.strain_x, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.strain_y, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.strain_z, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.strain_xy, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.strain_yz, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.strain_xz, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.strain_x, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.strain_y, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.strain_z, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.strain_xy, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.strain_yz, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.strain_xz, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.STRAIN_X, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.STRAIN_Y, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.STRAIN_Z, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.STRAIN_XY, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.STRAIN_YZ, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.STRAIN_XZ, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.STRAIN_X, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.STRAIN_Y, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.STRAIN_Z, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.STRAIN_XY, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.STRAIN_YZ, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
+    (FemzipArrayType.STRAIN_XZ, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
     # AIRBAG
-    (FemzipArrayType.airbag_state_geom, FemzipVariableCategory.CPM_AIRBAG): {
+    (FemzipArrayType.AIRBAG_STATE_GEOM, FemzipVariableCategory.CPM_AIRBAG): {
         ArrayType.airbag_n_active_particles,
         ArrayType.airbag_bag_volume,
     },
     # AIRBAG PARTICLES
-    (FemzipArrayType.airbag_particle_gas_chamber_id, FemzipVariableCategory.CPM_INT_VAR): {
+    (FemzipArrayType.AIRBAG_PARTICLE_GAS_CHAMBER_ID, FemzipVariableCategory.CPM_INT_VAR): {
         ArrayType.airbag_particle_gas_id
     },
-    (FemzipArrayType.airbag_particle_chamber_id, FemzipVariableCategory.CPM_INT_VAR): {
+    (FemzipArrayType.AIRBAG_PARTICLE_CHAMBER_ID, FemzipVariableCategory.CPM_INT_VAR): {
         ArrayType.airbag_particle_chamber_id
     },
-    (FemzipArrayType.airbag_particle_leakage, FemzipVariableCategory.CPM_INT_VAR): {
+    (FemzipArrayType.AIRBAG_PARTICLE_LEAKAGE, FemzipVariableCategory.CPM_INT_VAR): {
         ArrayType.airbag_particle_leakage
     },
-    (FemzipArrayType.airbag_particle_mass, FemzipVariableCategory.CPM_FLOAT_VAR): {
+    (FemzipArrayType.AIRBAG_PARTICLE_MASS, FemzipVariableCategory.CPM_FLOAT_VAR): {
         ArrayType.airbag_particle_mass
     },
-    (FemzipArrayType.airbag_particle_pos_x, FemzipVariableCategory.CPM_FLOAT_VAR): {
+    (FemzipArrayType.AIRBAG_PARTICLE_POS_X, FemzipVariableCategory.CPM_FLOAT_VAR): {
         ArrayType.airbag_particle_position
     },
-    (FemzipArrayType.airbag_particle_pos_y, FemzipVariableCategory.CPM_FLOAT_VAR): {
+    (FemzipArrayType.AIRBAG_PARTICLE_POS_Y, FemzipVariableCategory.CPM_FLOAT_VAR): {
         ArrayType.airbag_particle_position
     },
-    (FemzipArrayType.airbag_particle_pos_z, FemzipVariableCategory.CPM_FLOAT_VAR): {
+    (FemzipArrayType.AIRBAG_PARTICLE_POS_Z, FemzipVariableCategory.CPM_FLOAT_VAR): {
         ArrayType.airbag_particle_position
     },
-    (FemzipArrayType.airbag_particle_vel_x, FemzipVariableCategory.CPM_FLOAT_VAR): {
+    (FemzipArrayType.AIRBAG_PARTICLE_VEL_X, FemzipVariableCategory.CPM_FLOAT_VAR): {
         ArrayType.airbag_particle_velocity
     },
-    (FemzipArrayType.airbag_particle_vel_y, FemzipVariableCategory.CPM_FLOAT_VAR): {
+    (FemzipArrayType.AIRBAG_PARTICLE_VEL_Y, FemzipVariableCategory.CPM_FLOAT_VAR): {
         ArrayType.airbag_particle_velocity
     },
-    (FemzipArrayType.airbag_particle_vel_z, FemzipVariableCategory.CPM_FLOAT_VAR): {
+    (FemzipArrayType.AIRBAG_PARTICLE_VEL_Z, FemzipVariableCategory.CPM_FLOAT_VAR): {
         ArrayType.airbag_particle_velocity
     },
-    (FemzipArrayType.airbag_particle_radius, FemzipVariableCategory.CPM_FLOAT_VAR): {
+    (FemzipArrayType.AIRBAG_PARTICLE_RADIUS, FemzipVariableCategory.CPM_FLOAT_VAR): {
         ArrayType.airbag_particle_radius
     },
-    (FemzipArrayType.airbag_particle_spin_energy, FemzipVariableCategory.CPM_FLOAT_VAR): {
+    (FemzipArrayType.AIRBAG_PARTICLE_SPIN_ENERGY, FemzipVariableCategory.CPM_FLOAT_VAR): {
         ArrayType.airbag_particle_spin_energy
     },
-    (FemzipArrayType.airbag_particle_tran_energy, FemzipVariableCategory.CPM_FLOAT_VAR): {
+    (FemzipArrayType.AIRBAG_PARTICLE_TRAN_ENERGY, FemzipVariableCategory.CPM_FLOAT_VAR): {
         ArrayType.airbag_particle_translation_energy
     },
-    (FemzipArrayType.airbag_particle_neighbor_dist, FemzipVariableCategory.CPM_FLOAT_VAR): {
+    (FemzipArrayType.AIRBAG_PARTICLE_NEIGHBOR_DIST, FemzipVariableCategory.CPM_FLOAT_VAR): {
         ArrayType.airbag_particle_nearest_segment_distance
     },
 }
 
 # indexes for various femzip arrays
 stress_index = {
-    FemzipArrayType.stress_x.value: 0,
-    FemzipArrayType.stress_y.value: 1,
-    FemzipArrayType.stress_z.value: 2,
-    FemzipArrayType.stress_xy.value: 3,
-    FemzipArrayType.stress_yz.value: 4,
-    FemzipArrayType.stress_xz.value: 5,
-    FemzipArrayType.normal_force_x.value: 0,
-    FemzipArrayType.normal_force_y.value: 1,
-    FemzipArrayType.normal_force_xy.value: 2,
-    FemzipArrayType.shear_force_x.value: 0,
-    FemzipArrayType.shear_force_y.value: 1,
-    FemzipArrayType.strain_inner_x.value: 0,
-    FemzipArrayType.strain_inner_y.value: 1,
-    FemzipArrayType.strain_inner_z.value: 2,
-    FemzipArrayType.strain_inner_xy.value: 3,
-    FemzipArrayType.strain_inner_yz.value: 4,
-    FemzipArrayType.strain_inner_xz.value: 5,
-    FemzipArrayType.strain_outer_x.value: 0,
-    FemzipArrayType.strain_outer_y.value: 1,
-    FemzipArrayType.strain_outer_z.value: 2,
-    FemzipArrayType.strain_outer_xy.value: 3,
-    FemzipArrayType.strain_outer_yz.value: 4,
-    FemzipArrayType.strain_outer_xz.value: 5,
-    FemzipArrayType.beam_s_shear_resultant.value: 0,
-    FemzipArrayType.beam_t_shear_resultant.value: 1,
-    FemzipArrayType.beam_s_bending_moment.value: 0,
-    FemzipArrayType.beam_t_bending_moment.value: 1,
-    FemzipArrayType.strain_x.value: 0,
-    FemzipArrayType.strain_y.value: 1,
-    FemzipArrayType.strain_z.value: 2,
-    FemzipArrayType.strain_xy.value: 3,
-    FemzipArrayType.strain_yz.value: 4,
-    FemzipArrayType.strain_xz.value: 5,
-    FemzipArrayType.beam_shear_stress_rs.value: 0,
-    FemzipArrayType.beam_shear_stress_tr.value: 1,
-    FemzipArrayType.airbag_particle_pos_x.value: 0,
-    FemzipArrayType.airbag_particle_pos_y.value: 1,
-    FemzipArrayType.airbag_particle_pos_z.value: 2,
-    FemzipArrayType.airbag_particle_vel_x.value: 0,
-    FemzipArrayType.airbag_particle_vel_y.value: 1,
-    FemzipArrayType.airbag_particle_vel_z.value: 2,
-    FemzipArrayType.bending_moment_mx.value: 0,
-    FemzipArrayType.bending_moment_my.value: 1,
-    FemzipArrayType.bending_moment_mxy.value: 2,
-    FemzipArrayType.unknown_1.value: 0,
-    FemzipArrayType.unknown_2.value: 1,
+    FemzipArrayType.STRESS_X.value: 0,
+    FemzipArrayType.STRESS_Y.value: 1,
+    FemzipArrayType.STRESS_Z.value: 2,
+    FemzipArrayType.STRESS_XY.value: 3,
+    FemzipArrayType.STRESS_YZ.value: 4,
+    FemzipArrayType.STRESS_XZ.value: 5,
+    FemzipArrayType.NORMAL_FORCE_X.value: 0,
+    FemzipArrayType.NORMAL_FORCE_Y.value: 1,
+    FemzipArrayType.NORMAL_FORCE_XY.value: 2,
+    FemzipArrayType.SHEAR_FORCE_X.value: 0,
+    FemzipArrayType.SHEAR_FORCE_Y.value: 1,
+    FemzipArrayType.STRAIN_INNER_X.value: 0,
+    FemzipArrayType.STRAIN_INNER_Y.value: 1,
+    FemzipArrayType.STRAIN_INNER_Z.value: 2,
+    FemzipArrayType.STRAIN_INNER_XY.value: 3,
+    FemzipArrayType.STRAIN_INNER_YZ.value: 4,
+    FemzipArrayType.STRAIN_INNER_XZ.value: 5,
+    FemzipArrayType.STRAIN_OUTER_X.value: 0,
+    FemzipArrayType.STRAIN_OUTER_Y.value: 1,
+    FemzipArrayType.STRAIN_OUTER_Z.value: 2,
+    FemzipArrayType.STRAIN_OUTER_XY.value: 3,
+    FemzipArrayType.STRAIN_OUTER_YZ.value: 4,
+    FemzipArrayType.STRAIN_OUTER_XZ.value: 5,
+    FemzipArrayType.BEAM_S_SHEAR_RESULTANT.value: 0,
+    FemzipArrayType.BEAM_T_SHEAR_RESULTANT.value: 1,
+    FemzipArrayType.BEAM_S_BENDING_MOMENT.value: 0,
+    FemzipArrayType.BEAM_T_BENDING_MOMENT.value: 1,
+    FemzipArrayType.STRAIN_X.value: 0,
+    FemzipArrayType.STRAIN_Y.value: 1,
+    FemzipArrayType.STRAIN_Z.value: 2,
+    FemzipArrayType.STRAIN_XY.value: 3,
+    FemzipArrayType.STRAIN_YZ.value: 4,
+    FemzipArrayType.STRAIN_XZ.value: 5,
+    FemzipArrayType.BEAM_SHEAR_STRESS_RS.value: 0,
+    FemzipArrayType.BEAM_SHEAR_STRESS_TR.value: 1,
+    FemzipArrayType.AIRBAG_PARTICLE_POS_X.value: 0,
+    FemzipArrayType.AIRBAG_PARTICLE_POS_Y.value: 1,
+    FemzipArrayType.AIRBAG_PARTICLE_POS_Z.value: 2,
+    FemzipArrayType.AIRBAG_PARTICLE_VEL_X.value: 0,
+    FemzipArrayType.AIRBAG_PARTICLE_VEL_Y.value: 1,
+    FemzipArrayType.AIRBAG_PARTICLE_VEL_Z.value: 2,
+    FemzipArrayType.BENDING_MOMENT_MX.value: 0,
+    FemzipArrayType.BENDING_MOMENT_MY.value: 1,
+    FemzipArrayType.BENDING_MOMENT_MXY.value: 2,
+    FemzipArrayType.UNKNOWN_1.value: 0,
+    FemzipArrayType.UNKNOWN_2.value: 1,
 }
 
 

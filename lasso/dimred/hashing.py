@@ -38,8 +38,8 @@ def _match_modes(
     """
 
     matches = []
-    mode1_hash_indexes = [iHash for iHash in range(len(hashes1))]
-    mode2_hash_indexes = [iHash for iHash in range(len(hashes2))]
+    mode1_hash_indexes = list(range(len(hashes1)))
+    mode2_hash_indexes = list(range(len(hashes2)))
 
     for i_hash in mode1_hash_indexes:
 
@@ -89,18 +89,16 @@ def is_orientation_flip_required(eigenvectors1: np.ndarray, eigenvectors2: np.nd
 
     # one eigenmode only
     if eigenvectors1.ndim == 1:
-
         knn_error_basic = np.dot(eigenvectors1, eigenvectors2)
         return knn_error_basic < 0
 
     # multiple eigenmodes
-    else:
-        n_modes = min(eigenvectors1.shape[1], eigenvectors2.shape[1])
-        errors = [
-            np.dot(eigenvectors1[:, i_mode], eigenvectors2[:, i_mode]) for i_mode in range(n_modes)
-        ]
+    n_modes = min(eigenvectors1.shape[1], eigenvectors2.shape[1])
+    errors = [
+        np.dot(eigenvectors1[:, i_mode], eigenvectors2[:, i_mode]) for i_mode in range(n_modes)
+    ]
 
-        return np.array([err < 0 for err in errors])
+    return np.array([err < 0 for err in errors])
 
 
 def _compute_mode_similarities(
@@ -129,9 +127,11 @@ def _compute_mode_similarities(
     -------
     mode_similarities : list(float)
         similarities of the matched modes
-    """
 
-    # TODO integrate functions with unequal sampling
+    Notes
+    -----
+        This function cannot deal with unequal sampling of the input hashes.
+    """
 
     mode_similarities = []
     for i_hash, j_hash in matches:
@@ -150,7 +150,7 @@ def _compute_mode_similarities(
         else:
             mode_ = hashes2[j_hash, 1, :]
 
-        # TODO Warning x is usually originally hashes[i_mode, 0]
+        # Warning: x is usually originally hashes[i_mode, 0]
         x = np.linspace(0, 1, hashes1.shape[2])
         norm1 = curve_normalizer(x, hashes1[i_hash, 1])
         norm2 = curve_normalizer(x, mode_)
@@ -167,6 +167,7 @@ def _compute_mode_similarities(
 def _join_hash_comparison_thread_files(
     comparison_filepath: str, thread_filepaths: Sequence[str], n_runs: int
 ):
+    # pylint: disable = too-many-locals
 
     if os.path.exists(comparison_filepath):
         if os.path.isfile(comparison_filepath):
@@ -197,10 +198,10 @@ def _join_hash_comparison_thread_files(
             compression="gzip",
         )
 
-        for i_thread in range(len(thread_filepaths)):
+        for thread_filepath in thread_filepaths:
 
             # open thread file
-            with h5py.File(thread_filepaths[i_thread], "r") as thread_file:
+            with h5py.File(thread_filepath, "r") as thread_file:
 
                 # insert matrix entries
                 matrix_indexes = thread_file["matrix_indexes"]
@@ -216,7 +217,7 @@ def _join_hash_comparison_thread_files(
                     ds_weights[i_row, i_col] = (thread_weights[i_row] + thread_weights[i_col]) / 2
 
             # delete thread file
-            os.remove(thread_filepaths[i_thread])
+            os.remove(thread_filepath)
 
 
 def run_hash_comparison(
@@ -225,7 +226,20 @@ def run_hash_comparison(
     n_threads: int = 1,
     print_progress: bool = False,
 ):
-    """ """
+    """Compare two hashes of a simulation run part
+
+    Parameters
+    ----------
+    comparison_filepath: str
+        filepath to the hdf5 in which the result of the comparison will be
+        stored
+    hashes_filepaths: List[str]
+        filepath to the stored hashes
+    n_threads: int
+        number of threads used for the comparison
+    print_progress: bool
+        whether to print the progress
+    """
     assert n_threads > 0
 
     # fixed settings
@@ -592,7 +606,6 @@ def curve_normalizer(x: np.ndarray, y: np.ndarray):
 def compute_hashes(
     eig_vecs: np.ndarray,
     result_field: np.ndarray,
-    # elem_size,
     n_points: int = 100,
     bandwidth: float = 0.05,
 ) -> List[Tuple[np.ndarray, np.ndarray]]:
@@ -605,11 +618,11 @@ def compute_hashes(
     result_field : np.ndarray
         result field to hash
     n_points : resolution of the hash
-        number of equidistant points to use for smoothing
-        (TODO) automate this selection from the mesh size
+        Number of equidistant points to use for smoothing.
+        Should be determined from the mesh size (2.5 times average elem size).
     bandwidth : float
-        bandwidth in percent of the kernel
-        (TODO) choose 5 times global element size median
+        Bandwidth in percent of the kernel.
+        Recommended as 5 times global element size median.
 
     Returns
     -------
@@ -623,12 +636,13 @@ def compute_hashes(
         eig_vecs.shape[0], len(result_field)
     )
 
-    # TODO vectorize to speed it up
-    hash_functions = []
-    for iEigen in range(eig_vecs.shape[1]):
+    # Note: needs to be vectorized to speed it up
 
-        xmin = eig_vecs[:, iEigen].min()
-        xmax = eig_vecs[:, iEigen].max()
+    hash_functions = []
+    for i_eigen in range(eig_vecs.shape[1]):
+
+        xmin = eig_vecs[:, i_eigen].min()
+        xmax = eig_vecs[:, i_eigen].max()
 
         x = np.linspace(xmin, xmax, n_points)
         y = np.zeros(n_points)
@@ -637,7 +651,7 @@ def compute_hashes(
         c = -0.5 / local_bandwidth**2
 
         for ii, point in enumerate(x):
-            y[ii] = np.dot(result_field, np.exp(c * np.square(point - eig_vecs[:, iEigen])))
+            y[ii] = np.dot(result_field, np.exp(c * np.square(point - eig_vecs[:, i_eigen])))
         y /= np.sqrt(2 * np.pi) * bandwidth
 
         hash_functions.append((x, y))
