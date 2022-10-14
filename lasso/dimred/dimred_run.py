@@ -12,19 +12,23 @@ from typing import Sequence, Tuple, Union
 import h5py
 import numpy as np
 import psutil
+from lasso.utils.rich_progress_bars import PlaceHolderBar, WorkingDots
 from rich.console import Console
 from rich.progress import BarColumn, Progress
 from rich.table import Table
 from rich.text import Text
 
-from lasso.utils.rich_progress_bars import PlaceHolderBar, WorkingDots
 from .svd.clustering_betas import create_cluster_arg_dict, create_detector_arg_dict, group_betas
 from .svd.plot_beta_clusters import plot_clusters_js
 from .svd.pod_functions import calculate_V_and_Betas
 from .svd.subsampling_methods import create_reference_subsample, remap_random_subsample
 
+# pylint: disable = too-many-lines
+
 
 class DimredRunError(Exception):
+    """Custom exception for errors during the dimensionality reduction"""
+
     def __init__(self, msg):
         self.message = msg
 
@@ -99,18 +103,16 @@ def parse_dimred_args():
         type=str,
         nargs="?",
         default=DIMRED_STAGES[0],
-        help="Optional. At which specific stage to start the analysis ({0}).".format(
-            ", ".join(DIMRED_STAGES)
-        ),
+        help="Optional. "
+        f"At which specific stage to start the analysis ({', '.join(DIMRED_STAGES)}).",
     )
     parser.add_argument(
         "--end-stage",
         type=str,
         nargs="?",
         default=DIMRED_STAGES[-1],
-        help="Optional. At which specific stage to stop the analysis ({0}).".format(
-            ", ".join(DIMRED_STAGES)
-        ),
+        help="Optional. "
+        f"At which specific stage to stop the analysis ({', '.join(DIMRED_STAGES)}).",
     )
     parser.add_argument(
         "--project-dir",
@@ -182,12 +184,14 @@ def parse_dimred_args():
 
     if len(sys.argv) < 2:
         parser.print_help()
-        exit(0)
+        sys.exit(0)
 
     return parser.parse_args(sys.argv[1:])
 
 
 class DimredStage(enum.Enum):
+    """Enum for all stages of the dimenstionality reduction"""
+
     REFERENCE_RUN = "REFERENCE_RUN"
     IMPORT_RUNS = "IMPORT_RUNS"
     REDUCTION = "REDUCTION"
@@ -205,19 +209,25 @@ DIMRED_STAGES = (
 
 
 class HDF5FileNames(enum.Enum):
-    subsample_save_name = "subsample"
-    subsampled_group_name = "subsampled_runs"
-    betas_group_name = "betas"
-    v_rob_save_name = "v_rob"
-    plot_load_time = "t_load"
-    subsample_process_time = "t_total"
-    nr_clusters = "nr_clusters"
-    has_outliers = "has_outliers"
-    outliers = "outlier"
-    cluster = "cluster"
+    """Enum for arrays in the hdf5 file"""
+
+    SUBSAMPLE_SAVE_NAME = "subsample"
+    SUBSAMPLED_GROUP_NAME = "subsampled_runs"
+    BETAS_GROUP_NAME = "betas"
+    V_ROB_SAVE_NAME = "v_rob"
+    PLOT_LOAD_TIME = "t_load"
+    SUBSAMPLE_PROCESS_TIME = "t_total"
+    NR_CLUSTER = "nr_clusters"
+    HAS_OUTLIERS = "has_outliers"
+    OUTLIERS = "outlier"
+    CLUSTER = "cluster"
 
 
 class DimredRun:
+    """Class to control and run the dimensionality reduction process"""
+
+    # pylint: disable = too-many-instance-attributes
+
     reference_run: str
     simulation_runs: Sequence[str]
     exclude_runs: Sequence[str]
@@ -306,8 +316,10 @@ class DimredRun:
             Using a project directory allows to restart stages of the entire
             process.
         """
-        # settings
 
+        # pylint: disable = too-many-arguments, too-many-locals
+
+        # settings
         # Set up Rich Console and Rich logging
         self.console = console
         if self.console:
@@ -355,7 +367,7 @@ class DimredRun:
         if self.part_ids is not None and len(self.part_ids) != 0:
             table.add_row("selected parts", ",".join(str(entry) for entry in self.part_ids))
         self.timestep = timestep
-        if not timestep == -1:
+        if timestep != -1:
             table.add_row("Timestep: ", str(timestep))
 
         # check if start_stage_index and end_stage_index are valid
@@ -420,8 +432,6 @@ class DimredRun:
         if self.logfile_filepath:
             self.console.save_html(self.logfile_filepath)
 
-        # tb = sys.exc_info()[2]
-        # sys.tracebacklimit = 0
         raise DimredRunError(err_msg)
 
     def _check_img_path(self, img_path: str):
@@ -430,9 +440,9 @@ class DimredRun:
             abs_path = os.path.abspath(img_path)
             js_path = re.sub(r"\\", "/", abs_path)
             return js_path
-        else:
-            err_msg = "provided argument --embedding.images is not a folder"
-            self.raise_error(err_msg)
+
+        err_msg = "provided argument --embedding.images is not a folder"
+        self.raise_error(err_msg)
 
     def _parse_stages(self, start_stage: str, end_stage: str):
 
@@ -456,9 +466,10 @@ class DimredRun:
         # check if start and end are in correct order
         if start_stage_index > end_stage_index:
             err_msg = (
-                "The specified end stage '{0}' comes before the start stage ({1}). "
-                + "Try the order: {2}"
-            ).format(end_stage, start_stage, ", ".join(DIMRED_STAGES))
+                f"The specified end stage '{end_stage}' "
+                f"comes before the start stage ({start_stage}). "
+                f"Try the order: {', '.join(DIMRED_STAGES)}"
+            )
             self.raise_error(err_msg)
 
         return start_stage_index, end_stage_index
@@ -467,27 +478,24 @@ class DimredRun:
         # check if stage skip is valid
         if self.start_stage_index == DIMRED_STAGES.index(DimredStage.IMPORT_RUNS.value):
             self.log("Skipped setup stage", style="warning")
-            if not (HDF5FileNames.subsample_save_name.value in self.h5file):  # type: ignore
+            if HDF5FileNames.SUBSAMPLE_SAVE_NAME.value not in self.h5file:  # type: ignore
                 msg = "no reference sample found"
                 self.raise_error(msg)
         elif self.start_stage_index == DIMRED_STAGES.index(DimredStage.REDUCTION.value):
             self.log("Skipped import stage", style="warning")
-            if not (HDF5FileNames.subsampled_group_name.value in self.h5file):  # type: ignore
+            if HDF5FileNames.SUBSAMPLED_GROUP_NAME.value not in self.h5file:  # type: ignore
                 msg = "no subsampled samples found"
                 self.raise_error(msg)
         elif self.start_stage_index == DIMRED_STAGES.index(DimredStage.CLUSTERING.value):
             self.log("Skipped reduction stage", style="warning")
-            if not (
-                (HDF5FileNames.v_rob_save_name.value in self.h5file)  # type: ignore
-                and (HDF5FileNames.betas_group_name.value in self.h5file)
+            if (
+                HDF5FileNames.V_ROB_SAVE_NAME.value not in self.h5file  # type: ignore
+                or HDF5FileNames.BETAS_GROUP_NAME.value not in self.h5file
             ):  # type: ignore
                 err_msg = "Could not find reduced betas and V_ROB"
                 self.raise_error(err_msg)
         elif self.start_stage_index == DIMRED_STAGES.index(DimredStage.CLUSTERING.value):
             self.log("Skipped clustering stage", style="warning")
-            # if not (HDF5FileNames.clustering_index.value in self.h5file):
-            # err_msg = "No clustering index found"
-            # self.raise_error(err_msg)
 
     def _parse_part_ids(self, part_ids: Union[Sequence[int], None]) -> Sequence[int]:
 
@@ -659,14 +667,6 @@ class DimredRun:
         return self
 
     def __exit__(self, exception_type, exception_value, traceback):
-        # self.pool.shutdown()
-        # Process pool automatically shuts down upon exiting.
-        # Calling pool.shutdown() leads to an Error
-        # OSError: handle is closed
-        # when python program has finished.
-
-        # TODO: Add rich logging if exception occurred
-
         self.pool = None
         self.h5file.close()
         self.h5file = None
@@ -678,17 +678,10 @@ class DimredRun:
 
     def reset_project_dir(self):
         """resets the project directory entirely"""
-        # disable logging
-        # for handler in self.logger.handlers:
-        # handler.close()
-        # self.logger.removeHandler(handler)
 
         # delete folder
         if os.path.exists(self.project_dir):
             shutil.rmtree(self.project_dir)
-
-        # reinit logger
-        # self.logger = self._setup_logger(self.reset_project_dir)
 
         if self.project_dir:
             os.makedirs(self.project_dir, exist_ok=True)
@@ -711,8 +704,8 @@ class DimredRun:
             ref_task = prog.add_task("", total=1)
 
             # Delete existing reference subsample
-            if HDF5FileNames.subsample_save_name.value in self.h5file:  # type: ignore
-                del self.h5file[HDF5FileNames.subsample_save_name.value]
+            if HDF5FileNames.SUBSAMPLE_SAVE_NAME.value in self.h5file:  # type: ignore
+                del self.h5file[HDF5FileNames.SUBSAMPLE_SAVE_NAME.value]
 
             reference_sample = create_reference_subsample(self.reference_run, self.part_ids)
 
@@ -723,10 +716,10 @@ class DimredRun:
 
         # create dataset in h5file
         h5_ref = self.h5file.create_dataset(
-            HDF5FileNames.subsample_save_name.value, data=reference_sample[0]
+            HDF5FileNames.SUBSAMPLE_SAVE_NAME.value, data=reference_sample[0]
         )
-        h5_ref.attrs[HDF5FileNames.plot_load_time.value] = reference_sample[2]
-        h5_ref.attrs[HDF5FileNames.subsample_process_time.value] = reference_sample[1]
+        h5_ref.attrs[HDF5FileNames.PLOT_LOAD_TIME.value] = reference_sample[2]
+        h5_ref.attrs[HDF5FileNames.SUBSAMPLE_PROCESS_TIME.value] = reference_sample[1]
 
         # log time and success
         self.log("Loadtime Reference subsample: " + str(reference_sample[2])[:5])
@@ -756,14 +749,14 @@ class DimredRun:
             task1 = prog.add_task(
                 "[cyan]Subsampling plots [/cyan]", total=len(self.simulation_runs)
             )
-            h5_ref = self.h5file[HDF5FileNames.subsample_save_name.value]
+            h5_ref = self.h5file[HDF5FileNames.SUBSAMPLE_SAVE_NAME.value]
             # prog.columns[4].update_avrg(h5_ref.attrs[HDF5FileNames.plot_load_time.value])
 
             submitted_samples = []
 
             # delete previous subsample entries
-            if HDF5FileNames.subsampled_group_name.value in self.h5file:  # type: ignore
-                del self.h5file[HDF5FileNames.subsampled_group_name.value]
+            if HDF5FileNames.SUBSAMPLED_GROUP_NAME.value in self.h5file:  # type: ignore
+                del self.h5file[HDF5FileNames.SUBSAMPLED_GROUP_NAME.value]
 
             # submit all simulation runs
             for _, entry in enumerate(self.simulation_runs):
@@ -792,8 +785,8 @@ class DimredRun:
             t_cum_io = 0
 
             # prepare hdf5 file
-            self.h5file.create_group(HDF5FileNames.subsampled_group_name.value)
-            # TODO: this isn't very elegant, there must be a better way
+            self.h5file.create_group(HDF5FileNames.SUBSAMPLED_GROUP_NAME.value)
+            # This isn't very elegant, there must be a better way
             while not prog.finished:
                 for i, sub in enumerate(submitted_samples):
                     if sub[1].done():
@@ -801,10 +794,10 @@ class DimredRun:
                             if type(sub[1].result()[0]) == str:
                                 self.raise_error(sub[1].result())
                             h5_sample = self.h5file[
-                                HDF5FileNames.subsampled_group_name.value
+                                HDF5FileNames.SUBSAMPLED_GROUP_NAME.value
                             ].create_dataset(sub[0], data=sub[1].result()[0])
-                            h5_sample.attrs[HDF5FileNames.plot_load_time.value] = sub[1].result()[2]
-                            h5_sample.attrs[HDF5FileNames.subsample_process_time.value] = sub[
+                            h5_sample.attrs[HDF5FileNames.PLOT_LOAD_TIME.value] = sub[1].result()[2]
+                            h5_sample.attrs[HDF5FileNames.SUBSAMPLE_PROCESS_TIME.value] = sub[
                                 1
                             ].result()[1]
                             submitted_samples.pop(i)
@@ -852,12 +845,12 @@ class DimredRun:
             prog = PlaceHolderBar()
         with prog:
             # deletes old files
-            if HDF5FileNames.betas_group_name.value in self.h5file:  # type: ignore
-                del self.h5file[HDF5FileNames.betas_group_name.value]
-            if HDF5FileNames.v_rob_save_name.value in self.h5file:  # type: ignore
-                del self.h5file[HDF5FileNames.v_rob_save_name.value]
+            if HDF5FileNames.BETAS_GROUP_NAME.value in self.h5file:  # type: ignore
+                del self.h5file[HDF5FileNames.BETAS_GROUP_NAME.value]
+            if HDF5FileNames.V_ROB_SAVE_NAME.value in self.h5file:  # type: ignore
+                del self.h5file[HDF5FileNames.V_ROB_SAVE_NAME.value]
 
-            beta_group = self.h5file.create_group(HDF5FileNames.betas_group_name.value)
+            beta_group = self.h5file.create_group(HDF5FileNames.BETAS_GROUP_NAME.value)
 
             excluded_entries = [
                 os.path.basename(os.path.split(entry)[0])
@@ -868,13 +861,13 @@ class DimredRun:
 
             valid_entries = [
                 entry
-                for entry in self.h5file[HDF5FileNames.subsampled_group_name.value].keys()
+                for entry in self.h5file[HDF5FileNames.SUBSAMPLED_GROUP_NAME.value].keys()
                 if entry not in excluded_entries
             ]
 
             run_timesteps = np.array(
                 [
-                    self.h5file[HDF5FileNames.subsampled_group_name.value][entry].shape[0]
+                    self.h5file[HDF5FileNames.SUBSAMPLED_GROUP_NAME.value][entry].shape[0]
                     for entry in valid_entries
                 ]
             )
@@ -895,7 +888,7 @@ class DimredRun:
 
             sub_displ = np.stack(
                 [
-                    self.h5file[HDF5FileNames.subsampled_group_name.value][entry][:min_step, :]
+                    self.h5file[HDF5FileNames.SUBSAMPLED_GROUP_NAME.value][entry][:min_step, :]
                     for entry in valid_entries
                 ]
             )
@@ -909,11 +902,11 @@ class DimredRun:
 
             v_rob, betas = result
             for i, sample in enumerate(
-                self.h5file[HDF5FileNames.subsampled_group_name.value].keys()
+                self.h5file[HDF5FileNames.SUBSAMPLED_GROUP_NAME.value].keys()
             ):
                 beta_group.create_dataset(sample, data=betas[i])
 
-            self.h5file.create_dataset(HDF5FileNames.v_rob_save_name.value, data=v_rob)
+            self.h5file.create_dataset(HDF5FileNames.V_ROB_SAVE_NAME.value, data=v_rob)
 
         self.log("Dimension Reduction completed", style="success")
 
@@ -921,12 +914,12 @@ class DimredRun:
         """clustering results"""
         self._perform_context_check()
         # delete old entries
-        betas_group = self.h5file[HDF5FileNames.betas_group_name.value]
-        if HDF5FileNames.has_outliers.value in betas_group.attrs:
-            del betas_group.attrs[HDF5FileNames.has_outliers.value]
+        betas_group = self.h5file[HDF5FileNames.BETAS_GROUP_NAME.value]
+        if HDF5FileNames.HAS_OUTLIERS.value in betas_group.attrs:
+            del betas_group.attrs[HDF5FileNames.HAS_OUTLIERS.value]
 
-        if HDF5FileNames.nr_clusters.value in betas_group.attrs:
-            del betas_group.attrs[HDF5FileNames.nr_clusters.value]
+        if HDF5FileNames.NR_CLUSTER.value in betas_group.attrs:
+            del betas_group.attrs[HDF5FileNames.NR_CLUSTER.value]
 
         if not self.cluster_type and not self.detector_type:
             msg = "No arguments provided for clustering, clustering aborted"
@@ -989,16 +982,16 @@ class DimredRun:
 
             # Save clusters
             if len(id_cluster) > 1:
-                betas_group.attrs.create(HDF5FileNames.nr_clusters.value, len(id_cluster))
+                betas_group.attrs.create(HDF5FileNames.NR_CLUSTER.value, len(id_cluster))
             if self.detector_type is not None:
                 # if attribute has_outliers is set, the first cluster contains the outliers
                 # so all outliers can be found by searching for the cluster attribute "0"
-                betas_group.attrs.create(HDF5FileNames.has_outliers.value, len(id_cluster[0]))
+                betas_group.attrs.create(HDF5FileNames.HAS_OUTLIERS.value, len(id_cluster[0]))
             for index, cluster in enumerate(id_cluster):
                 for entry in cluster:
                     # Enter appropriate cluster as attribute
                     sample = betas_group[entry]
-                    sample.attrs.create(HDF5FileNames.cluster.value, index)
+                    sample.attrs.create(HDF5FileNames.CLUSTER.value, index)
 
             prog.advance(cluster_task)  # type: ignore
 
@@ -1009,7 +1002,7 @@ class DimredRun:
 
         self._perform_context_check()
         self.log("Creating .html viz")
-        betas_group = self.h5file[HDF5FileNames.betas_group_name.value]
+        betas_group = self.h5file[HDF5FileNames.BETAS_GROUP_NAME.value]
         mark_outliers = False
 
         excluded_entries = [
@@ -1020,7 +1013,7 @@ class DimredRun:
         ]
 
         # check if clustering was performed, else load all betas into one pseudo-cluster
-        if HDF5FileNames.nr_clusters.value not in betas_group.attrs:
+        if HDF5FileNames.NR_CLUSTER.value not in betas_group.attrs:
 
             # plotfunction expects list of cluster
             # we have no clusters -> we claim all is in one cluster
@@ -1035,7 +1028,7 @@ class DimredRun:
 
         else:
             # check if outlier where detected
-            if HDF5FileNames.has_outliers.value in betas_group.attrs:
+            if HDF5FileNames.HAS_OUTLIERS.value in betas_group.attrs:
                 mark_outliers = True
 
             # index of all runs
@@ -1043,7 +1036,7 @@ class DimredRun:
 
             # create an index referencing each run to a cluster
             cluster_index = np.stack(
-                [betas_group[entry].attrs[HDF5FileNames.cluster.value] for entry in id_data]
+                [betas_group[entry].attrs[HDF5FileNames.CLUSTER.value] for entry in id_data]
             )
 
             # load betas & ids
@@ -1052,7 +1045,7 @@ class DimredRun:
             # create list containing list of clusters
             beta_cluster = []
             id_cluster = []
-            for i, cluster in enumerate(range(betas_group.attrs[HDF5FileNames.nr_clusters.value])):
+            for i, cluster in enumerate(range(betas_group.attrs[HDF5FileNames.NR_CLUSTER.value])):
                 chosen = np.where(cluster_index == cluster)[0]
                 if len(chosen) > 0:
                     beta_cluster.append(beta_data[chosen])

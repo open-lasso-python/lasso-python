@@ -240,6 +240,9 @@ def run_hash_comparison(
     print_progress: bool
         whether to print the progress
     """
+
+    # pylint: disable = too-many-locals, too-many-statements
+
     assert n_threads > 0
 
     # fixed settings
@@ -249,6 +252,7 @@ def run_hash_comparison(
     # the actual function starts way much down
 
     def _threading_run_comparison(run_indices, comparison_filepath, comm_q):
+        # pylint: disable = too-many-statements
 
         n_comparisons_thread = len(run_indices)
 
@@ -268,7 +272,7 @@ def run_hash_comparison(
             "filepaths",
             data=hashes_filepaths_ascii,
             shape=(len(hashes_filepaths_ascii), 1),
-            dtype="S{}".format(max_len),
+            dtype=f"S{max_len}",
         )
 
         n_modes_estimated = 25
@@ -304,7 +308,7 @@ def run_hash_comparison(
             compression=hdf5_dataset_compression,
         )
 
-        def _save_data(computed_results, hdf5_file, counter):
+        def _save_data(computed_results, counter):
 
             start = counter + 1 - len(computed_results)
             for i_result, result in enumerate(computed_results):
@@ -383,7 +387,7 @@ def run_hash_comparison(
 
             # save to file occasionally
             if counter % 500 == 0:
-                _save_data(computed_results, hdf5_file, counter)
+                _save_data(computed_results, counter)
 
             # print status
             if comm_q and not comm_q.full():
@@ -399,7 +403,7 @@ def run_hash_comparison(
 
         # dump at end (if anything was computed)
         if counter:
-            _save_data(computed_results, hdf5_file, counter)
+            _save_data(computed_results, counter)
 
     # <-- FUNCTION STARTS HERE
 
@@ -427,7 +431,7 @@ def run_hash_comparison(
 
         # run threads
         thread_filepaths = [
-            comparison_filepath + "_thread%d" % i_thread for i_thread in range(n_threads)
+            comparison_filepath + f"_thread{i_thread}" for i_thread in range(n_threads)
         ]
         threads = [
             multiprocessing.Process(
@@ -436,7 +440,8 @@ def run_hash_comparison(
             )
             for i_thread, matrix_indexes in enumerate(thread_matrix_entries)
         ]
-        [thread.start() for thread in threads]
+        for thread in threads:
+            thread.start()
 
         # logging
         if print_progress:
@@ -458,45 +463,39 @@ def run_hash_comparison(
                         thread_stats[i_thread] = comm_q.get(False)
 
                 # print msg
-                msg = (
-                    "| "
-                    + "".join(
-                        "Thread {0}: {1}% ({2}/{3}) {4}s | ".format(
-                            i_thread,
-                            "%.1f" % (100 * stats["i_entry"] / stats["n_entries"],),
-                            stats["i_entry"],
-                            stats["n_entries"],
-                            "%.2f" % stats["computation_time"],
-                        )
-                        for i_thread, stats in enumerate(thread_stats)
+                # pylint: disable = consider-using-f-string
+                thread_msg_list = [
+                    (
+                        f"Thread {i_thread}: "
+                        f"{(100 * stats['i_entry'] / stats['n_entries']):.1f}% "
+                        f"({stats['i_entry']}/{stats['n_entries']}) "
+                        f"{stats['computation_time']:.2f}s | "
                     )
-                    + "\r"
-                )
+                    for i_thread, stats in enumerate(thread_stats)
+                ]
+                msg = "| " + "".join(thread_msg_list) + "\r"
                 print(msg, end="")
                 time.sleep(0.35)
 
             # print completion message
-            msg = (
-                "| "
-                + "".join(
-                    "Thread {0}: {1}% ({2}/{3}) {4}s | ".format(
-                        i_thread,
-                        "%d" % 100,
-                        stats["n_entries"],
-                        stats["n_entries"],
-                        "%.2f" % stats["computation_time"],
-                    )
-                    for i_thread, stats in enumerate(thread_stats)
+            thread_msg_list = [
+                (
+                    f"Thread {i_thread}: "
+                    f"{(100 * stats['i_entry'] / stats['n_entries']):.1f}% "
+                    f"({stats['i_entry']}/{stats['n_entries']}) "
+                    f"{stats['computation_time']:.2f}s | "
                 )
-                + "\r"
-            )
+                for i_thread, stats in enumerate(thread_stats)
+            ]
+            msg = "| " + "".join(thread_msg_list) + "\r"
             print(msg, end="")
 
             print("")
             print("done.")
 
         # join thread worker files
-        [thread.join() for thread in threads]
+        for thread in threads:
+            thread.join()
         _join_hash_comparison_thread_files(comparison_filepath, thread_filepaths, n_runs)
 
 
@@ -535,12 +534,14 @@ def is_mode_match(
         the entire model).
     """
 
+    # pylint: disable = too-many-locals
+
     # if the jensen-shannon-divergence is below this value
     # then a mode switch is assumed
     distance_limit = 0.1
 
     # number of bins for probability distribution
-    nBins = 25
+    n_bins = 25
 
     # (1) match sub-samples in xyz
     # tree = KDTree(xyz1)
@@ -559,7 +560,7 @@ def is_mode_match(
     # bin the values
     xmin = min(tmp1.min(), tmp2.min())
     xmax = max(tmp1.max(), tmp2.max())
-    bins = np.linspace(xmin, xmax, nBins)
+    bins = np.linspace(xmin, xmax, n_bins)
     indexes_p1 = np.digitize(tmp1, bins)
     indexes_p2 = np.digitize(tmp2, bins)
     p1 = np.bincount(indexes_p1) / len(tmp1)
@@ -632,9 +633,7 @@ def compute_hashes(
         For comparison, only y is usually used.
     """
 
-    assert eig_vecs.shape[0] == len(result_field), "{} != {}".format(
-        eig_vecs.shape[0], len(result_field)
-    )
+    assert eig_vecs.shape[0] == len(result_field), f"{eig_vecs.shape[0]} != {len(result_field)}"
 
     # Note: needs to be vectorized to speed it up
 

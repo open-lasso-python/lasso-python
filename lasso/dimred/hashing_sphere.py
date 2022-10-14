@@ -1,11 +1,12 @@
-from sklearn.preprocessing import normalize
-from scipy.stats import binned_statistic_2d
-from scipy.spatial import ConvexHull
 import os
-import h5py
 import typing
-import numpy as np
 import warnings
+
+import h5py
+import numpy as np
+from scipy.spatial import ConvexHull
+from scipy.stats import binned_statistic_2d
+from sklearn.preprocessing import normalize
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
@@ -64,7 +65,7 @@ def _create_sphere_mesh(diameter: np.ndarray) -> typing.Tuple[np.ndarray, np.nda
 
 
 def _project_to_sphere(
-    points: np.ndarray, centroid: np.ndarray, AXIS: str = "Z"
+    points: np.ndarray, centroid: np.ndarray, axis: str = "Z"
 ) -> typing.Tuple[np.ndarray, np.ndarray]:
     """compute the projection vectors of centroid to each point in terms of spherical coordinates
 
@@ -88,11 +89,11 @@ def _project_to_sphere(
     indexes = [0, 1, 2]
 
     # correct the indexes based on user input
-    if AXIS == "Z":
+    if axis == "Z":
         indexes = [0, 1, 2]  # z axis aligned with global z-axis
-    elif AXIS == "Y":
+    elif axis == "Y":
         indexes = [0, 2, 1]  # z axis aligned with global y-axis
-    elif AXIS == "X":
+    elif axis == "X":
         indexes = [2, 1, 0]  # z axis aligned with global x-axis
 
     # projection
@@ -174,10 +175,6 @@ def compute_hashes(
 ):
     """Compute the hashes using spherical projection of the field values
 
-    NOTE:
-        Key for node_displacements for all timesteps: 'xyz'
-        Key for field values for all timesteps: 'fields'
-
     Parameters
     ----------
     source_path : str
@@ -195,7 +192,15 @@ def compute_hashes(
     -------
     hashes : np.ndarray
         hashed field values
+
+    Notes
+    -----
+        Key for node_displacements for all timesteps: 'xyz'
+        Key for field values for all timesteps: 'fields'
     """
+
+    # pylint: disable = too-many-locals
+
     node_displacement_key = "xyz"
     fields_key = "fields"
     file_name = "run_"
@@ -226,7 +231,7 @@ def compute_hashes(
         bins_a, bins_b = _create_sphere_mesh(dist)
 
         # compute the point projections
-        proj_alpha, proj_beta = _project_to_sphere(xyz, centroid, AXIS="Y")
+        proj_alpha, proj_beta = _project_to_sphere(xyz, centroid, axis="Y")
 
         # bin the spherical coordinates in terms of alpha and beta
         histo = binned_statistic_2d(

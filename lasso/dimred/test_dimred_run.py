@@ -44,9 +44,9 @@ class TestDimredRun(TestCase):
                 test_run.process_reference_run()
 
                 # check if reference subsamples match
-                test_refsample = test_run.h5file[HDF5FileNames.subsample_save_name.value]
+                test_refsample = test_run.h5file[HDF5FileNames.SUBSAMPLE_SAVE_NAME.value]
                 verification_refsample = verification_hdf5_file[
-                    HDF5FileNames.subsample_save_name.value
+                    HDF5FileNames.SUBSAMPLE_SAVE_NAME.value
                 ]
                 self.assertEqual(test_refsample.shape, verification_refsample.shape)
                 self.assertTrue((test_refsample[:] - verification_refsample[:]).max() == 0)
@@ -61,7 +61,7 @@ class TestDimredRun(TestCase):
                 test_run.subsample_to_reference_run()
 
                 # get subsampled samples
-                test_sub_group = test_run.h5file[HDF5FileNames.subsampled_group_name.value]
+                test_sub_group = test_run.h5file[HDF5FileNames.SUBSAMPLED_GROUP_NAME.value]
                 test_subs = np.stack([test_sub_group[key][:] for key in test_sub_group.keys()])
 
                 # check if shape is equal to (n_samples, timesteps, subsampled nodes, dims)
@@ -75,7 +75,7 @@ class TestDimredRun(TestCase):
                 test_run.dimension_reduction_svd()
 
                 # get test betas
-                test_betas_group = test_run.h5file[HDF5FileNames.betas_group_name.value]
+                test_betas_group = test_run.h5file[HDF5FileNames.BETAS_GROUP_NAME.value]
                 test_ids = np.stack([key for key in test_betas_group.keys()])
                 test_betas = np.stack([test_betas_group[key][:] for key in test_betas_group.keys()])
 
@@ -84,7 +84,7 @@ class TestDimredRun(TestCase):
                 self.assertEqual(test_ids.shape, (49,))
                 self.assertEqual(test_betas.shape, (49, 5, 10))
 
-                test_v_rob = test_run.h5file[HDF5FileNames.v_rob_save_name.value][:]
+                test_v_rob = test_run.h5file[HDF5FileNames.V_ROB_SAVE_NAME.value][:]
                 # shape of v_rob must be (eigen, timesteps, nodes)
                 self.assertEqual(test_v_rob.shape, (10, 5, 2000 * 3))
 
