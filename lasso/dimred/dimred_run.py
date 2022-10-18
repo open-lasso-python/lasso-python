@@ -12,15 +12,15 @@ from typing import Sequence, Tuple, Union
 import h5py
 import numpy as np
 import psutil
-from lasso.utils.rich_progress_bars import PlaceHolderBar, WorkingDots
 from rich.console import Console
 from rich.progress import BarColumn, Progress
 from rich.table import Table
 from rich.text import Text
 
+from ..utils.rich_progress_bars import PlaceHolderBar, WorkingDots
 from .svd.clustering_betas import create_cluster_arg_dict, create_detector_arg_dict, group_betas
 from .svd.plot_beta_clusters import plot_clusters_js
-from .svd.pod_functions import calculate_V_and_Betas
+from .svd.pod_functions import calculate_v_and_betas
 from .svd.subsampling_methods import create_reference_subsample, remap_random_subsample
 
 # pylint: disable = too-many-lines
@@ -385,6 +385,8 @@ class DimredRun:
         self.html_set_timestamp = html_set_timestamp
         self.show_output = show_output
 
+        self.pool = None
+
     def log(self, msg: str, style: Union[str, None] = None, highlight: bool = False):
         """Log a message
 
@@ -434,8 +436,12 @@ class DimredRun:
 
         raise DimredRunError(err_msg)
 
-    def _check_img_path(self, img_path: str):
+    # pylint believes this function has different return statements
+    # whereas it only has one.
+    # pylint: disable = inconsistent-return-statements
+    def _check_img_path(self, img_path: str) -> str:
         """checks if provided image path is valid"""
+
         if os.path.isdir(img_path):
             abs_path = os.path.abspath(img_path)
             js_path = re.sub(r"\\", "/", abs_path)
@@ -448,15 +454,11 @@ class DimredRun:
 
         # check validity
         if start_stage not in DIMRED_STAGES:
-            err_msg = "{0} is not a valid stage. Try: {1}.".format(
-                start_stage, ", ".join(DIMRED_STAGES)
-            )
+            err_msg = f"{start_stage} is not a valid stage. Try: {', '.join(DIMRED_STAGES)}."
             self.raise_error(err_msg)
 
         if end_stage not in DIMRED_STAGES:
-            err_msg = "{0} is not a valid stage. Try: {1}.".format(
-                end_stage, ", ".join(DIMRED_STAGES)
-            )
+            err_msg = f"{end_stage} is not a valid stage. Try: {', '.join(DIMRED_STAGES)}."
             self.raise_error(err_msg)
 
         # get indexes
@@ -514,8 +516,10 @@ class DimredRun:
         project_dir = os.path.abspath(project_dir)
 
         if os.path.isfile(project_dir):
-            err_msg = "The project path '{0}' is pointing at an existing file."
-            " Change either the project path or move the file."
+            err_msg = (
+                f"The project path '{project_dir}' is pointing at an existing file."
+                " Change either the project path or move the file."
+            )
             self.raise_error(err_msg)
 
         if not os.path.exists(project_dir):
@@ -531,6 +535,8 @@ class DimredRun:
         exclude_runs: Sequence[str],
         table: Table,
     ) -> Tuple[Sequence[str], str, Sequence[str]]:
+
+        # pylint: disable = too-many-locals
 
         # search all denoted runs
         simulation_runs = []
@@ -561,15 +567,13 @@ class DimredRun:
         if not simulation_runs_ok:
             err_msg = (
                 "No simulation files could be found with the specified patterns. "
-                + "Check the argument 'simulation_runs'."
+                "Check the argument 'simulation_runs'."
             )
             self.raise_error(err_msg)
 
-        table.add_row("# simul.-files", "{}".format(len(simulation_runs)))
+        table.add_row("# simul.-files", str(len(simulation_runs)))
 
-        table.add_row(
-            "# excluded files", "{}".format(n_runs_before_filtering - n_runs_after_filtering)
-        )
+        table.add_row("# excluded files", f"{n_runs_before_filtering - n_runs_after_filtering}")
 
         # check for valid reference run
         reference_run = ""
@@ -577,7 +581,7 @@ class DimredRun:
 
             reference_run_ok = os.path.isfile(reference_run_pattern)
             if not reference_run_ok:
-                err_msg = "Filepath '{0}' is not a file.".format(reference_run_pattern)
+                err_msg = f"Filepath '{reference_run_pattern}' is not a file."
                 self.raise_error(err_msg)
 
             reference_run = os.path.normpath(reference_run_pattern)
@@ -587,8 +591,7 @@ class DimredRun:
             if len(simulation_runs) > 1:
                 reference_run = simulation_runs[0]
             else:
-                err_msg = "Number of Simulation runs after using first as \n"
-                err_msg += "Reference run would be zero. "
+                err_msg = "Number of Simulation runs after using first as reference run is zero."
                 self.raise_error(err_msg)
 
         # add to table
@@ -629,7 +632,7 @@ class DimredRun:
 
         # creates a valid argument dict for outlier detection arguments
         self.detector_type = None
-        self.detector_args = dict()
+        self.detector_args = {}
 
         if outlier_args:
             result = create_detector_arg_dict(outlier_args)
@@ -642,10 +645,10 @@ class DimredRun:
     def _parse_n_processes(self, n_processes: int, table: Table) -> int:
 
         if n_processes <= 0:
-            err_msg = "n-processes is '{0}' but must be at least 1.".format(n_processes)
+            err_msg = f"n-processes is '{n_processes}' but must be at least 1."
             self.raise_error(err_msg)
 
-        table.add_row("n-processes", "{}".format(n_processes))
+        table.add_row("n-processes", str(n_processes))
         return n_processes
 
     def _parse_html_name(self, html_name_string: str) -> str:
@@ -654,8 +657,10 @@ class DimredRun:
         html_name = html_name.replace(" ", "-")
 
         if replace_count > 0:
-            msg = "Replaced {} invalid characters for the html file name.".format(replace_count)
-            msg += "\nThe new hmtl name is {}".format(html_name)
+            msg = (
+                f"Replaced {replace_count} invalid characters for the html file name. "
+                f"The new hmtl name is: {html_name}"
+            )
             self.log(msg)
 
         return html_name
@@ -728,6 +733,9 @@ class DimredRun:
 
     def subsample_to_reference_run(self):
         """Subsamples all runs"""
+
+        # pylint: disable = too-many-branches,too-many-locals
+
         self._perform_context_check()
         self.log("Subsampling")
 
@@ -776,8 +784,9 @@ class DimredRun:
                     break
 
             # check if an error occurred
-            if self.pool._broken and "entry" in locals():  # type: ignore
-                msg = "Failed to load file: {}".format(entry)  # type: ignore
+            # pylint: disable = protected-access, undefined-loop-variable
+            if self.pool._broken and "entry" in locals():
+                msg = f"Failed to load file: {entry}"
                 self.raise_error(msg)
 
             # we measure required time here
@@ -791,7 +800,7 @@ class DimredRun:
                 for i, sub in enumerate(submitted_samples):
                     if sub[1].done():
                         try:
-                            if type(sub[1].result()[0]) == str:
+                            if isinstance(sub[1].result()[0], str):
                                 self.raise_error(sub[1].result())
                             h5_sample = self.h5file[
                                 HDF5FileNames.SUBSAMPLED_GROUP_NAME.value
@@ -805,7 +814,7 @@ class DimredRun:
                             t_cum_io += sub[1].result()[2]
                             t_cum += sub[1].result()[1]
                         except RuntimeError:
-                            err_msg = "Error while loading {}".format(sub)
+                            err_msg = f"Error while loading {sub}"
                             self.raise_error(err_msg)
                 time.sleep(0.5)
 
@@ -826,6 +835,8 @@ class DimredRun:
 
     def dimension_reduction_svd(self):
         """Calculate V_ROB and Betas"""
+
+        # pylint: disable = too-many-locals
 
         # applying pod_functions.py
         # (TODO: lots of stuff in the pod_functions.py has to be overhauled)
@@ -893,7 +904,7 @@ class DimredRun:
                 ]
             )
 
-            result = calculate_V_and_Betas(
+            result = calculate_v_and_betas(
                 sub_displ, progress_bar=prog, task_id=beta_task
             )  # type: ignore
             # returns string if samplesize to small
@@ -912,6 +923,9 @@ class DimredRun:
 
     def clustering_results(self):
         """clustering results"""
+
+        # pylint: disable = too-many-locals
+
         self._perform_context_check()
         # delete old entries
         betas_group = self.h5file[HDF5FileNames.BETAS_GROUP_NAME.value]
@@ -953,18 +967,18 @@ class DimredRun:
                     [betas_group[entry][self.timestep, :3] for entry in beta_index]
                 )  # betas_group.keys()])
             except ValueError:
-                log_msg = "Invalid parameter for timestep. Set a valid timestep with --timestep. "
-                log_msg += "\n           "
-                log_msg += "To save time, you can restart the tool with --start-stage CLUSTERING."
+                log_msg = (
+                    "Invalid parameter for timestep. Set a valid timestep with --timestep.\n"
+                    "To save time, you can restart the tool with --start-stage CLUSTERING."
+                )
                 self.log(log_msg, style="warning")
-                err_msg = "Timestep {0} is not a valid timestep. ".format(self.timestep)
                 t_max = betas_group[beta_index[0]][:].shape[0]
-                err_msg += "Samples have {0} timesteps. ".format(t_max)
-                err_msg += "Choose a timestep between 0 and {0}".format(t_max - 1)
+                err_msg = (
+                    f"Timestep {self.timestep} is not a valid timestep. "
+                    f"Samples have {t_max} timesteps. "
+                    f"Choose a timestep between 0 and {t_max - 1}"
+                )
                 self.raise_error(err_msg)
-            # betas = np.linalg.norm(np.stack([
-            #     betas_group[entry][:, 1:4, :] for entry in betas_group.keys()
-            # ]), axis=3)
 
             result = group_betas(
                 beta_index,

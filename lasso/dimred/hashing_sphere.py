@@ -4,6 +4,10 @@ import warnings
 
 import h5py
 import numpy as np
+
+# scipy is C-code which causes invalid linter warning about ConvexHull not
+# being around.
+# pylint: disable = no-name-in-module
 from scipy.spatial import ConvexHull
 from scipy.stats import binned_statistic_2d
 from sklearn.preprocessing import normalize
@@ -215,8 +219,8 @@ def compute_hashes(
     # the last time step only
     for ii in range(n_files):
         with h5py.File(source_path + file_name + str(ii) + ".h5", "r") as hf:
-            node_displacements = hf[node_displacement_key].value
-            fields = hf[fields_key].value
+            node_displacements = hf[node_displacement_key]
+            fields = hf[fields_key]
 
         xyz = node_displacements[:, 0, :]
 

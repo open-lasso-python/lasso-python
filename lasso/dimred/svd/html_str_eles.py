@@ -1,4 +1,4 @@
-overhead_string = """
+OVERHEAD_STRING = """
 <html>
   <title>3D Beta Embedding</title>
 <head>
@@ -87,7 +87,7 @@ overhead_string = """
   </div>
 """  # noqa: E501
 
-trace_string = """
+TRACE_STRING = """
   {_traceNr_} =
     {{
       name: '{_name_}',
@@ -101,7 +101,7 @@ trace_string = """
     }},
 """
 
-const_string = """
+CONST_STRING = """
   {_three_min_}
   <script>
     path = "{_path_str_}"
@@ -109,7 +109,7 @@ const_string = """
     const runIDs = {_runIdEntries_}
 """
 
-script_string = """
+SCRIPT_STRING = """
     const pointSlider = document.getElementById("slider_pt_size")
     const borderSlider = document.getElementById("slider_border_size")
     const plotDiv = document.getElementById("plotDiv")

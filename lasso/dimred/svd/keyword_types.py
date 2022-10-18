@@ -2,7 +2,7 @@ import typing
 
 
 class ClusterType:
-    """Specifies names of specific clustering algorythms"""
+    """Specifies names of specific clustering algorithms"""
 
     OPTICS = "OPTICS"
     DBSCAN = "DBSCAN"
@@ -11,6 +11,7 @@ class ClusterType:
 
     @staticmethod
     def get_cluster_type_name() -> typing.List[str]:
+        """Get the name of the clustering algorithms"""
         return [
             ClusterType.OPTICS,
             ClusterType.DBSCAN,
@@ -29,29 +30,9 @@ class DetectorType:
 
     @staticmethod
     def get_detector_type_name() -> typing.List[str]:
+        """Get the name of the detector algorithms"""
         return [
             DetectorType.IsolationForest,
             DetectorType.OneClassSVM,
             DetectorType.LocalOutlierFactor,
-            # DetectorType.Experimental,
-        ]
-
-
-class FileNames:
-    """Makes sure, all functions use the same name when referencing the same file"""
-
-    name_csv = "mapping_names_to_id.csv"
-    name_reference_sample = "reference_subsample.npy"
-    name_subsamples = "all_subsamples.npy"
-    name_betas = "betas.npy"
-    name_V_ROB = "V_ROB.npy"
-
-    @staticmethod
-    def get_file_name() -> typing.List[str]:
-        return [
-            FileNames.name_csv,
-            FileNames.name_reference_sample,
-            FileNames.name_subsamples,
-            FileNames.name_betas,
-            FileNames.name_V_ROB,
         ]
