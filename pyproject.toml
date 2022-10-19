@@ -56,6 +56,8 @@ disable = [
     # A lot can go wrong under the hood so we catch broadly in multiple places
     # to report nice errors and skip failing parts if possible.
     "broad-except",
+    # We have a lot of lines which are self-similar but which are okay that way.
+    "duplicate-code",
 ]
 
 [tool.pylint.basic]

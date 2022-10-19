@@ -1,27 +1,27 @@
 from concurrent import futures
-from lasso.logging import str_error
-from lasso.diffcrash.DiffcrashRun import (
-    DiffcrashRun,
-    parse_diffcrash_args,
-    DC_STAGES,
-    DC_STAGE_SETUP,
+
+from lasso.diffcrash.diffcrash_run import (
+    DC_STAGE_EIGEN,
+    DC_STAGE_EXPORT,
     DC_STAGE_IMPORT,
     DC_STAGE_MATH,
-    DC_STAGE_EXPORT,
     DC_STAGE_MATRIX,
-    DC_STAGE_EIGEN,
     DC_STAGE_MERGE,
+    DC_STAGE_SETUP,
+    DC_STAGES,
+    DiffcrashRun,
+    parse_diffcrash_args,
 )
 
+from ..logging import str_error
 
-def parse_stages(start_stage: str, end_stage: str):
+
+def _parse_stages(start_stage: str, end_stage: str):
 
     # check validity
     if start_stage not in DC_STAGES or end_stage not in DC_STAGES:
         raise ValueError(
-            str_error(
-                "{0} is not a valid stage. Try: {1}.".format(start_stage, ", ".join(DC_STAGES))
-            )
+            str_error(f"{start_stage} is not a valid stage. Try: {', '.join(DC_STAGES)}.")
         )
 
     # get indexes
@@ -32,10 +32,9 @@ def parse_stages(start_stage: str, end_stage: str):
     if start_stage_index > end_stage_index:
         raise ValueError(
             str_error(
-                (
-                    "The specified end stage '{0}' comes before the start stage ({1})."
-                    + " Try the order: {2}"
-                ).format(end_stage, start_stage, ", ".join(DC_STAGES))
+                f"The specified end stage '{end_stage}' comes before "
+                f"the start stage ({start_stage}). "
+                f"Try the order: {', '.join(DC_STAGES)}"
             )
         )
 
@@ -43,6 +42,7 @@ def parse_stages(start_stage: str, end_stage: str):
 
 
 def main():
+    """Main function for running diffcrash"""
 
     # parse command line stuff
     parser = parse_diffcrash_args()
@@ -62,7 +62,7 @@ def main():
     )
 
     # determine start and end stages
-    start_stage_index, end_stage_index = parse_stages(parser.start_stage, parser.end_stage)
+    start_stage_index, end_stage_index = _parse_stages(parser.start_stage, parser.end_stage)
 
     # remove old stuff
     if start_stage_index == 0:
