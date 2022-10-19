@@ -1,7 +1,7 @@
 from unittest import TestCase
 import numpy as np
 from lasso.dimred.svd.clustering_betas import group_betas
-from lasso.dimred.svd.KeywordTypes import DetectorType, ClusterType
+from lasso.dimred.svd.keyword_types import DetectorType, ClusterType
 
 
 class TestClustering(TestCase):

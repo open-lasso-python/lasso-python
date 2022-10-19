@@ -12,11 +12,13 @@ class PlaceHolderBar:
     tasks: list = []
 
     # noinspection PyUnusedLocal
+    # pylint: disable = unused-argument
     def __init__(self, **kwargs):
         """This is a placeholder to not clutter console during testing"""
         self.finished: False
 
     # noinspection PyUnusedLocal
+    # pylint: disable = unused-argument
     def render(self, task: Any) -> str:
         """returns the planned output: empty string"""
         return ""
@@ -91,7 +93,8 @@ class SubsamplingWaitTime(ProgressColumn):
 
         if task.completed == task.total:
             return "Time remaining: 00:00"
-        elif self.cum_time > 0:
+
+        if self.cum_time > 0:
             avrg_time = self.cum_time / max(1, task.completed)
             rem_tasks = task.total - task.completed
             gr_tasks = math.floor(rem_tasks / self.n_proc)
@@ -112,8 +115,8 @@ class SubsamplingWaitTime(ProgressColumn):
                 secs = "0" + secs
             out_str = "Time remaining: " + mins + ":" + secs
             return out_str
-        else:
-            return "Time remaining: --:--"
+
+        return "Time remaining: --:--"
 
     def update_avrg(self, new_time: float):
         """TODO: add description"""

@@ -4,14 +4,14 @@ import inspect
 # Source: https://www.fast.ai/2019/08/06/delegation/
 
 
-def delegates(to=None, keep=False):
+def delegates(to_function=None, keep=False):
     """Decorator: replace `**kwargs` in signature with params from `to`"""
 
     def _f(f_att):
-        if to is None:
+        if to_function is None:
             to_f, from_f = f_att.__base__.__init__, f_att.__init__
         else:
-            to_f, from_f = to, f_att
+            to_f, from_f = to_function, f_att
         sig = inspect.signature(from_f)
         sig_dict = dict(sig.parameters)
         k = sig_dict.pop("kwargs")

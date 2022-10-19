@@ -1,4 +1,5 @@
 import ctypes
+from dataclasses import dataclass
 import logging
 import mmap
 import os
@@ -14,14 +15,16 @@ from typing import Any, BinaryIO, Dict, Iterable, List, Set, Tuple, Union
 import numpy as np
 
 from ..femzip.femzip_api import FemzipAPI, FemzipBufferInfo, FemzipVariableCategory
-from ..io.BinaryBuffer import BinaryBuffer
+from ..io.binary_buffer import BinaryBuffer
 from ..io.files import open_file_or_filepath
 from ..logging import get_logger
 from ..plotting import plot_shell_mesh
-from .ArrayType import ArrayType
-from .D3plotHeader import D3plotFiletype, D3plotHeader
-from .FemzipMapper import FemzipMapper, filter_femzip_variables
-from .FilterType import FilterType
+from .array_type import ArrayType
+from .d3plot_header import D3plotFiletype, D3plotHeader
+from .femzip_mapper import FemzipMapper, filter_femzip_variables
+from .filter_type import FilterType
+
+# pylint: disable = too-many-lines
 
 FORTRAN_OFFSET = 1
 LOGGER = get_logger(__name__)
@@ -103,6 +106,7 @@ def _negative_to_positive_state_indexes(indexes: Set[int], n_entries) -> Set[int
     return new_entries
 
 
+# pylint: disable = too-many-instance-attributes
 class D3plotWriterSettings:
     """Settings class for d3plot writing"""
 
@@ -138,7 +142,7 @@ class D3plotWriterSettings:
         self.unique_shell_part_indexes = np.empty(0, dtype=self.itype)
         self.unique_solid_part_indexes = np.empty(0, dtype=self.itype)
         self.unique_tshell_part_indexes = np.empty(0, dtype=self.itype)
-        self._STR_CODEC = "utf-8"
+        self._str_codec = "utf-8"
         self.has_node_temperature_gradient = False
         self.has_node_residual_forces = False
         self.has_node_residual_moments = False
@@ -151,6 +155,13 @@ class D3plotWriterSettings:
 
     @property
     def wordsize(self):
+        """Get the wordsize to use for the d3plot
+
+        Returns
+        -------
+            worsize : int
+                D3plot wordsize
+        """
         return self.d3plot.header.wordsize
 
     @property
@@ -168,7 +179,9 @@ class D3plotWriterSettings:
         assert isinstance(new_header, dict)
         self._header = new_header
 
+    # pylint: disable = too-many-branches, too-many-statements, too-many-locals
     def build_header(self):
+        """Build the new d3plot header"""
 
         new_header = {}
 
@@ -215,7 +228,7 @@ class D3plotWriterSettings:
         _check_array_occurrence(
             self.d3plot, array_names=required_arrays, required_array_names=required_arrays
         )
-        has_rigid_road = True if ArrayType.rigid_road_node_ids in self.d3plot.arrays else False
+        has_rigid_road = ArrayType.rigid_road_node_ids in self.d3plot.arrays
 
         # check for mattyp shit
         # self.mattyp = 0
@@ -324,15 +337,15 @@ class D3plotWriterSettings:
             required_array_names=[ArrayType.node_temperature],
         )
 
-        it = 0
+        it_temp = 0
         if ArrayType.node_mass_scaling in self.d3plot.arrays:
-            it += 10
+            it_temp += 10
 
         if (
             ArrayType.node_temperature in self.d3plot.arrays
             and ArrayType.node_heat_flux not in self.d3plot.arrays
         ):
-            it += 1
+            it_temp += 1
         elif (
             ArrayType.node_temperature in self.d3plot.arrays
             and ArrayType.node_heat_flux in self.d3plot.arrays
@@ -340,16 +353,16 @@ class D3plotWriterSettings:
 
             node_temp_shape = self.d3plot.arrays[ArrayType.node_temperature].shape
             if node_temp_shape.ndim == 2:
-                it += 2
+                it_temp += 2
             elif node_temp_shape.ndim == 3:
-                it += 3
+                it_temp += 3
             else:
                 msg = "{1} is supposed to have either 2 or 3 dims and not '{0}'"
                 raise RuntimeError(msg.format(node_temp_shape.ndim, ArrayType.node_temperature))
         else:
             # caught by _check_array_occurrence
             pass
-        new_header["it"] = it
+        new_header["it"] = it_temp
 
         # IU - disp field indicator
         new_header["iu"] = 1 if ArrayType.node_displacement in self.d3plot.arrays else 0
@@ -403,7 +416,7 @@ class D3plotWriterSettings:
 
         # NV3D - number of solid vars
         # NEIPH - number of solid history vars
-        n_solid_layers = self.d3plot._check_array_dims(
+        n_solid_layers = self.d3plot.check_array_dims(
             {
                 ArrayType.element_solid_stress: 2,
                 ArrayType.element_solid_effective_plastic_strain: 2,
@@ -415,11 +428,11 @@ class D3plotWriterSettings:
         )
         n_solid_layers = 1 if n_solid_layers < 1 else n_solid_layers
         self.n_solid_layers = n_solid_layers
-        if n_solid_layers != 1 and n_solid_layers != 8:
+        if n_solid_layers not in (1, 8):
             err_msg = "Solids must have either 1 or 8 integration layers not {0}."
             raise ValueError(err_msg.format(self.n_solid_layers))
 
-        n_solid_hist_vars, n_ = self._count_array_state_var(
+        n_solid_hist_vars, _ = self.count_array_state_var(
             array_type=ArrayType.element_solid_history_variables,
             dimension_names=["n_timesteps", "n_solids", "n_solid_layers", "n_history_vars"],
             has_layers=True,
@@ -429,10 +442,10 @@ class D3plotWriterSettings:
 
         if ArrayType.element_solid_strain in self.d3plot.arrays:
             n_solid_hist_vars += 6
-        # TODO verify if this is counted as history var
+        # It is uncertain if this is counted as history var
         if ArrayType.element_solid_plastic_strain_tensor in self.d3plot.arrays:
             n_solid_hist_vars += 6
-        # TODO verify if this is counted as history var
+        # It is uncertain if this is counted as history var
         if ArrayType.element_solid_thermal_strain_tensor in self.d3plot.arrays:
             n_solid_hist_vars += 6
         n_solid_vars = (7 + n_solid_hist_vars) * n_solid_layers
@@ -480,7 +493,7 @@ class D3plotWriterSettings:
             ArrayType.element_beam_axial_strain: 2,
             ArrayType.element_beam_history_vars: 2,
         }
-        n_beam_layers = self.d3plot._check_array_dims(array_dims, "n_beam_layers")
+        n_beam_layers = self.d3plot.check_array_dims(array_dims, "n_beam_layers")
         new_header["beamip"] = n_beam_layers
 
         new_header["neipb"] = 0
@@ -500,7 +513,7 @@ class D3plotWriterSettings:
                 )
                 raise ValueError(msg.format(ArrayType.element_beam_history_vars))
             if array.shape[3] != 3 + n_beam_layers:
-                msg = "Array '{0}' dimension 3 must have size " "(3+n_beam_layers). {1} != (3+{2})"
+                msg = "Array '{0}' dimension 3 must have size (3+n_beam_layers). {1} != (3+{2})"
                 raise ValueError(msg.format(ArrayType.element_beam_history_vars))
             new_header["neipb"] = array.shape[3]
 
@@ -548,13 +561,13 @@ class D3plotWriterSettings:
             or ArrayType.element_tshell_history_variables in self.d3plot.arrays
         ):
 
-            n_shell_history_vars, n_shell_layers = self._count_array_state_var(
+            n_shell_history_vars, n_shell_layers = self.count_array_state_var(
                 array_type=ArrayType.element_shell_history_vars,
                 dimension_names=["n_timesteps", "n_shells", "n_shell_layers", "n_history_vars"],
                 has_layers=True,
                 n_layers=n_shell_layers,
             )
-            n_tshell_history_vars, n_tshell_layers = self._count_array_state_var(
+            n_tshell_history_vars, n_tshell_layers = self.count_array_state_var(
                 array_type=ArrayType.element_tshell_history_variables,
                 dimension_names=["n_timesteps", "n_tshells", "n_shell_layers", "n_history_vars"],
                 has_layers=True,
@@ -584,7 +597,7 @@ class D3plotWriterSettings:
             ArrayType.element_tshell_effective_plastic_strain: 2,
             ArrayType.element_tshell_history_variables: 2,
         }
-        n_shell_layers = self.d3plot._check_array_dims(array_dims, "n_shell_layers")
+        n_shell_layers = self.d3plot.check_array_dims(array_dims, "n_shell_layers")
         self.n_shell_layers = n_shell_layers
 
         # NELTH - number of thick shell elements
@@ -697,7 +710,6 @@ class D3plotWriterSettings:
             or ArrayType.element_solid_strain in self.d3plot.arrays
             or ArrayType.element_tshell_strain in self.d3plot.arrays
         ):
-            # FIXME
             # new_header["idtdt"] = 10000
             istrn = 1
         new_header["istrn"] = istrn
@@ -749,7 +761,7 @@ class D3plotWriterSettings:
             ArrayType.element_tshell_stress: 2,
             ArrayType.element_tshell_effective_plastic_strain: 2,
         }
-        n_shell_layers = self.d3plot._check_array_dims(array_dims, "n_layers")
+        n_shell_layers = self.d3plot.check_array_dims(array_dims, "n_layers")
 
         # beauty fix: take old shell layers if none exist
         if n_shell_layers == 0:
@@ -867,7 +879,7 @@ class D3plotWriterSettings:
             or ArrayType.part_velocity in self.d3plot.arrays
         ):
 
-            tmp_nmmat2 = self.d3plot._check_array_dims(
+            tmp_nmmat2 = self.d3plot.check_array_dims(
                 {
                     ArrayType.part_ids: 0,
                     ArrayType.part_internal_energy: 1,
@@ -998,6 +1010,7 @@ class D3plotWriterSettings:
 
         # subver overwrite
         if self.d3plot.header.n_airbags:
+            # pylint: disable = protected-access
             subver = self.d3plot._airbag_info.subver
 
         n_partgas = (
@@ -1095,6 +1108,7 @@ class D3plotWriterSettings:
         # new header
         self._header = new_header
 
+    # pylint: disable = too-many-return-statements
     def pack(self, value: Any, size=None, dtype_hint=None) -> bytes:
         """Pack a python value according to its settings
 
@@ -1124,27 +1138,27 @@ class D3plotWriterSettings:
         if isinstance(value, self._allowed_int_types):
             return struct.pack(self.itype, value)
         # FLOAT
-        elif isinstance(value, self._allowed_float_types):
+        if isinstance(value, self._allowed_float_types):
             return struct.pack(self.ftype, value)
         # BYTES
-        elif isinstance(value, bytes):
+        if isinstance(value, bytes):
             if size and len(value) > size:
                 return value[:size]
             return value
         # BYTEARRAY
-        elif isinstance(value, bytearray):
+        if isinstance(value, bytearray):
             if size and len(value) > size:
                 return bytes(value[:size])
             return bytes(value)
         # STRING
-        elif isinstance(value, str):
+        if isinstance(value, str):
             if size:
                 fmt = "{0:" + str(size) + "}"
-                return fmt.format(value).encode(self._STR_CODEC)
-            else:
-                return value.encode(self._STR_CODEC)
+                return fmt.format(value).encode(self._str_codec)
+
+            return value.encode(self._str_codec)
         # ARRAY
-        elif isinstance(value, np.ndarray):
+        if isinstance(value, np.ndarray):
 
             if (value.dtype != self.ftype and dtype_hint == np.floating) or (
                 value.dtype != self.itype and dtype_hint == np.integer
@@ -1159,23 +1173,21 @@ class D3plotWriterSettings:
                 new_dtype = self.itype if dtype_hint == np.integer else self.ftype
 
                 # log conversion
-                msg = "Converting array from {0} to {1}"
-                LOGGER.info(msg.format(value.dtype, new_dtype))
+                msg = "Converting array from %s to %s"
+                LOGGER.info(msg, value.dtype, new_dtype)
 
                 # warn if convert between int and float (possible bugs)
                 if not np.issubdtype(value.dtype, dtype_hint):
-                    LOGGER.warning(msg.format(value.dtype, new_dtype))
+                    LOGGER.warning(msg, value.dtype, new_dtype)
 
                 value = value.astype(new_dtype)
 
             return value.tobytes()
 
-        # else
-        else:
-            msg = "Cannot deserialize type '{0}' of value '{1}' for writing."
-            raise RuntimeError(msg.format(type(value), value))
+        msg = "Cannot deserialize type '%s' of value '%s' for writing."
+        raise RuntimeError(msg, type(value), value)
 
-    def _count_array_state_var(
+    def count_array_state_var(
         self, array_type: str, dimension_names: List[str], has_layers: bool, n_layers: int = 0
     ) -> Tuple[int, int]:
         """This functions checks and updates the variable count for certain types of arrays
@@ -1245,7 +1257,10 @@ class D3plotWriterSettings:
         return n_vars, n_layers
 
 
+@dataclass
 class MemoryInfo:
+    """MemoryInfo contains info about memory regions in files"""
+
     start: int = 0
     length: int = 0
     filepath: str = ""
@@ -1253,18 +1268,10 @@ class MemoryInfo:
     filesize: int = 0
     use_mmap: bool = False
 
-    def __init__(
-        self, start: int, length: int, filepath: str, n_states: int, filesize: int, use_mmap: bool
-    ):
-        self.start = start
-        self.length = length
-        self.filepath = filepath
-        self.n_states = n_states
-        self.filesize = filesize
-        self.use_mmap = use_mmap
-
 
 class FemzipInfo:
+    """FemzipInfo contains information and wrappers for the femzip api"""
+
     api: FemzipAPI
     n_states: int = 0
     buffer_info: FemzipBufferInfo
@@ -1284,15 +1291,18 @@ class FemzipInfo:
                     self.buffer_info = self.api.get_buffer_info(filepath)
                 # loading femzip api failed
                 except Exception as err:
-                    err_msg = "Failed to use Femzip: {0}"
-                    raise RuntimeError(err_msg.format(err))
+                    raise RuntimeError(f"Failed to use Femzip: {err}") from err
 
 
 class MaterialSectionInfo:
+    """MaterialSectionInfo contains vars from the material section"""
+
     n_rigid_shells: int = 0
 
 
 class SphSectionInfo:
+    """SphSectionInfo contains vars from the sph geometry section"""
+
     n_sph_array_length: int = 11
     n_sph_vars: int = 0
     has_influence_radius: bool = False
@@ -1309,6 +1319,8 @@ class SphSectionInfo:
 
 
 class AirbagInfo:
+    """AirbagInfo contains vars used to describe the sph geometry section"""
+
     n_geometric_variables: int = 0
     n_airbag_state_variables: int = 0
     n_particle_state_variables: int = 0
@@ -1319,6 +1331,13 @@ class AirbagInfo:
     n_chambers: int = 0
 
     def get_n_variables(self) -> int:
+        """Get the number of airbag variables
+
+        Returns
+        -------
+        n_airbag_vars: int
+            number of airbag vars
+        """
         return (
             self.n_geometric_variables
             + self.n_particle_state_variables
@@ -1327,6 +1346,8 @@ class AirbagInfo:
 
 
 class NumberingInfo:
+    """NumberingInfo contains vars from the part numbering section (ids)"""
+
     # the value(s) of ptr is initialized
     # as 1 since we need to make it
     # negative if part_ids are written
@@ -1352,29 +1373,22 @@ class NumberingInfo:
     n_rigid_bodies: int = 0
 
 
+@dataclass
 class RigidBodyMetadata:
+    """RigidBodyMetadata contains vars from the rigid body metadata section.
+    This section comes before the individual rigid body data.
+    """
+
     internal_number: int
     n_nodes: int
     node_indexes: np.ndarray
     n_active_nodes: int
     active_node_indexes: np.ndarray
 
-    def __init__(
-        self,
-        internal_number: int,
-        n_nodes: int,
-        node_indexes: np.ndarray,
-        n_active_nodes: int,
-        active_node_indexes: np.ndarray,
-    ):
-        self.internal_number = internal_number
-        self.n_nodes = n_nodes
-        self.node_indexes = node_indexes
-        self.n_active_nodes = n_active_nodes
-        self.active_node_indexes = active_node_indexes
-
 
 class RigidBodyInfo:
+    """RigidBodyMetadata contains vars for the individual rigid bodies"""
+
     rigid_body_metadata_list: Iterable[RigidBodyMetadata]
     n_rigid_bodies: int = 0
 
@@ -1386,6 +1400,8 @@ class RigidBodyInfo:
 
 
 class RigidRoadInfo:
+    """RigidRoadInfo contains metadata for the description of rigid roads"""
+
     n_nodes: int = 0
     n_road_segments: int = 0
     n_roads: int = 0
@@ -1402,6 +1418,10 @@ class RigidRoadInfo:
 
 
 class StateInfo:
+    """StateInfo holds metadata for states which is currently solely the timestep.
+    We all had bigger plans in life ...
+    """
+
     n_timesteps: int = 0
 
     def __init__(self, n_timesteps: int = 0):
@@ -1419,10 +1439,13 @@ class D3plot:
     _numbering_info: NumberingInfo
     _rigid_body_info: RigidBodyInfo
     _rigid_road_info: RigidRoadInfo
+    _buffer: Union[BinaryBuffer, None] = None
 
     # we all love secret settings
     use_advanced_femzip_api: bool = False
 
+    # This amount of args is needed
+    # pylint: disable = too-many-arguments, too-many-statements, unused-argument
     def __init__(
         self,
         filepath: str = None,
@@ -1439,7 +1462,7 @@ class D3plot:
         filepath: str
             path to a d3plot file
         use_femzip: bool
-           Not needed anymore. Enforces femzip decompression manually.
+           Not used anymore.
         n_files_to_load_at_once: int
            *DEPRECATED* not used anymore, use `buffered_reading`
         state_array_filter: Union[List[str], None]
@@ -1474,13 +1497,12 @@ class D3plot:
             If dyna wrote multiple files for several states,
             only give the path to the first file.
         """
-        super(D3plot, self).__init__()
+        super().__init__()
 
         LOGGER.debug("-------- D 3 P L O T --------")
 
         self._arrays = {}
         self._header = D3plotHeader()
-        # self._femzip_info = FemzipInfo()
         self._femzip_info = FemzipInfo(filepath=filepath if filepath is not None else "")
         self._material_section_info = MaterialSectionInfo()
         self._sph_info = SphSectionInfo()
@@ -1497,9 +1519,7 @@ class D3plot:
         if n_files_to_load_at_once is not None:
             warn_msg = "D3plot argument '{0}' is deprecated. Please use '{1}=True'."
             raise DeprecationWarning(warn_msg.format("n_files_to_load_at_once", "buffered_reading"))
-        self.buffered_reading = (
-            True if buffered_reading or (state_filter is not None and any(state_filter)) else False
-        )
+        self.buffered_reading = buffered_reading or (state_filter is not None and any(state_filter))
 
         # arrays to filter out
         self.state_array_filter = state_array_filter
@@ -1507,17 +1527,17 @@ class D3plot:
         # load memory accordingly
         # no femzip
         if filepath and not self._femzip_info.use_femzip:
-            self.bb = BinaryBuffer(filepath)
+            self._buffer = BinaryBuffer(filepath)
             self.bb_states = None
         # femzip
         elif filepath and self._femzip_info.use_femzip:
-            self.bb = self._read_femzip_geometry(filepath)
+            self._buffer = self._read_femzip_geometry(filepath)
             # we need to reload the header
-            self._header = D3plotHeader().load_file(self.bb)
+            self._header = D3plotHeader().load_file(self._buffer)
             self.bb_states = None
         # no data to load basically
         else:
-            self.bb = None
+            self._buffer = None
             self.bb_states = None
 
         self.geometry_section_size = 0
@@ -1544,12 +1564,12 @@ class D3plot:
                     filepath,
                 )
             except Exception:
-                tb = traceback.format_exc()
+                trace = traceback.format_exc()
                 warn_msg = (
                     "Error when using advanced Femzip API, "
-                    "falling back to normal but slower Femzip API.\n{0}"
+                    "falling back to normal but slower Femzip API.\n%s"
                 )
-                LOGGER.warning(warn_msg.format(tb))
+                LOGGER.warning(warn_msg, trace)
 
                 # since we had a crash, we need to reload the file
                 # to be sure we don't crash again
@@ -1588,11 +1608,11 @@ class D3plot:
         )
 
         # save
-        bb = BinaryBuffer()
-        bb.filepath_ = filepath
-        bb.memoryview = buffer_geo.cast("B")
+        buffer = BinaryBuffer()
+        buffer.filepath_ = filepath
+        buffer.memoryview = buffer_geo.cast("B")
 
-        return bb
+        return buffer
 
     @property
     def n_timesteps(self) -> int:
@@ -1650,7 +1670,7 @@ class D3plot:
 
     @staticmethod
     def _is_end_of_file_marker(
-        bb: BinaryBuffer, position: int, ftype: Union[np.float32, np.float64]
+        buffer: BinaryBuffer, position: int, ftype: Union[np.float32, np.float64]
     ) -> bool:
         """Check for the dyna eof marker at a certain position
 
@@ -1679,7 +1699,7 @@ class D3plot:
             err_msg = "Floating point type '{0}' is not a floating point type."
             raise ValueError(err_msg.format(ftype))
 
-        return bb.read_number(position, ftype) == ftype(-999999)
+        return buffer.read_number(position, ftype) == ftype(-999999)
 
     def _correct_file_offset(self):
         """Correct the position in the bytes
@@ -1692,10 +1712,10 @@ class D3plot:
             in order to get to the next useful data block.
         """
 
-        if not self.bb:
+        if not self._buffer:
             return
 
-        block_count = len(self.bb) // (512 * self.header.wordsize)
+        block_count = len(self._buffer) // (512 * self.header.wordsize)
 
         # Warning!
         # Resets the block count!
@@ -1744,6 +1764,7 @@ class D3plot:
 
         return max(n_rigid_walls, 0)
 
+    # pylint: disable = unused-argument, too-many-locals
     def _read_d3plot_file_generator(
         self, buffered_reading: bool, state_filter: Union[None, Set[int]]
     ) -> typing.Any:
@@ -1758,25 +1779,23 @@ class D3plot:
 
         Yields
         ------
-        bb: BinaryBuffer
+        buffer: BinaryBuffer
             buffer for each file
         n_states: int
             number of states from second yield on
         """
 
         # (1) STATES
-        # TODO this is dangerous
-        # the following routine requires data from
-        # several sections in the geometry part
-        # calling this too early crashes
+        # This is dangerous. The following routine requires data from
+        # several sections in the geometry part calling this too early crashes
         bytes_per_state = self._compute_n_bytes_per_state()
         file_infos = self._collect_file_infos(bytes_per_state)
 
         # some status
         n_files = len(file_infos)
         n_states = sum(map(lambda file_info: file_info.n_states, file_infos))
-        LOGGER.debug("n_files found: {0}".format(n_files))
-        LOGGER.debug("n_states estimated: {0}".format(n_states))
+        LOGGER.debug("n_files found: %d", n_files)
+        LOGGER.debug("n_states estimated: %d", n_states)
 
         # convert negative state indexes into positive ones
         if state_filter is not None:
@@ -1809,7 +1828,7 @@ class D3plot:
                 n_previous_states += minfo.n_states
             file_infos = file_infos_tmp
 
-        LOGGER.debug("buffers: {0}".format(pprint.pformat([info.__dict__ for info in file_infos])))
+        LOGGER.debug("buffers: %s", pprint.pformat([info.__dict__ for info in file_infos]))
 
         # number of states and if buffered reading is used
         n_states_selected = sum(map(lambda file_info: file_info.n_states, file_infos))
@@ -1817,8 +1836,8 @@ class D3plot:
 
         sub_file_infos = [file_infos] if not buffered_reading else [[info] for info in file_infos]
         for sub_file_info_list in sub_file_infos:
-            bb, n_states = D3plot._read_file_from_memory_info(sub_file_info_list)
-            yield bb, n_states
+            buffer, n_states = D3plot._read_file_from_memory_info(sub_file_info_list)
+            yield buffer, n_states
 
     def _read_femzip_file_generator(
         self, buffered_reading: bool, state_filter: Union[None, Set[int]]
@@ -1834,7 +1853,7 @@ class D3plot:
 
         Yields
         ------
-        bb: BinaryBuffer
+        buffer: BinaryBuffer
             binary buffer of a file
         n_states: int
             from second yield on, number of states for buffers
@@ -1854,16 +1873,17 @@ class D3plot:
             n_states_to_load = len(state_filter)
         else:
             n_states_to_load = n_timesteps
-            state_filter_parsed = {i_timestep for i_timestep in range(n_timesteps)}
+            state_filter_parsed = set(range(n_timesteps))
 
         yield n_states_to_load
 
         n_files_to_load_at_once = n_timesteps if not buffered_reading else 1
+        # pylint: disable = invalid-name
         BufferStateType = ctypes.c_float * (buffer_info.size_state * n_files_to_load_at_once)
         buffer_state = BufferStateType()
 
-        bb = BinaryBuffer()
-        bb.memoryview = memoryview(buffer_state)
+        buffer = BinaryBuffer()
+        buffer.memoryview = memoryview(buffer_state)
 
         # do the thing
         i_timesteps_read = 0
@@ -1871,7 +1891,7 @@ class D3plot:
         for i_timestep in range(n_timesteps):
 
             # buffer offset
-            buffer_current_state = bb.memoryview[i_timesteps_read * buffer_info.size_state :]
+            buffer_current_state = buffer.memoryview[i_timesteps_read * buffer_info.size_state :]
 
             # read state
             femzip_api.read_single_state(i_timestep, buffer_info, state_buffer=buffer_current_state)
@@ -1885,13 +1905,13 @@ class D3plot:
             # This is ok for buffered reading thus indirectly safe
             # since elsewhere the arrays get copied but keep it in mind!
             if i_timesteps_read != 0 and i_timesteps_read % n_files_to_load_at_once == 0:
-                yield bb, i_timesteps_read
+                yield buffer, i_timesteps_read
                 i_timesteps_read = 0
 
             # stop in case we have everything we needed
             if i_timestep >= max_timestep:
                 if i_timesteps_read != 0:
-                    yield bb, i_timesteps_read
+                    yield buffer, i_timesteps_read
                 break
 
         # do the thing
@@ -1973,7 +1993,7 @@ class D3plot:
             if (
                 plt_name == ArrayType.element_solid_history_variables
                 and self.header.has_element_strain
-                and ArrayType.element_solid_strain not in mapper.d3plot_arrays.keys()
+                and ArrayType.element_solid_strain not in mapper.d3plot_arrays
             ):
                 self.arrays[ArrayType.element_solid_strain] = arr[:, :, :, :6]
                 tmp_array = arr[:, :, :, 6:]
@@ -2004,8 +2024,8 @@ class D3plot:
 
         LOGGER.debug("-------- H E A D E R --------")
 
-        if self.bb:
-            self._header.load_file(self.bb)
+        if self._buffer:
+            self._header.load_file(self._buffer)
 
         self.geometry_section_size = self._header.n_header_bytes
 
@@ -2058,24 +2078,24 @@ class D3plot:
         # this is a class method since it is also needed elsewhere
         self.geometry_section_size = self._read_header_part_contact_interface_titles(
             self.header,
-            self.bb,
+            self._buffer,
             self.geometry_section_size,  # type: ignore
             self.arrays,
         )
 
         # Extra Data Types (for multi solver output)
-        # TODO
+        # ... not supported
 
     def _read_material_section(self):
         """This function reads the material type section"""
 
-        if not self.bb:
+        if not self._buffer:
             return
 
         if not self.header.has_material_type_section:
             return
 
-        LOGGER.debug("_read_material_section start at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_material_section start at byte %d", self.geometry_section_size)
 
         position = self.geometry_section_size
 
@@ -2099,20 +2119,20 @@ class D3plot:
             # all the values for the element to zero." (Manual 03.2016)
 
             self._material_section_info.n_rigid_shells = int(
-                self.bb.read_number(position, self._header.itype)
+                self._buffer.read_number(position, self._header.itype)
             )  # type: ignore
             position += self.header.wordsize
 
-            test_nummat = self.bb.read_number(position, self._header.itype)
+            test_nummat = self._buffer.read_number(position, self._header.itype)
             position += self.header.wordsize
 
             if test_nummat != self.header.n_parts:
                 raise RuntimeError(
-                    "nmmat (header) != nmmat (material type data): %d != %d"
-                    % (self.header.n_parts, test_nummat)
+                    "nmmat (header) != nmmat (material type data): "
+                    f"{self.header.n_parts} != {test_nummat}",
                 )
 
-            self.arrays[ArrayType.part_material_type] = self.bb.read_ndarray(
+            self.arrays[ArrayType.part_material_type] = self._buffer.read_ndarray(
                 position, self.header.n_parts * self.header.wordsize, 1, self.header.itype
             )
             position += self.header.n_parts * self.header.wordsize
@@ -2120,27 +2140,24 @@ class D3plot:
         except Exception:
             # print info
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_material_section", trb_msg))
+            LOGGER.warning("A failure in %s was caught:\n%s", "_read_material_section", trb_msg)
 
             # fix position
             position = original_position + blocksize
 
         self.geometry_section_size = position
-        LOGGER.debug("_read_material_section end at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_material_section end at byte %d", self.geometry_section_size)
 
     def _read_fluid_material_data(self):
         """Read the fluid material data"""
 
-        if not self.bb:
+        if not self._buffer:
             return
 
         if self.header.n_ale_materials == 0:
             return
 
-        LOGGER.debug(
-            "_read_fluid_material_data start at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_fluid_material_data start at byte %d", self.geometry_section_size)
 
         position = self.geometry_section_size
 
@@ -2151,7 +2168,7 @@ class D3plot:
         try:
             # Fluid Material Data
             array_length = self.header.n_ale_materials * self.header.wordsize
-            self.arrays[ArrayType.ale_material_ids] = self.bb.read_ndarray(
+            self.arrays[ArrayType.ale_material_ids] = self._buffer.read_ndarray(
                 position, array_length, 1, self.header.itype
             )  # type: ignore
             position += array_length
@@ -2160,28 +2177,26 @@ class D3plot:
 
             # print info
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_fluid_material_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_fluid_material_data", trb_msg)
 
             # fix position
             position = original_position + blocksize
 
         # remember position
         self.geometry_section_size = position
-        LOGGER.debug("_read_fluid_material_data end at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_fluid_material_data end at byte %d", self.geometry_section_size)
 
     def _read_sph_element_data_flags(self):
         """Read the sph element data flags"""
 
-        if not self.bb:
+        if not self._buffer:
             return
 
         if not self.header.n_sph_nodes:
             return
 
-        LOGGER.debug(
-            "_read_sph_element_data_flags start at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_sph_element_data_flags start at byte %d", self.geometry_section_size)
 
         position = self.geometry_section_size
 
@@ -2199,7 +2214,7 @@ class D3plot:
             "isphfg11": (position + 10 * self.header.wordsize, self._header.itype),
         }
 
-        sph_header_data = self.header.read_words(self.bb, sph_element_data_words)
+        sph_header_data = self.header.read_words(self._buffer, sph_element_data_words)
 
         self._sph_info.n_sph_array_length = sph_header_data["isphfg1"]
         self._sph_info.has_influence_radius = sph_header_data["isphfg2"] != 0
@@ -2215,8 +2230,11 @@ class D3plot:
         self._sph_info.n_sph_history_vars = sph_header_data["isphfg11"]
 
         if self._sph_info.n_sph_array_length != 11:
-            msg = "Detected inconsistency: isphfg = {0} but must be 11."
-            raise RuntimeError(msg.format(self._sph_info.n_sph_array_length))
+            msg = (
+                "Detected inconsistency: "
+                f"isphfg = {self._sph_info.n_sph_array_length} but must be 11."
+            )
+            raise RuntimeError(msg)
 
         self._sph_info.n_sph_vars = (
             sph_header_data["isphfg2"]
@@ -2233,14 +2251,12 @@ class D3plot:
         )  # material number
 
         self.geometry_section_size += sph_header_data["isphfg1"] * self.header.wordsize
-        LOGGER.debug(
-            "_read_sph_element_data_flags end at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_sph_element_data_flags end at byte %d", self.geometry_section_size)
 
     def _read_particle_data(self):
         """Read the geometry section for particle data (airbags)"""
 
-        if not self.bb:
+        if not self._buffer:
             return
 
         if "npefg" not in self.header.raw_header:
@@ -2251,7 +2267,7 @@ class D3plot:
         if npefg <= 0 or npefg > 10000000:
             return
 
-        LOGGER.debug("_read_particle_data start at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_particle_data start at byte %d", self.geometry_section_size)
 
         position = self.geometry_section_size
 
@@ -2273,7 +2289,7 @@ class D3plot:
             "nstgeom": (position + 3 * self.header.wordsize, self._header.itype),
         }
 
-        self.header.read_words(self.bb, particle_geometry_data_words, airbag_header)
+        self.header.read_words(self._buffer, particle_geometry_data_words, airbag_header)
         position += 4 * self.header.wordsize
 
         # transfer to info object
@@ -2286,7 +2302,7 @@ class D3plot:
 
         if self._airbag_info.subver == 4:
             # number of chambers
-            self._airbag_info.n_chambers = self.bb.read_number(position, self._header.itype)
+            self._airbag_info.n_chambers = self._buffer.read_number(position, self._header.itype)
             position += self.header.wordsize
 
         n_airbag_variables = self._airbag_info.get_n_variables()
@@ -2298,7 +2314,7 @@ class D3plot:
 
         try:
             # variable typecodes
-            self.arrays[ArrayType.airbag_variable_types] = self.bb.read_ndarray(
+            self.arrays[ArrayType.airbag_variable_types] = self._buffer.read_ndarray(
                 position, n_airbag_variables * self.header.wordsize, 1, self._header.itype
             )
             position += n_airbag_variables * self.header.wordsize
@@ -2309,7 +2325,7 @@ class D3plot:
             var_width = 8
 
             for i_variable in range(n_airbag_variables):
-                name = self.bb.read_text(
+                name = self._buffer.read_text(
                     position + (i_variable * var_width) * self.header.wordsize,
                     var_width * self.header.wordsize,
                 )
@@ -2322,23 +2338,24 @@ class D3plot:
 
             # print info
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_particle_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_particle_data", trb_msg)
 
             # fix position
             position = original_position + blocksize
 
         # update position marker
         self.geometry_section_size = position
-        LOGGER.debug("_read_particle_data start at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_particle_data start at byte %d", self.geometry_section_size)
 
+    # pylint: disable = too-many-branches
     def _read_geometry_data(self):
         """Read the data from the geometry section"""
 
-        if not self.bb:
+        if not self._buffer:
             return
 
-        LOGGER.debug("_read_geometry_data start at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_geometry_data start at byte %d", self.geometry_section_size)
 
         # not sure but I think never used by LS-Dyna
         # anyway needs to be detected in the header and not here,
@@ -2356,14 +2373,14 @@ class D3plot:
         n_dimensions = self.header.n_dimensions
         section_word_length = n_dimensions * n_nodes
         try:
-            node_coordinates = self.bb.read_ndarray(
+            node_coordinates = self._buffer.read_ndarray(
                 position, section_word_length * self.header.wordsize, 1, self.header.ftype
             ).reshape((n_nodes, n_dimensions))
             self.arrays[ArrayType.node_coordinates] = node_coordinates
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_geometry_data, node_coordinates", trb_msg))
+            msg = "A failure in %d was caught:\n%s"
+            LOGGER.warning(msg, "_read_geometry_data, node_coordinates", trb_msg)
         finally:
             position += section_word_length * self.header.wordsize
 
@@ -2371,7 +2388,7 @@ class D3plot:
         n_solids = self.header.n_solids
         section_word_length = 9 * n_solids
         try:
-            elem_solid_data = self.bb.read_ndarray(
+            elem_solid_data = self._buffer.read_ndarray(
                 position, section_word_length * self.header.wordsize, 1, self._header.itype
             ).reshape((n_solids, 9))
             solid_connectivity = elem_solid_data[:, :8]
@@ -2380,8 +2397,8 @@ class D3plot:
             self.arrays[ArrayType.element_solid_part_indexes] = solid_part_indexes - FORTRAN_OFFSET
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_geometry_data, solids_geometry", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_geometry_data, solids_geometry", trb_msg)
         finally:
             position += section_word_length * self.header.wordsize
 
@@ -2391,15 +2408,15 @@ class D3plot:
             try:
                 self.arrays[
                     ArrayType.element_solid_extra_nodes
-                ] = elem_solid_data = self.bb.read_ndarray(
+                ] = elem_solid_data = self._buffer.read_ndarray(
                     position, section_word_length * self.header.wordsize, 1, self._header.itype
                 ).reshape(
                     (n_solids, 2)
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_geometry_data, ten_node_solids", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_geometry_data, ten_node_solids", trb_msg)
             finally:
                 position += section_word_length * self.header.wordsize
 
@@ -2407,7 +2424,7 @@ class D3plot:
         n_thick_shells = self.header.n_thick_shells
         section_word_length = 9 * n_thick_shells
         try:
-            elem_tshell_data = self.bb.read_ndarray(
+            elem_tshell_data = self._buffer.read_ndarray(
                 position, section_word_length * self.header.wordsize, 1, self._header.itype
             ).reshape((self.header.n_thick_shells, 9))
             self.arrays[ArrayType.element_tshell_node_indexes] = (
@@ -2418,8 +2435,8 @@ class D3plot:
             )
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_geometry_data, tshells_geometry", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_geometry_data, tshells_geometry", trb_msg)
         finally:
             position += section_word_length * self.header.wordsize
 
@@ -2427,7 +2444,7 @@ class D3plot:
         n_beams = self.header.n_beams
         section_word_length = 6 * n_beams
         try:
-            elem_beam_data = self.bb.read_ndarray(
+            elem_beam_data = self._buffer.read_ndarray(
                 position, section_word_length * self.header.wordsize, 1, self._header.itype
             ).reshape((n_beams, 6))
             self.arrays[ArrayType.element_beam_part_indexes] = elem_beam_data[:, 5] - FORTRAN_OFFSET
@@ -2436,8 +2453,8 @@ class D3plot:
             )
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_geometry_data, beams_geometry", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_geometry_data, beams_geometry", trb_msg)
         finally:
             position += section_word_length * self.header.wordsize
 
@@ -2445,7 +2462,7 @@ class D3plot:
         n_shells = self.header.n_shells
         section_word_length = 5 * n_shells
         try:
-            elem_shell_data = self.bb.read_ndarray(
+            elem_shell_data = self._buffer.read_ndarray(
                 position, section_word_length * self.header.wordsize, 1, self._header.itype
             ).reshape((self.header.n_shells, 5))
             self.arrays[ArrayType.element_shell_node_indexes] = (
@@ -2456,19 +2473,19 @@ class D3plot:
             )
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_geometry_data, shells_geometry", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_geometry_data, shells_geometry", trb_msg)
         finally:
             position += section_word_length * self.header.wordsize
 
         # update word position
         self.geometry_section_size = position
 
-        LOGGER.debug("_read_geometry_data end at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_geometry_data end at byte %d", self.geometry_section_size)
 
     def _read_user_ids(self):
 
-        if not self.bb:
+        if not self._buffer:
             return
 
         if not self.header.has_numbering_section:
@@ -2492,7 +2509,7 @@ class D3plot:
             )
             return
 
-        LOGGER.debug("_read_user_ids start at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_user_ids start at byte %d", self.geometry_section_size)
 
         position = self.geometry_section_size
 
@@ -2523,7 +2540,7 @@ class D3plot:
                 "nmmat": (position + 15 * self.header.wordsize, self._header.itype),
             }
 
-            numbering_header = self.header.read_words(self.bb, numbering_words)
+            numbering_header = self.header.read_words(self._buffer, numbering_words)
             position += len(numbering_words) * self.header.wordsize
 
             # let's make life easier
@@ -2545,7 +2562,7 @@ class D3plot:
             if info.has_material_ids:
 
                 # read extra header
-                self.header.read_words(self.bb, extra_numbering_words, numbering_header)
+                self.header.read_words(self._buffer, extra_numbering_words, numbering_header)
                 position += len(extra_numbering_words) * self.header.wordsize
 
                 # transfer more
@@ -2571,39 +2588,37 @@ class D3plot:
             if n_words_computed != self.header.n_numbering_section_words:
                 warn_msg = (
                     "ID section: The computed word count does "
-                    "not match the header word count: {0} != {1}."
+                    "not match the header word count: %d != %d."
                     " The ID arrays might contain errors."
                 )
-                LOGGER.warning(
-                    warn_msg.format(n_words_computed, self.header.n_numbering_section_words)
-                )
+                LOGGER.warning(warn_msg, n_words_computed, self.header.n_numbering_section_words)
             # node ids
             array_length = info.n_nodes * self.header.wordsize
-            self.arrays[ArrayType.node_ids] = self.bb.read_ndarray(
+            self.arrays[ArrayType.node_ids] = self._buffer.read_ndarray(
                 position, array_length, 1, self._header.itype
             )
             position += array_length
             # solid ids
             array_length = info.n_solids * self.header.wordsize
-            self.arrays[ArrayType.element_solid_ids] = self.bb.read_ndarray(
+            self.arrays[ArrayType.element_solid_ids] = self._buffer.read_ndarray(
                 position, array_length, 1, self._header.itype
             )
             position += array_length
             # beam ids
             array_length = info.n_beams * self.header.wordsize
-            self.arrays[ArrayType.element_beam_ids] = self.bb.read_ndarray(
+            self.arrays[ArrayType.element_beam_ids] = self._buffer.read_ndarray(
                 position, array_length, 1, self._header.itype
             )
             position += array_length
             # shell ids
             array_length = info.n_shells * self.header.wordsize
-            self.arrays[ArrayType.element_shell_ids] = self.bb.read_ndarray(
+            self.arrays[ArrayType.element_shell_ids] = self._buffer.read_ndarray(
                 position, array_length, 1, self._header.itype
             )
             position += array_length
             # tshell ids
             array_length = info.n_thick_shells * self.header.wordsize
-            self.arrays[ArrayType.element_tshell_ids] = self.bb.read_ndarray(
+            self.arrays[ArrayType.element_tshell_ids] = self._buffer.read_ndarray(
                 position, array_length, 1, self._header.itype
             )
             position += array_length
@@ -2623,24 +2638,24 @@ class D3plot:
 
                 if info.n_parts != self.header.n_parts:
                     err_msg = (
-                        "nmmat in the file header ({}) and in the "
-                        "numbering header ({}) are inconsistent."
+                        "nmmat in the file header (%d) and in the "
+                        "numbering header (%d) are inconsistent."
                     )
-                    raise RuntimeError(err_msg.format(self.header.n_parts, info.n_parts))
+                    raise RuntimeError(err_msg, self.header.n_parts, info.n_parts)
 
                 array_length = info.n_parts * self.header.wordsize
 
-                self.arrays[ArrayType.part_ids] = self.bb.read_ndarray(
+                self.arrays[ArrayType.part_ids] = self._buffer.read_ndarray(
                     position, info.n_parts * self.header.wordsize, 1, self._header.itype
                 )
                 position += info.n_parts * self.header.wordsize
 
-                self.arrays[ArrayType.part_ids_unordered] = self.bb.read_ndarray(
+                self.arrays[ArrayType.part_ids_unordered] = self._buffer.read_ndarray(
                     position, info.n_parts * self.header.wordsize, 1, self._header.itype
                 )
                 position += info.n_parts * self.header.wordsize
 
-                self.arrays[ArrayType.part_ids_cross_references] = self.bb.read_ndarray(
+                self.arrays[ArrayType.part_ids_cross_references] = self._buffer.read_ndarray(
                     position, info.n_parts * self.header.wordsize, 1, self._header.itype
                 )
                 position += info.n_parts * self.header.wordsize
@@ -2651,33 +2666,31 @@ class D3plot:
         except Exception:
             # print info
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_user_ids", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_user_ids", trb_msg)
 
             # fix position
             position = original_position + blocksize
 
         # update position
         self.geometry_section_size = position
-        LOGGER.debug("_read_user_ids end at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_user_ids end at byte %d", self.geometry_section_size)
 
     def _read_rigid_body_description(self):
         """Read the rigid body description section"""
 
-        if not self.bb:
+        if not self._buffer:
             return
 
         if not self.header.has_rigid_body_data:
             return
 
-        LOGGER.debug(
-            "_read_rigid_body_description start at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_rigid_body_description start at byte %d", self.geometry_section_size)
 
         position = self.geometry_section_size
 
         rigid_body_description_header = {
-            "nrigid": self.bb.read_number(position, self._header.itype)
+            "nrigid": self._buffer.read_number(position, self._header.itype)
         }
         position += self.header.wordsize
 
@@ -2688,26 +2701,28 @@ class D3plot:
         for _ in range(info.n_rigid_bodies):
             rigid_body_info = {
                 # rigid body part internal number
-                "mrigid": self.bb.read_number(position, self._header.itype),
+                "mrigid": self._buffer.read_number(position, self._header.itype),
                 # number of nodes in rigid body
-                "numnodr": self.bb.read_number(position + self.header.wordsize, self._header.itype),
+                "numnodr": self._buffer.read_number(
+                    position + self.header.wordsize, self._header.itype
+                ),
             }
             position += 2 * self.header.wordsize
 
             # internal node number of rigid body
             array_length = rigid_body_info["numnodr"] * self.header.wordsize
-            rigid_body_info["noder"] = self.bb.read_ndarray(
+            rigid_body_info["noder"] = self._buffer.read_ndarray(
                 position, array_length, 1, self._header.itype
             )
             position += array_length
 
             # number of active (non-rigid) nodes
-            rigid_body_info["numnoda"] = self.bb.read_number(position, self._header.itype)
+            rigid_body_info["numnoda"] = self._buffer.read_number(position, self._header.itype)
             position += self.header.wordsize
 
             # internal node numbers of active nodes
             array_length = rigid_body_info["numnoda"] * self.header.wordsize
-            rigid_body_info["nodea"] = self.bb.read_ndarray(
+            rigid_body_info["nodea"] = self._buffer.read_ndarray(
                 position, array_length, 1, self._header.itype
             )
             position += array_length
@@ -2758,21 +2773,19 @@ class D3plot:
 
         # update position
         self.geometry_section_size = position
-        LOGGER.debug(
-            "_read_rigid_body_description end at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_rigid_body_description end at byte %d", self.geometry_section_size)
 
     def _read_sph_node_and_material_list(self):
         """Read SPH node and material list"""
 
-        if not self.bb:
+        if not self._buffer:
             return
 
         if self.header.n_sph_nodes <= 0:
             return
 
         LOGGER.debug(
-            "_read_sph_node_and_material_list start at byte {}".format(self.geometry_section_size)
+            "_read_sph_node_and_material_list start at byte %d", self.geometry_section_size
         )
 
         position = self.geometry_section_size
@@ -2780,7 +2793,7 @@ class D3plot:
         array_length = self.header.n_sph_nodes * self.header.wordsize * 2
         try:
             # read info array
-            sph_node_matlist = self.bb.read_ndarray(
+            sph_node_matlist = self._buffer.read_ndarray(
                 position, array_length, 1, self._header.itype
             ).reshape((self.header.n_sph_nodes, 2))
 
@@ -2791,21 +2804,19 @@ class D3plot:
         except Exception:
             # print info
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_sph_node_and_material_list", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_sph_node_and_material_list", trb_msg)
 
         finally:
             # update position
             self.geometry_section_size += array_length
 
-        LOGGER.debug(
-            "_read_sph_node_and_material_list end at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_sph_node_and_material_list end at byte %d", self.geometry_section_size)
 
     def _read_particle_geometry_data(self):
         """Read the particle geometry data"""
 
-        if not self.bb:
+        if not self._buffer:
             return
 
         if "npefg" not in self.header.raw_header:
@@ -2814,9 +2825,7 @@ class D3plot:
         if self.header.raw_header["npefg"] <= 0:
             return
 
-        LOGGER.debug(
-            "_read_particle_geometry_data start at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_particle_geometry_data start at byte %d", self.geometry_section_size)
 
         info = self._airbag_info
 
@@ -2833,7 +2842,7 @@ class D3plot:
 
             # extract geometry as a single array
             array_length = blocksize
-            particle_geom_data = self.bb.read_ndarray(
+            particle_geom_data = self._buffer.read_ndarray(
                 position, array_length, 1, self._header.itype
             ).reshape((info.n_airbags, ngeom))
             position += array_length
@@ -2849,8 +2858,8 @@ class D3plot:
         except Exception:
             # print info
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_particle_geometry_data", trb_msg))
+            msg = "A failure in %d was caught:\n%s"
+            LOGGER.warning(msg, "_read_particle_geometry_data", trb_msg)
 
             # fix position
             position = original_position + blocksize
@@ -2858,20 +2867,18 @@ class D3plot:
         # update position
         self.geometry_section_size = position
 
-        LOGGER.debug(
-            "_read_particle_geometry_data end at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_particle_geometry_data end at byte %d", self.geometry_section_size)
 
     def _read_rigid_road_surface(self):
         """Read rigid road surface data"""
 
-        if not self.bb:
+        if not self._buffer:
             return
 
         if not self.header.has_rigid_road_surface:
             return
 
-        LOGGER.debug("_read_rigid_road_surface start at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_rigid_road_surface start at byte %d", self.geometry_section_size)
 
         position = self.geometry_section_size
 
@@ -2883,7 +2890,7 @@ class D3plot:
             "motion": (position + 3 * self.header.wordsize, self._header.itype),
         }
 
-        rigid_road_header = self.header.read_words(self.bb, rigid_road_surface_words)
+        rigid_road_header = self.header.read_words(self._buffer, rigid_road_surface_words)
         position += 4 * self.header.wordsize
 
         self._rigid_road_info = RigidRoadInfo(
@@ -2896,13 +2903,15 @@ class D3plot:
 
         # node ids
         array_length = info.n_nodes * self.header.wordsize
-        rigid_road_node_ids = self.bb.read_ndarray(position, array_length, 1, self._header.itype)
+        rigid_road_node_ids = self._buffer.read_ndarray(
+            position, array_length, 1, self._header.itype
+        )
         self.arrays[ArrayType.rigid_road_node_ids] = rigid_road_node_ids
         position += array_length
 
         # node xyz
         array_length = info.n_nodes * 3 * self.header.wordsize
-        rigid_road_node_coords = self.bb.read_ndarray(
+        rigid_road_node_coords = self._buffer.read_ndarray(
             position, array_length, 1, self.header.ftype
         ).reshape((info.n_nodes, 3))
         self.arrays[ArrayType.rigid_road_node_coordinates] = rigid_road_node_coords
@@ -2923,12 +2932,12 @@ class D3plot:
         # n_total_segments = 0
         for i_surf in range(info.n_roads):
             # surface id
-            surf_id = self.bb.read_number(position, self._header.itype)  # type: ignore
+            surf_id = self._buffer.read_number(position, self._header.itype)  # type: ignore
             position += self.header.wordsize
             rigid_road_ids[i_surf] = surf_id
 
             # number of segments of surface
-            surf_nseg = self.bb.read_number(
+            surf_nseg = self._buffer.read_number(
                 position + 1 * self.header.wordsize, self._header.itype
             )  # type: ignore
             position += self.header.wordsize
@@ -2939,7 +2948,7 @@ class D3plot:
 
             # node ids of surface segments
             array_length = 4 * surf_nseg * self.header.wordsize
-            surf_segm_node_ids = self.bb.read_ndarray(
+            surf_segm_node_ids = self._buffer.read_ndarray(
                 position,  # type: ignore
                 array_length,  # type: ignore
                 1,
@@ -2961,17 +2970,16 @@ class D3plot:
 
         # update position
         self.geometry_section_size = position
-        LOGGER.debug("_read_rigid_road_surface end at byte {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_rigid_road_surface end at byte %d", self.geometry_section_size)
 
+    # pylint: disable = too-many-branches
     def _read_extra_node_connectivity(self):
         """Read the extra node data for creepy elements"""
 
-        if not self.bb:
+        if not self._buffer:
             return
 
-        LOGGER.debug(
-            "_read_extra_node_connectivity start at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_extra_node_connectivity start at byte %d", self.geometry_section_size)
 
         position = self.geometry_section_size
 
@@ -2979,16 +2987,16 @@ class D3plot:
         if self.header.has_solid_2_extra_nodes:
             array_length = 2 * self.header.n_solids * self.header.wordsize
             try:
-                array = self.bb.read_ndarray(position, array_length, 1, self._header.itype).reshape(
-                    (self.header.n_solids, 2)
-                )
+                array = self._buffer.read_ndarray(
+                    position, array_length, 1, self._header.itype
+                ).reshape((self.header.n_solids, 2))
                 self.arrays[ArrayType.element_solid_node10_extra_node_indexes] = (
                     array - FORTRAN_OFFSET
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid10", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid10", trb_msg)
             finally:
                 position += array_length
 
@@ -2996,9 +3004,9 @@ class D3plot:
         if self.header.n_shells_8_nodes > 0:
             array_length = 5 * self.header.n_shells_8_nodes * self.header.wordsize
             try:
-                array = self.bb.read_ndarray(position, array_length, 1, self._header.itype).reshape(
-                    (self.header.n_shells_8_nodes, 5)
-                )
+                array = self._buffer.read_ndarray(
+                    position, array_length, 1, self._header.itype
+                ).reshape((self.header.n_shells_8_nodes, 5))
                 self.arrays[ArrayType.element_shell_node8_element_index] = (
                     array[:, 0] - FORTRAN_OFFSET
                 )
@@ -3007,8 +3015,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, shell8", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, shell8", trb_msg)
             finally:
                 position += array_length
 
@@ -3016,9 +3024,9 @@ class D3plot:
         if self.header.n_solids_20_node_hexas > 0:
             array_length = 13 * self.header.n_solids_20_node_hexas * self.header.wordsize
             try:
-                array = self.bb.read_ndarray(position, array_length, 1, self._header.itype).reshape(
-                    (self.header.n_solids_20_node_hexas, 13)
-                )
+                array = self._buffer.read_ndarray(
+                    position, array_length, 1, self._header.itype
+                ).reshape((self.header.n_solids_20_node_hexas, 13))
                 self.arrays[ArrayType.element_solid_node20_element_index] = (
                     array[:, 0] - FORTRAN_OFFSET
                 )
@@ -3027,8 +3035,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid20", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid20", trb_msg)
             finally:
                 position += array_length
 
@@ -3039,9 +3047,9 @@ class D3plot:
         ):
             array_length = 28 * self.header.n_solids_27_node_hexas * self.header.wordsize
             try:
-                array = self.bb.read_ndarray(position, array_length, 1, self._header.itype).reshape(
-                    (self.header.n_solids_27_node_hexas, 28)
-                )
+                array = self._buffer.read_ndarray(
+                    position, array_length, 1, self._header.itype
+                ).reshape((self.header.n_solids_27_node_hexas, 28))
                 self.arrays[ArrayType.element_solid_node27_element_index] = (
                     array[:, 0] - FORTRAN_OFFSET
                 )
@@ -3050,8 +3058,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid27", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid27", trb_msg)
             finally:
                 position += array_length
 
@@ -3062,9 +3070,9 @@ class D3plot:
         ):
             array_length = 22 * self.header.n_solids_21_node_pentas * self.header.wordsize
             try:
-                array = self.bb.read_ndarray(position, array_length, 1, self._header.itype).reshape(
-                    (self.header.n_solids_21_node_pentas, 22)
-                )
+                array = self._buffer.read_ndarray(
+                    position, array_length, 1, self._header.itype
+                ).reshape((self.header.n_solids_21_node_pentas, 22))
                 self.arrays[ArrayType.element_solid_node21_penta_element_index] = (
                     array[:, 0] - FORTRAN_OFFSET
                 )
@@ -3073,8 +3081,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid21p", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid21p", trb_msg)
             finally:
                 position += array_length
 
@@ -3086,9 +3094,9 @@ class D3plot:
             # manual says 8 but this seems odd
             array_length = 8 * self.header.n_solids_15_node_tetras * self.header.wordsize
             try:
-                array = self.bb.read_ndarray(position, array_length, 1, self._header.itype).reshape(
-                    (self.header.n_solids_15_node_tetras, 8)
-                )
+                array = self._buffer.read_ndarray(
+                    position, array_length, 1, self._header.itype
+                ).reshape((self.header.n_solids_15_node_tetras, 8))
                 self.arrays[ArrayType.element_solid_node15_tetras_element_index] = (
                     array[:, 0] - FORTRAN_OFFSET
                 )
@@ -3097,8 +3105,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid15t", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid15t", trb_msg)
             finally:
                 position += array_length
 
@@ -3106,9 +3114,9 @@ class D3plot:
         if self.header.n_solids_20_node_tetras > 0 and self.header.has_cubic_solids:
             array_length = 21 * self.header.n_solids_20_node_tetras * self.header.wordsize
             try:
-                array = self.bb.read_ndarray(position, array_length, 1, self._header.itype).reshape(
-                    (self.header.n_solids_20_node_tetras, 21)
-                )
+                array = self._buffer.read_ndarray(
+                    position, array_length, 1, self._header.itype
+                ).reshape((self.header.n_solids_20_node_tetras, 21))
                 self.arrays[ArrayType.element_solid_node20_tetras_element_index] = (
                     array[:, 0] - FORTRAN_OFFSET
                 )
@@ -3117,8 +3125,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid20t", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid20t", trb_msg)
             finally:
                 position += array_length
 
@@ -3126,9 +3134,9 @@ class D3plot:
         if self.header.n_solids_40_node_pentas > 0 and self.header.has_cubic_solids:
             array_length = 41 * self.header.n_solids_40_node_pentas * self.header.wordsize
             try:
-                array = self.bb.read_ndarray(position, array_length, 1, self._header.itype).reshape(
-                    (self.header.n_solids_40_node_pentas, 41)
-                )
+                array = self._buffer.read_ndarray(
+                    position, array_length, 1, self._header.itype
+                ).reshape((self.header.n_solids_40_node_pentas, 41))
                 self.arrays[ArrayType.element_solid_node40_pentas_element_index] = (
                     array[:, 0] - FORTRAN_OFFSET
                 )
@@ -3137,8 +3145,8 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid40t", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid40t", trb_msg)
             finally:
                 position += array_length
 
@@ -3146,9 +3154,9 @@ class D3plot:
         if self.header.n_solids_64_node_hexas > 0 and self.header.has_cubic_solids:
             array_length = 65 * self.header.n_solids_64_node_hexas * self.header.wordsize
             try:
-                array = self.bb.read_ndarray(position, array_length, 1, self._header.itype).reshape(
-                    (self.header.n_solids_64_node_hexas, 65)
-                )
+                array = self._buffer.read_ndarray(
+                    position, array_length, 1, self._header.itype
+                ).reshape((self.header.n_solids_64_node_hexas, 65))
                 self.arrays[ArrayType.element_solid_node64_hexas_element_index] = (
                     array[:, 0] - FORTRAN_OFFSET
                 )
@@ -3157,23 +3165,22 @@ class D3plot:
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_extra_node_connectivity, solid64t", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_extra_node_connectivity, solid64t", trb_msg)
             finally:
                 position += array_length
 
         # update position
         self.geometry_section_size = position
 
-        LOGGER.debug(
-            "_read_extra_node_connectivity end at byte {}".format(self.geometry_section_size)
-        )
+        LOGGER.debug("_read_extra_node_connectivity end at byte %d", self.geometry_section_size)
 
+    # pylint: disable = too-many-branches
     @classmethod
     def _read_header_part_contact_interface_titles(
         cls,
         header: D3plotHeader,
-        bb: Union[BinaryBuffer, None],
+        buffer: Union[BinaryBuffer, None],
         geometry_section_size: int,
         arrays: dict,
     ) -> int:
@@ -3196,7 +3203,7 @@ class D3plot:
             new size of the geometry section
         """
 
-        if not bb:
+        if not buffer:
             return geometry_section_size
 
         if header.filetype not in (
@@ -3207,9 +3214,7 @@ class D3plot:
             return geometry_section_size
 
         LOGGER.debug(
-            "_read_header_part_contact_interface_titles start at byte {}".format(
-                geometry_section_size
-            )
+            "_read_header_part_contact_interface_titles start at byte %d", geometry_section_size
         )
 
         position = geometry_section_size
@@ -3224,7 +3229,7 @@ class D3plot:
         try:
             # there is only output if there is an eof marker
             # at least I think I fixed such a bug in the past
-            if not cls._is_end_of_file_marker(bb, position, header.ftype):
+            if not cls._is_end_of_file_marker(buffer, position, header.ftype):
                 return geometry_section_size
 
             position += header.wordsize
@@ -3233,7 +3238,7 @@ class D3plot:
             ntypes = []
 
             # read first ntype
-            current_ntype = bb.read_number(position, header.itype)
+            current_ntype = buffer.read_number(position, header.itype)
 
             while current_ntype in [90000, 90001, 90002, 90020]:
 
@@ -3249,7 +3254,7 @@ class D3plot:
                     titles_wordsize = 4
 
                     array_length = 18 * titles_wordsize
-                    header.title2 = bb.read_text(position, array_length)
+                    header.title2 = buffer.read_text(position, array_length)
                     position += array_length
 
                 # some title output
@@ -3259,7 +3264,7 @@ class D3plot:
                     position += header.wordsize
 
                     # number of parts
-                    entry_count = bb.read_number(position, header.itype)
+                    entry_count = buffer.read_number(position, header.itype)
                     position += header.wordsize
 
                     # Bugfix:
@@ -3272,7 +3277,7 @@ class D3plot:
                         [("ids", header.itype), ("titles", "S" + str(18 * titles_wordsize))]
                     )
                     array_length = (header.wordsize + 18 * titles_wordsize) * int(entry_count)
-                    tmp_arrays = bb.read_ndarray(position, array_length, 1, array_type)
+                    tmp_arrays = buffer.read_ndarray(position, array_length, 1, array_type)
                     position += array_length
 
                     # save stuff
@@ -3293,7 +3298,7 @@ class D3plot:
                     position += header.wordsize
 
                     # number of keywords
-                    nline = bb.read_number(position, header.itype)
+                    nline = buffer.read_number(position, header.itype)
                     position += header.wordsize
 
                     # Bugfix:
@@ -3303,7 +3308,7 @@ class D3plot:
 
                     # keywords
                     array_length = 20 * titles_wordsize * int(nline)
-                    d3prop_keywords = bb.read_ndarray(
+                    d3prop_keywords = buffer.read_ndarray(
                         position, array_length, 1, np.dtype("S" + str(titles_wordsize * 20))
                     )
                     position += array_length
@@ -3313,27 +3318,25 @@ class D3plot:
 
                 # not sure whether there is an eof file here
                 # do not have a test file to check ...
-                if cls._is_end_of_file_marker(bb, position, header.ftype):
+                if cls._is_end_of_file_marker(buffer, position, header.ftype):
                     position += header.wordsize
 
                 # next one
-                if bb.size <= position:
+                if buffer.size <= position:
                     break
-                current_ntype = bb.read_number(position, header.itype)
+                current_ntype = buffer.read_number(position, header.itype)
 
             header.n_types = tuple(ntypes)
 
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_header_part_contact_interface_titles", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_header_part_contact_interface_titles", trb_msg)
 
         # remember position
         geometry_section_size = position
         LOGGER.debug(
-            "_read_header_part_contact_interface_titles end at byte {}".format(
-                geometry_section_size
-            )
+            "_read_header_part_contact_interface_titles end at byte %d", geometry_section_size
         )
 
         return geometry_section_size
@@ -3380,10 +3383,6 @@ class D3plot:
         # (1) ARRAY SHAPES
         # general
         n_dim = header.n_dimensions
-        # parts
-        n_parts = n_parts
-        # rigid walls
-        n_rigid_walls = n_rigid_walls
         # nodes
         n_nodes = header.n_nodes
         # solids
@@ -3590,16 +3589,16 @@ class D3plot:
                 array_dict[array_name] = np.empty(state_array_shapes[array_name], dtype=array_dtype)
             else:
                 raise ValueError(
-                    "Array '{0}' is not a state array. Please try one of: {1}".format(
-                        array_name, list(state_array_shapes.keys())
-                    )
+                    f"Array '{array_name}' is not a state array. "
+                    f"Please try one of: {list(state_array_shapes.keys())}",
                 )
 
     @staticmethod
     def _read_states_transfer_memory(
         i_state: int, buffer_array_dict: dict, master_array_dict: dict
     ):
-        """Transfers the memory from smaller buffer arrays with only a few timesteps into the major one
+        """Transfers the memory from smaller buffer arrays with only a few
+        timesteps into the major one
 
         Parameters
         ----------
@@ -3727,7 +3726,7 @@ class D3plot:
             rigid_body_motion_offset = n_rigids * n_rigid_vars * self.header.wordsize
         else:
             rigid_body_motion_offset = 0
-        # TODO
+        # ... not supported
         extra_data_offset = 0
 
         n_bytes_per_state = (
@@ -3758,16 +3757,16 @@ class D3plot:
             path to the d3plot
         """
 
-        if not self.bb or not filepath:
+        if not self._buffer or not filepath:
             self._state_info.n_timesteps = 0
             return
 
         LOGGER.debug("-------- S T A T E S --------")
-        LOGGER.debug("_read_states with geom offset {}".format(self.geometry_section_size))
+        LOGGER.debug("_read_states with geom offset %d", self.geometry_section_size)
 
         # (0) OFFSETS
         bytes_per_state = self._compute_n_bytes_per_state()
-        LOGGER.debug("bytes_per_state: {}".format(bytes_per_state))
+        LOGGER.debug("bytes_per_state: %d", bytes_per_state)
 
         # load the memory from the files
         if self._femzip_info.use_femzip:
@@ -3874,7 +3873,7 @@ class D3plot:
             self._state_info.n_timesteps = i_state
 
         if transfer_arrays:
-            self.bb = None
+            self._buffer = None
             self.bb_states = None
 
     def _read_states_global_section(
@@ -3897,7 +3896,7 @@ class D3plot:
             updated variable index after reading the section
         """
 
-        LOGGER.debug("_read_states_global_section start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_global_section start at var_index %d", var_index)
 
         # we wrap globals, parts and rigid walls into a single try
         # catch block since in the header the global section is
@@ -3921,13 +3920,13 @@ class D3plot:
         except Exception:
             # print
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_global_section", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_global_section", trb_msg)
         finally:
             timestep_var_size = 1
             var_index = original_var_index + self.header.n_global_vars + timestep_var_size
 
-        LOGGER.debug("_read_states_global_section end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_global_section end at var_index %d", var_index)
 
         return var_index
 
@@ -4107,7 +4106,7 @@ class D3plot:
         if self.header.n_nodes <= 0:
             return var_index
 
-        LOGGER.debug("_read_states_nodes start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_nodes start at var_index %d", var_index)
 
         n_dim = self.header.n_dimensions
         n_states = state_data.shape[0]
@@ -4122,8 +4121,8 @@ class D3plot:
                 array_dict[ArrayType.node_displacement] = tmp_array
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_displacement", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_displacement", trb_msg)
             finally:
                 var_index += n_dim * n_nodes
 
@@ -4138,8 +4137,8 @@ class D3plot:
                     ]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_nodes, node_temperatures", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_nodes, node_temperatures", trb_msg)
                 finally:
                     var_index += n_nodes
             # node temperature layers
@@ -4151,10 +4150,8 @@ class D3plot:
                     array_dict[ArrayType.node_temperature] = tmp_array
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(
-                        msg.format("_read_states_nodes, node_temperatures_layers", trb_msg)
-                    )
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_nodes, node_temperatures_layers", trb_msg)
                 finally:
                     var_index += 3 * n_nodes
 
@@ -4167,8 +4164,8 @@ class D3plot:
                 array_dict[ArrayType.node_heat_flux] = tmp_array
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_heat_flux", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_heat_flux", trb_msg)
             finally:
                 var_index += 3 * n_nodes
 
@@ -4180,13 +4177,13 @@ class D3plot:
                 ]
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_mass_scaling", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_mass_scaling", trb_msg)
             finally:
                 var_index += n_nodes
 
         # node temperature gradient
-        # TODO verify (could also be between temperature and node heat flux)
+        # Unclear: verify (could also be between temperature and node heat flux)
         if self.header.has_node_temperature_gradient:
             try:
                 array_dict[ArrayType.node_temperature_gradient] = state_data[
@@ -4194,13 +4191,13 @@ class D3plot:
                 ]
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_temperature_gradient", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_temperature_gradient", trb_msg)
             finally:
                 var_index += n_nodes
 
         # node residual forces and moments
-        # TODO verify (see before, according to docs this is after previous)
+        # Unclear: verify (see before, according to docs this is after previous)
         if self.header.has_node_residual_forces:
             try:
                 array_dict[ArrayType.node_residual_forces] = state_data[
@@ -4208,8 +4205,8 @@ class D3plot:
                 ].reshape((n_states, n_nodes, 3))
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_residual_forces", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_residual_forces", trb_msg)
             finally:
                 var_index += n_nodes * 3
 
@@ -4220,8 +4217,8 @@ class D3plot:
                 ].reshape((n_states, n_nodes, 3))
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_residual_moments", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_residual_moments", trb_msg)
             finally:
                 var_index += n_nodes * 3
 
@@ -4234,8 +4231,8 @@ class D3plot:
                 array_dict[ArrayType.node_velocity] = tmp_array
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_velocity", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_velocity", trb_msg)
             finally:
                 var_index += n_dim * n_nodes
 
@@ -4248,12 +4245,12 @@ class D3plot:
                 array_dict[ArrayType.node_acceleration] = tmp_array
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_nodes, node_acceleration", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_nodes, node_acceleration", trb_msg)
             finally:
                 var_index += n_dim * n_nodes
 
-        LOGGER.debug("_read_states_nodes end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_nodes end at var_index %d", var_index)
 
         return var_index
 
@@ -4280,7 +4277,7 @@ class D3plot:
         if self.header.n_solid_thermal_vars <= 0:
             return var_index
 
-        LOGGER.debug("_read_states_solids_thermal start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_solids_thermal start at var_index %d", var_index)
 
         n_states = state_data.shape[0]
         n_solids = self.header.n_solids
@@ -4293,12 +4290,12 @@ class D3plot:
             )
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_solids_thermal", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_solids_thermal", trb_msg)
         finally:
             var_index += n_thermal_vars * n_solids
 
-        LOGGER.debug("_read_states_solids_thermal end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_solids_thermal end at var_index %d", var_index)
 
         return var_index
 
@@ -4323,7 +4320,7 @@ class D3plot:
         if self.header.n_solids <= 0 or self.header.n_solid_vars <= 0:
             return var_index
 
-        LOGGER.debug("_read_states_solids start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_solids start at var_index %d", var_index)
 
         n_solid_vars = self.header.n_solid_vars
         n_solids = self.header.n_solids
@@ -4361,8 +4358,8 @@ class D3plot:
                     array_dict[ArrayType.element_solid_stress] = solid_state_data[:, :, :, :6]
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_solids, stress", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_solids, stress", trb_msg)
             finally:
                 i_solid_var += 6 * self.header.has_solid_stress
 
@@ -4375,8 +4372,8 @@ class D3plot:
                     ].reshape((n_states, n_solids, n_solid_layers))
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_solids, eff_plastic_strain", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_solids, eff_plastic_strain", trb_msg)
             finally:
                 i_solid_var += 1 * self.header.has_solid_pstrain
 
@@ -4388,8 +4385,8 @@ class D3plot:
                     ]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_solids, history_variables", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_solids, history_variables", trb_msg)
                 finally:
                     i_solid_var += n_history_vars
 
@@ -4409,8 +4406,8 @@ class D3plot:
                         del array_dict[ArrayType.element_solid_history_variables]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_solids, strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_solids, strain", trb_msg)
 
             # plastic strain tensor
             if self.header.has_solid_shell_plastic_strain_tensor:
@@ -4420,11 +4417,9 @@ class D3plot:
                     ]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
+                    msg = "A failure in %s was caught:\n%s"
                     LOGGER.warning(
-                        msg.format(
-                            "_read_states_solids, element_solid_plastic_strain_tensor", trb_msg
-                        )
+                        msg, "_read_states_solids, element_solid_plastic_strain_tensor", trb_msg
                     )
                 finally:
                     i_solid_var += 6
@@ -4437,11 +4432,9 @@ class D3plot:
                     ]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
+                    msg = "A failure in %s was caught:\n%s"
                     LOGGER.warning(
-                        msg.format(
-                            "_read_states_solids, element_solid_thermal_strain_tensor", trb_msg
-                        )
+                        msg, "_read_states_solids, element_solid_thermal_strain_tensor", trb_msg
                     )
                 finally:
                     i_solid_var += 6
@@ -4449,13 +4442,13 @@ class D3plot:
         # catch formatting in solid_state_datra
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_solids, solid_state_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_solids, solid_state_data", trb_msg)
         # always increment variable count
         finally:
             var_index += n_solids * n_solid_vars
 
-        LOGGER.debug("_read_states_solids end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_solids end at var_index %d", var_index)
 
         return var_index
 
@@ -4480,7 +4473,7 @@ class D3plot:
         if self.header.n_thick_shells <= 0 or self.header.n_thick_shell_vars <= 0:
             return var_index
 
-        LOGGER.debug("_read_states_tshell start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_tshell start at var_index %d", var_index)
 
         n_states = state_data.shape[0]
         n_tshells = self.header.n_thick_shells
@@ -4502,10 +4495,10 @@ class D3plot:
 
             if n_tshell_vars2 != n_thsell_vars:
                 msg = (
-                    "n_tshell_vars != n_tshell_vars_computed: {} != {}."
-                    + " Thick shell variables might be wrong."
+                    "n_tshell_vars != n_tshell_vars_computed: %d != %d."
+                    " Thick shell variables might be wrong."
                 )
-                LOGGER.warning(msg.format(n_thsell_vars, n_tshell_vars2))
+                LOGGER.warning(msg, n_thsell_vars, n_tshell_vars2)
 
             # thick shell element data
             tshell_data = state_data[:, var_index : var_index + n_thsell_vars * n_tshells]
@@ -4525,8 +4518,8 @@ class D3plot:
                     ].reshape((n_states, n_tshells, n_layers, 6))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_tshell, stress", trb_msg))
+                    msg = "A failure in %d was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_tshell, stress", trb_msg)
                 finally:
                     i_tshell_layer_var += 6
 
@@ -4540,8 +4533,8 @@ class D3plot:
                     )
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_tshell, eff_plastic_strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_tshell, eff_plastic_strain", trb_msg)
                 finally:
                     i_tshell_layer_var += 1
 
@@ -4553,8 +4546,8 @@ class D3plot:
                     ].reshape((n_states, n_tshells, n_layers, n_history_vars))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_tshell, history_variables", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_tshell, history_variables", trb_msg)
 
             # STRAIN (only non layer data for tshells)
             if n_strain_vars:
@@ -4565,17 +4558,17 @@ class D3plot:
                     )
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_tshell, strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_tshell, strain", trb_msg)
 
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_tshell, tshell_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_tshell, tshell_data", trb_msg)
         finally:
             var_index += n_thsell_vars * n_tshells
 
-        LOGGER.debug("_read_states_tshell end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_tshell end at var_index %d", var_index)
 
         return var_index
 
@@ -4600,11 +4593,13 @@ class D3plot:
         if self.header.n_beams <= 0 or self.header.n_beam_vars <= 0:
             return var_index
 
-        LOGGER.debug("_read_states_beams start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_beams start at var_index %d", var_index)
 
         # usual beam vars
+        # pylint: disable = invalid-name
         N_BEAM_BASIC_VARS = 6
         # beam intergration point vars
+        # pylint: disable = invalid-name
         N_BEAM_IP_VARS = 5
 
         n_states = state_data.shape[0]
@@ -4635,8 +4630,8 @@ class D3plot:
                 ].reshape((n_states, n_beams))
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_beams, axial_force", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_beams, axial_force", trb_msg)
 
             # shear force
             try:
@@ -4645,8 +4640,8 @@ class D3plot:
                 ].reshape((n_states, n_beams, 2))
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_beams, shear_force", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_beams, shear_force", trb_msg)
 
             # bending moment
             try:
@@ -4655,8 +4650,8 @@ class D3plot:
                 ].reshape((n_states, n_beams, 2))
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_beams, bending_moment", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_beams, bending_moment", trb_msg)
 
             # torsion moment
             try:
@@ -4665,8 +4660,8 @@ class D3plot:
                 ].reshape((n_states, n_beams))
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_beams, torsion_moment", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_beams, torsion_moment", trb_msg)
 
             if n_layers:
 
@@ -4681,32 +4676,32 @@ class D3plot:
                     array_dict[ArrayType.element_beam_axial_stress] = beam_layer_data[:, :, :, 0]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_beams, axial_stress", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_beams, axial_stress", trb_msg)
 
                 # shear stress
                 try:
                     array_dict[ArrayType.element_beam_shear_stress] = beam_layer_data[:, :, :, 1:3]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_beams, shear_stress", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_beams, shear_stress", trb_msg)
 
                 # eff. plastic strain
                 try:
                     array_dict[ArrayType.element_beam_plastic_strain] = beam_layer_data[:, :, :, 3]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_beams, eff_plastic_strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_beams, eff_plastic_strain", trb_msg)
 
                 # axial strain
                 try:
                     array_dict[ArrayType.element_beam_axial_strain] = beam_layer_data[:, :, :, 4]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_beams, axial_strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_beams, axial_strain", trb_msg)
 
             # history vars
             if n_history_vars:
@@ -4716,19 +4711,19 @@ class D3plot:
                     ].reshape((n_states, n_beams, 3 + n_layers, n_history_vars))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_beams, history_variables", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_beams, history_variables", trb_msg)
 
         # failure of formatting beam state data
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_beams, beam_state_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_beams, beam_state_data", trb_msg)
         # always increment variable index
         finally:
             var_index += n_beams * n_beam_vars
 
-        LOGGER.debug("_read_states_beams end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_beams end at var_index %d", var_index)
 
         return var_index
 
@@ -4764,7 +4759,7 @@ class D3plot:
         if self.header.n_shell_vars <= 0 or n_reduced_shells <= 0:
             return var_index
 
-        LOGGER.debug("_read_states_shell start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_shell start at var_index %d", var_index)
 
         n_states = state_data.shape[0]
         n_shells = n_reduced_shells
@@ -4794,10 +4789,10 @@ class D3plot:
 
             if n_shell_vars != n_shell_vars2:
                 msg = (
-                    "n_shell_vars != n_shell_vars_computed: {} != {}."
-                    + " Shell variables might be wrong."
+                    "n_shell_vars != n_shell_vars_computed: %d != %d."
+                    " Shell variables might be wrong."
                 )
-                LOGGER.warning(msg.format(n_shell_vars, n_shell_vars2))
+                LOGGER.warning(msg, n_shell_vars, n_shell_vars2)
 
             n_layer_vars = n_layers * (n_stress_vars + n_pstrain_vars + n_history_vars)
 
@@ -4820,8 +4815,8 @@ class D3plot:
                     ].reshape((n_states, n_shells, n_layers, n_stress_vars))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_shells, stress", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_shells, stress", trb_msg)
                 finally:
                     layer_var_index += n_stress_vars
 
@@ -4833,8 +4828,8 @@ class D3plot:
                     ].reshape((n_states, n_shells, n_layers))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_shells, stress", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_shells, stress", trb_msg)
                 finally:
                     layer_var_index += 1
 
@@ -4846,8 +4841,8 @@ class D3plot:
                     ].reshape((n_states, n_shells, n_layers, n_history_vars))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_shells, history_variables", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_shells, history_variables", trb_msg)
                 finally:
                     layer_var_index += n_history_vars
 
@@ -4867,8 +4862,8 @@ class D3plot:
                     ].reshape((n_states, n_shells, 3))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_shells, forces", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_shells, forces", trb_msg)
                 finally:
                     nonlayer_var_index += n_force_variables
 
@@ -4883,8 +4878,8 @@ class D3plot:
                     ].reshape((n_states, n_shells, 2))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_shells, history_variables", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_shells, history_variables", trb_msg)
                 finally:
                     nonlayer_var_index += 3
 
@@ -4899,8 +4894,8 @@ class D3plot:
                     )
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_shells, strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_shells, strain", trb_msg)
                 finally:
                     nonlayer_var_index += n_strain_vars
 
@@ -4912,8 +4907,8 @@ class D3plot:
                     ].reshape((n_states, n_shells))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_shells, internal_energy", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_shells, internal_energy", trb_msg)
 
             # PLASTIC STRAIN TENSOR
             if n_plastic_strain_tensor:
@@ -4926,11 +4921,9 @@ class D3plot:
                     ] = pstrain_tensor.reshape((n_states, n_shells, n_layers, 6))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
+                    msg = "A failure in %s was caught:\n%s"
                     LOGGER.warning(
-                        msg.format(
-                            "_read_states_shells, element_shell_plastic_strain_tensor", trb_msg
-                        )
+                        msg, "_read_states_shells, element_shell_plastic_strain_tensor", trb_msg
                     )
                 finally:
                     nonlayer_var_index += n_plastic_strain_tensor
@@ -4946,11 +4939,9 @@ class D3plot:
                     ] = thermal_tensor.reshape((n_states, n_shells, 6))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
+                    msg = "A failure in %s was caught:\n%s"
                     LOGGER.warning(
-                        msg.format(
-                            "_read_states_shells, element_shell_thermal_strain_tensor", trb_msg
-                        )
+                        msg, "_read_states_shells, element_shell_thermal_strain_tensor", trb_msg
                     )
                 finally:
                     nonlayer_var_index += n_thermal_strain_tensor
@@ -4958,14 +4949,14 @@ class D3plot:
         # error in formatting shell state data
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_shell, shell_state_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_shell, shell_state_data", trb_msg)
 
         # always increment variable index
         finally:
             var_index += n_shell_vars * n_shells
 
-        LOGGER.debug("_read_states_shell end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_shell end at var_index %d", var_index)
 
         return var_index
 
@@ -4992,7 +4983,7 @@ class D3plot:
         if not self.header.has_node_deletion_data and not self.header.has_element_deletion_data:
             return var_index
 
-        LOGGER.debug("_read_states_is_alive start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_is_alive start at var_index %s", var_index)
 
         n_states = state_data.shape[0]
 
@@ -5007,8 +4998,8 @@ class D3plot:
                     ]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_is_alive, nodes", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_is_alive, nodes", trb_msg)
                 finally:
                     var_index += n_nodes
 
@@ -5028,8 +5019,8 @@ class D3plot:
                     ].reshape((n_states, n_solids))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_is_alive, solids", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_is_alive, solids", trb_msg)
                 finally:
                     var_index += n_solids
 
@@ -5041,8 +5032,8 @@ class D3plot:
                     ].reshape((n_states, n_tshells))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_is_alive, solids", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_is_alive, solids", trb_msg)
                 finally:
                     var_index += n_tshells
 
@@ -5054,8 +5045,8 @@ class D3plot:
                     ].reshape((n_states, n_shells))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_is_alive, shells", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_is_alive, shells", trb_msg)
                 finally:
                     var_index += n_shells
 
@@ -5067,12 +5058,12 @@ class D3plot:
                     ].reshape((n_states, n_beams))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_is_alive, beams", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_is_alive, beams", trb_msg)
                 finally:
                     var_index += n_beams
 
-        LOGGER.debug("_read_states_is_alive end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_is_alive end at var_index %d", var_index)
 
         return var_index
 
@@ -5097,7 +5088,7 @@ class D3plot:
         if self.header.n_sph_nodes <= 0:
             return var_index
 
-        LOGGER.debug("_read_states_sph start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_sph start at var_index %d", var_index)
 
         info = self._sph_info
         n_states = state_data.shape[0]
@@ -5115,8 +5106,8 @@ class D3plot:
                 array_dict[ArrayType.sph_deletion] = sph_data[:, 0] < 0
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_sph, deletion", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_sph, deletion", trb_msg)
 
             # particle radius
             if info.has_influence_radius:
@@ -5124,8 +5115,8 @@ class D3plot:
                     array_dict[ArrayType.sph_radius] = sph_data[:, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, radius", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, radius", trb_msg)
                 finally:
                     i_var += 1
 
@@ -5135,8 +5126,8 @@ class D3plot:
                     array_dict[ArrayType.sph_pressure] = sph_data[:, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, pressure", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, pressure", trb_msg)
                 finally:
                     i_var += 1
 
@@ -5148,8 +5139,8 @@ class D3plot:
                     ].reshape((n_states, n_particles, 6))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, pressure", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, pressure", trb_msg)
                 finally:
                     i_var += 6 * n_particles
 
@@ -5159,8 +5150,8 @@ class D3plot:
                     array_dict[ArrayType.sph_effective_plastic_strain] = sph_data[:, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, eff_plastic_strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, eff_plastic_strain", trb_msg)
                 finally:
                     i_var += 1
 
@@ -5170,8 +5161,8 @@ class D3plot:
                     array_dict[ArrayType.sph_density] = sph_data[:, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, density", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, density", trb_msg)
                 finally:
                     i_var += 1
 
@@ -5181,8 +5172,8 @@ class D3plot:
                     array_dict[ArrayType.sph_internal_energy] = sph_data[:, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, internal_energy", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, internal_energy", trb_msg)
                 finally:
                     i_var += 1
 
@@ -5192,8 +5183,8 @@ class D3plot:
                     array_dict[ArrayType.sph_n_neighbors] = sph_data[:, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, n_neighbors", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, n_neighbors", trb_msg)
                 finally:
                     i_var += 1
 
@@ -5206,8 +5197,8 @@ class D3plot:
                     ].reshape((n_states, n_particles, 6))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, strain", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, strain", trb_msg)
                 finally:
                     i_var += 6 * n_particles
 
@@ -5217,8 +5208,8 @@ class D3plot:
                     ].reshape((n_states, n_particles, 6))
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, strainrate", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, strainrate", trb_msg)
                 finally:
                     i_var += 6 * n_particles
 
@@ -5228,19 +5219,19 @@ class D3plot:
                     array_dict[ArrayType.sph_mass] = sph_data[:, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
-                    msg = "A failure in {0} was caught:\n{1}"
-                    LOGGER.warning(msg.format("_read_states_sph, pressure", trb_msg))
+                    msg = "A failure in %s was caught:\n%s"
+                    LOGGER.warning(msg, "_read_states_sph, pressure", trb_msg)
                 finally:
                     i_var += 1
 
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_sph, sph_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_sph, sph_data", trb_msg)
         finally:
             var_index += n_particles * n_variables
 
-        LOGGER.debug("_read_states_sph end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_sph end at var_index %d", var_index)
 
         return var_index
 
@@ -5265,7 +5256,7 @@ class D3plot:
         if self.header.n_airbags <= 0:
             return var_index
 
-        LOGGER.debug("_read_states_airbags start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_airbags start at var_index %d", var_index)
 
         n_states = state_data.shape[0]
         info = self._airbag_info
@@ -5327,9 +5318,9 @@ class D3plot:
                         ].view(get_dtype(var_type))
                     except Exception:
                         trb_msg = traceback.format_exc()
-                        msg = "A failure in {0} was caught:\n{1}"
+                        msg = "A failure in %s was caught:\n%s"
                         LOGGER.warning(
-                            msg.format("_read_states_airbags, airbag_n_active_particles", trb_msg)
+                            msg, "_read_states_airbags, airbag_n_active_particles", trb_msg
                         )
                 elif var_name.startswith("Bag Vol"):
                     try:
@@ -5338,11 +5329,11 @@ class D3plot:
                         ].view(get_dtype(var_type))
                     except Exception:
                         trb_msg = traceback.format_exc()
-                        msg = "A failure in {0} was caught:\n{1}"
-                        LOGGER.warning(msg.format("_read_states_airbags, airbag_volume", trb_msg))
+                        msg = "A failure in %s was caught:\n%s"
+                        LOGGER.warning(msg, "_read_states_airbags, airbag_volume", trb_msg)
                 else:
-                    warn_msg = "Unknown airbag state var: '{0}'. Skipping it."
-                    LOGGER.warning(warn_msg.format(var_name))
+                    warn_msg = "Unknown airbag state var: '%s'. Skipping it."
+                    LOGGER.warning(warn_msg, var_name)
 
             # particles yay
             for i_particle_var in range(n_particle_vars):
@@ -5357,9 +5348,9 @@ class D3plot:
                         ].view(get_dtype(var_type))
                     except Exception:
                         trb_msg = traceback.format_exc()
-                        msg = "A failure in {0} {1} was caught:\n{2}"
+                        msg = "A failure in %s %s was caught:\n%s"
                         LOGGER.warning(
-                            msg.format("_read_states_airbags, particle_gas_id", var_name, trb_msg)
+                            msg, "_read_states_airbags, particle_gas_id", var_name, trb_msg
                         )
                 # particle chamber id
                 elif var_name.startswith("Cham ID"):
@@ -5369,9 +5360,9 @@ class D3plot:
                         ].view(get_dtype(var_type))
                     except Exception:
                         trb_msg = traceback.format_exc()
-                        msg = "A failure in {0} {1} was caught:\n{2}"
+                        msg = "A failure in %s %s was caught:\n%s"
                         LOGGER.warning(
-                            msg.format("_read_states_airbags, particle_gas_id", var_name, trb_msg)
+                            msg, "_read_states_airbags, particle_gas_id", var_name, trb_msg
                         )
                 # particle leakage
                 elif var_name.startswith("Leakage"):
@@ -5381,9 +5372,9 @@ class D3plot:
                         ].view(get_dtype(var_type))
                     except Exception:
                         trb_msg = traceback.format_exc()
-                        msg = "A failure in {0} {1} was caught:\n{2}"
+                        msg = "A failure in %s %s was caught:\n%s"
                         LOGGER.warning(
-                            msg.format("_read_states_airbags, particle_gas_id", var_name, trb_msg)
+                            msg, "_read_states_airbags, particle_gas_id", var_name, trb_msg
                         )
                 # particle mass
                 elif var_name.startswith("Mass"):
@@ -5393,9 +5384,9 @@ class D3plot:
                         ].view(get_dtype(var_type))
                     except Exception:
                         trb_msg = traceback.format_exc()
-                        msg = "A failure in {0} {1} was caught:\n{2}"
+                        msg = "A failure in %s %s was caught:\n%s"
                         LOGGER.warning(
-                            msg.format("_read_states_airbags, particle_gas_id", var_name, trb_msg)
+                            msg, "_read_states_airbags, particle_gas_id", var_name, trb_msg
                         )
                     # particle radius
                     try:
@@ -5404,9 +5395,9 @@ class D3plot:
                         ].view(get_dtype(var_type))
                     except Exception:
                         trb_msg = traceback.format_exc()
-                        msg = "A failure in {0} {1} was caught:\n{2}"
+                        msg = "A failure in %s %s was caught:\n%s"
                         LOGGER.warning(
-                            msg.format("_read_states_airbags, particle_gas_id", var_name, trb_msg)
+                            msg, "_read_states_airbags, particle_gas_id", var_name, trb_msg
                         )
                 # particle spin energy
                 elif var_name.startswith("Spin En"):
@@ -5416,9 +5407,9 @@ class D3plot:
                         ].view(get_dtype(var_type))
                     except Exception:
                         trb_msg = traceback.format_exc()
-                        msg = "A failure in {0} {1} was caught:\n{2}"
+                        msg = "A failure in %s %s was caught:\n%s"
                         LOGGER.warning(
-                            msg.format("_read_states_airbags, particle_gas_id", var_name, trb_msg)
+                            msg, "_read_states_airbags, particle_gas_id", var_name, trb_msg
                         )
                 # particle translational energy
                 elif var_name.startswith("Tran En"):
@@ -5428,9 +5419,9 @@ class D3plot:
                         ].view(get_dtype(var_type))
                     except Exception:
                         trb_msg = traceback.format_exc()
-                        msg = "A failure in {0} {1} was caught:\n{2}"
+                        msg = "A failure in %s %s was caught:\n%s"
                         LOGGER.warning(
-                            msg.format("_read_states_airbags, particle_gas_id", var_name, trb_msg)
+                            msg, "_read_states_airbags, particle_gas_id", var_name, trb_msg
                         )
                 # particle segment distance
                 elif var_name.startswith("NS dist"):
@@ -5440,9 +5431,9 @@ class D3plot:
                         ] = particle_data[:, :, i_particle_var].view(get_dtype(var_type))
                     except Exception:
                         trb_msg = traceback.format_exc()
-                        msg = "A failure in {0} {1} was caught:\n{2}"
+                        msg = "A failure in %s %s was caught:\n%s"
                         LOGGER.warning(
-                            msg.format("_read_states_airbags, particle_gas_id", var_name, trb_msg)
+                            msg, "_read_states_airbags, particle_gas_id", var_name, trb_msg
                         )
                 # particle position
                 elif var_name.startswith("Pos x"):
@@ -5459,9 +5450,9 @@ class D3plot:
                         ].view(get_dtype(var_type))
                     except Exception:
                         trb_msg = traceback.format_exc()
-                        msg = "A failure in {0} {1} was caught:\n{2}"
+                        msg = "A failure in %s %s was caught:\n%s"
                         LOGGER.warning(
-                            msg.format("_read_states_airbags, particle_gas_id", var_name, trb_msg)
+                            msg, "_read_states_airbags, particle_gas_id", var_name, trb_msg
                         )
                 elif var_name.startswith("Pos y"):
                     # handled in Pos x
@@ -5484,19 +5475,19 @@ class D3plot:
                         ].view(get_dtype(var_type))
                     except Exception:
                         trb_msg = traceback.format_exc()
-                        msg = "A failure in {0} {1} was caught:\n{2}"
+                        msg = "A failure in %s %s was caught:\n%s"
                         LOGGER.warning(
-                            msg.format("_read_states_airbags, particle_gas_id", var_name, trb_msg)
+                            msg, "_read_states_airbags, particle_gas_id", var_name, trb_msg
                         )
 
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_airbags, particle_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_airbags, particle_data", trb_msg)
         finally:
             var_index += n_total_vars
 
-        LOGGER.debug("_read_states_airbags end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_airbags end at var_index %d", var_index)
 
         return var_index
 
@@ -5523,7 +5514,7 @@ class D3plot:
         if not self.header.has_rigid_road_surface:
             return var_index
 
-        LOGGER.debug("_read_states_road_surfaces start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_road_surfaces start at var_index %s", var_index)
 
         n_states = state_data.shape[0]
         info = self._rigid_road_info
@@ -5540,25 +5531,25 @@ class D3plot:
                 array_dict[ArrayType.rigid_road_displacement] = road_data[:, :, 0, :]
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_road_surfaces, road_displacement", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_road_surfaces, road_displacement", trb_msg)
 
             # VELOCITY
             try:
                 array_dict[ArrayType.rigid_road_velocity] = road_data[:, :, 1, :]
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_road_surfaces, road_velocity", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_road_surfaces, road_velocity", trb_msg)
 
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_road_surfaces, road_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_road_surfaces, road_data", trb_msg)
         finally:
             var_index += 6 * n_roads
 
-        LOGGER.debug("_read_states_road_surfaces end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_road_surfaces end at var_index %d", var_index)
 
         return var_index
 
@@ -5585,7 +5576,7 @@ class D3plot:
         if not self.header.has_rigid_body_data:
             return var_index
 
-        LOGGER.debug("_read_states_rigid_body_motion start at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_rigid_body_motion start at var_index %d", var_index)
 
         info = self._rigid_body_info
         n_states = state_data.shape[0]
@@ -5604,8 +5595,8 @@ class D3plot:
                 array_dict[ArrayType.rigid_body_coordinates] = rigid_body_data[:, :, :3]
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_rigid_body_motion, coordinates", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_rigid_body_motion, coordinates", trb_msg)
             finally:
                 i_var = 3
 
@@ -5616,8 +5607,8 @@ class D3plot:
                 ]
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_rigid_body_motion, rot_matrix", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_rigid_body_motion, rot_matrix", trb_msg)
             finally:
                 i_var += 9
 
@@ -5629,8 +5620,8 @@ class D3plot:
                 array_dict[ArrayType.rigid_body_velocity] = rigid_body_data[:, :, i_var : i_var + 3]
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_rigid_body_motion, velocity", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_rigid_body_motion, velocity", trb_msg)
             finally:
                 i_var += 3
 
@@ -5641,8 +5632,8 @@ class D3plot:
                 ]
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_rigid_body_motion, rot_velocity", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_rigid_body_motion, rot_velocity", trb_msg)
             finally:
                 i_var += 3
 
@@ -5653,8 +5644,8 @@ class D3plot:
                 ]
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_read_states_rigid_body_motion, acceleration", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_rigid_body_motion, acceleration", trb_msg)
             finally:
                 i_var += 3
 
@@ -5665,22 +5656,20 @@ class D3plot:
                 ]
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(
-                    msg.format("_read_states_rigid_body_motion, rot_acceleration", trb_msg)
-                )
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_read_states_rigid_body_motion, rot_acceleration", trb_msg)
             finally:
                 i_var += 3
 
         except Exception:
             trb_msg = traceback.format_exc()
-            msg = "A failure in {0} was caught:\n{1}"
-            LOGGER.warning(msg.format("_read_states_rigid_body_motion, rigid_body_data", trb_msg))
+            msg = "A failure in %s was caught:\n%s"
+            LOGGER.warning(msg, "_read_states_rigid_body_motion, rigid_body_data", trb_msg)
 
         finally:
             var_index += n_rigids * n_rigid_vars
 
-        LOGGER.debug("_read_states_rigid_body_motion end at var_index {}".format(var_index))
+        LOGGER.debug("_read_states_rigid_body_motion end at var_index %d", var_index)
 
         return var_index
 
@@ -5709,7 +5698,7 @@ class D3plot:
             care of.
         """
 
-        if not self.bb:
+        if not self._buffer:
             return []
 
         base_filepath = self.header.filepath
@@ -5750,13 +5739,14 @@ class D3plot:
 
         # compute state data in first file
         # search therefore the first non-zero byte from the rear
-        last_nonzero_byte_index = self.bb.size
-        mview_inv_arr = np.asarray(self.bb.memoryview[::-1])
+        last_nonzero_byte_index = self._buffer.size
+        mview_inv_arr = np.asarray(self._buffer.memoryview[::-1])
+        # pylint: disable = invalid-name
         BLOCK_SIZE = 2048
-        for start in range(0, self.bb.size, BLOCK_SIZE):
+        for start in range(0, self._buffer.size, BLOCK_SIZE):
             (nz_indexes,) = np.nonzero(mview_inv_arr[start : start + BLOCK_SIZE])
             if len(nz_indexes):
-                last_nonzero_byte_index = self.bb.size - (start + nz_indexes[0])
+                last_nonzero_byte_index = self._buffer.size - (start + nz_indexes[0])
                 break
         n_states_beyond_geom = (
             last_nonzero_byte_index - self.geometry_section_size
@@ -5772,7 +5762,7 @@ class D3plot:
                 length=n_states_beyond_geom * size_per_state,  # type: ignore
                 filepath=base_filepath,
                 n_states=n_states_beyond_geom,  # type: ignore
-                filesize=self.bb.size,
+                filesize=self._buffer.size,
                 use_mmap=True,
             )
         ]
@@ -5888,7 +5878,7 @@ class D3plot:
         n_states = 0
         total_offset = 0
         for minfo in memory_infos:
-            LOGGER.debug("opening: {0}".format(minfo.filepath))
+            LOGGER.debug("opening: %s", minfo.filepath)
 
             with open(minfo.filepath, "br") as fp:
                 # NOTE
@@ -5959,8 +5949,8 @@ class D3plot:
             care of.
         """
 
-        if not self.bb:
-            return
+        if not self._buffer:
+            return BinaryBuffer(), 0
 
         memory_infos = self._collect_file_infos(size_per_state)
 
@@ -5976,7 +5966,7 @@ class D3plot:
         start = memory_infos[0].start
         length = memory_infos[0].length
         end = start + length
-        mview[:length] = self.bb.memoryview[start:end]
+        mview[:length] = self._buffer.memoryview[start:end]
 
         # transfer memory for other files
         total_offset = length
@@ -6018,7 +6008,7 @@ class D3plot:
         file_dir = file_dir if len(file_dir) != 0 else "."
         file_basename = os.path.basename(filepath)
 
-        pattern = "({path})[0-9]+$".format(path=file_basename)
+        pattern = f"({file_basename})[0-9]+$"
         reg = re.compile(pattern)
 
         filepaths = [
@@ -6048,26 +6038,26 @@ class D3plot:
             size of each word in bytes
         """
 
-        if not self.bb:
+        if not self._buffer:
             return 4, np.int32, np.float32
 
         # test file type flag (1=d3plot, 5=d3part, 11=d3eigv)
 
         # single precision
-        value = self.bb.read_number(44, np.int32)
+        value = self._buffer.read_number(44, np.int32)
         if value > 1000:
             value -= 1000
-        if value == 1 or value == 5 or value == 11:
+        if value in (1, 5, 11):
             return 4, np.int32, np.float32
 
         # double precision
-        value = self.bb.read_number(88, np.int64)
+        value = self._buffer.read_number(88, np.int64)
         if value > 1000:
             value -= 1000
-        if value == 1 or value == 5 or value == 11:
+        if value in (1, 5, 11):
             return 8, np.int64, np.float64
 
-        raise RuntimeError("Unknown file type '{0}'.".format(value))
+        raise RuntimeError(f"Unknown file type '{value}'.")
 
     def plot(
         self,
@@ -6135,7 +6125,7 @@ class D3plot:
             if is_element_field and len(shell_node_indexes) != len(field):  # type: ignore
                 msg = "Element indexes and field have different len: {} != {}"
                 raise ValueError(msg.format(shell_node_indexes.shape, field.shape))
-            elif not is_element_field and len(node_xyz) != len(field):  # type: ignore
+            if not is_element_field and len(node_xyz) != len(field):  # type: ignore
                 msg = "Node field and coords have different len: {} != {}"
                 raise ValueError(msg.format(node_xyz.shape, field.shape))
 
@@ -6160,7 +6150,7 @@ class D3plot:
                 os.remove(tmpfile)
 
         if export_filepath:
-            with open(export_filepath, "w") as fp:
+            with open(export_filepath, "w", encoding="utf-8") as fp:
                 fp.write(_html)
         else:
             # create new temp file
@@ -6240,50 +6230,50 @@ class D3plot:
 
             # header
             n_bytes_written += self._write_header(fp, write_settings)
-            LOGGER.debug(msg.format(n_bytes_written, "_write_header"))
+            LOGGER.debug(msg, n_bytes_written, "_write_header")
 
             # material section
             n_bytes_written += self._write_geom_material_section(fp, write_settings)
-            LOGGER.debug(msg.format(n_bytes_written, "_write_geom_material_section"))
+            LOGGER.debug(msg, n_bytes_written, "_write_geom_material_section")
 
             # fluid material data
             n_bytes_written += self._write_geom_fluid_material_header(fp, write_settings)
-            LOGGER.debug(msg.format(n_bytes_written, "_write_geom_fluid_material_header"))
+            LOGGER.debug(msg, n_bytes_written, "_write_geom_fluid_material_header")
 
             # SPH element data flags
             n_bytes_written += self._write_geom_sph_element_data_flags(fp, write_settings)
-            LOGGER.debug(msg.format(n_bytes_written, "_write_geom_sph_element_data_flags"))
+            LOGGER.debug(msg, n_bytes_written, "_write_geom_sph_element_data_flags")
 
             # Particle Data
             n_bytes_written += self._write_geom_particle_flags(fp, write_settings)
-            LOGGER.debug(msg.format(n_bytes_written, "_write_geom_particle_flags"))
+            LOGGER.debug(msg, n_bytes_written, "_write_geom_particle_flags")
 
             # Geometry Data
             n_bytes_written += self._write_geometry(fp, write_settings)
-            LOGGER.debug(msg.format(n_bytes_written, "_write_geometry"))
+            LOGGER.debug(msg, n_bytes_written, "_write_geometry")
 
             # User Material, Node, Blabla IDs
             n_bytes_written += self._write_geom_user_ids(fp, write_settings)
-            LOGGER.debug(msg.format(n_bytes_written, "_write_geom_user_ids"))
+            LOGGER.debug(msg, n_bytes_written, "_write_geom_user_ids")
 
             # Rigid Body Description
             n_bytes_written += self._write_geom_rigid_body_description(fp, write_settings)
-            LOGGER.debug(msg.format(n_bytes_written, "_write_geom_rigid_body_description"))
+            LOGGER.debug(msg, n_bytes_written, "_write_geom_rigid_body_description")
 
             # Adapted Element Parent List
-            # TODO
+            # not supported
 
             # Smooth Particle Hydrodynamcis Node and Material list
             n_bytes_written += self._write_geom_sph_node_and_materials(fp, write_settings)
-            LOGGER.debug(msg.format(n_bytes_written, "_write_geom_sph_node_and_materials"))
+            LOGGER.debug(msg, n_bytes_written, "_write_geom_sph_node_and_materials")
 
             # Particle Geometry Data
             n_bytes_written += self._write_geom_particle_geometry_data(fp, write_settings)
-            LOGGER.debug(msg.format(n_bytes_written, "_write_geom_particle_geometry_data"))
+            LOGGER.debug(msg, n_bytes_written, "_write_geom_particle_geometry_data")
 
             # Rigid Road Surface Data
             n_bytes_written += self._write_geom_rigid_road_surface(fp, write_settings)
-            LOGGER.debug(msg.format(n_bytes_written, "_write_geom_rigid_road_surface"))
+            LOGGER.debug(msg, n_bytes_written, "_write_geom_rigid_road_surface")
 
             # Connectivity for weirdo elements
             # 10 Node Tetra
@@ -6291,38 +6281,22 @@ class D3plot:
             # 20 Node Solid
             # 27 Node Solid
             n_bytes_written += self._write_geom_extra_node_data(fp, write_settings)
-            LOGGER.debug(msg.format(n_bytes_written, "_write_geom_extra_node_data"))
+            LOGGER.debug(msg, n_bytes_written, "_write_geom_extra_node_data")
 
             # end mark
             n_bytes_written += fp.write(write_settings.pack(-999999.0))
-            LOGGER.debug(msg.format(n_bytes_written, "_end_mark"))
+            LOGGER.debug(msg, n_bytes_written, "_end_mark")
 
             # Header Part & Contact Interface Titles
             n_bytes_written_before_titles = n_bytes_written
             n_bytes_written += self._write_header_part_contact_interface_titles(fp, write_settings)
-            LOGGER.debug(msg.format(n_bytes_written, "_write_header_part_contact_interface_titles"))
+            LOGGER.debug(msg, n_bytes_written, "_write_header_part_contact_interface_titles")
 
-            """
-            # we seal the file here with an endmark
-            n_bytes_written += \
-                fp.write(write_settings.pack(-999999.))
-            LOGGER.debug(msg.format(n_bytes_written,
-                                    "_end_mark"))
-
-            if not write_settings.single_file:
-                # correct zero padding at the end
-                if block_size_bytes > 0:
-                    zero_bytes = self._get_zero_byte_padding(n_bytes_written,
-                                                             block_size_bytes)
-                    n_bytes_written += fp.write(zero_bytes)
-                    LOGGER.debug(msg.format(n_bytes_written,
-                                            "_zero_byte_padding"))
-            """
             if n_bytes_written_before_titles != n_bytes_written:
 
                 # we seal the file here with an endmark
                 n_bytes_written += fp.write(write_settings.pack(-999999.0))
-                LOGGER.debug(msg.format(n_bytes_written, "_end_mark"))
+                LOGGER.debug(msg, n_bytes_written, "_end_mark")
             else:
                 pass
                 # we already set an end-mark before
@@ -6332,13 +6306,13 @@ class D3plot:
             if block_size_bytes > 0:
                 zero_bytes = self._get_zero_byte_padding(n_bytes_written, block_size_bytes)
                 n_bytes_written += fp.write(zero_bytes)
-                LOGGER.debug(msg.format(n_bytes_written, "_zero_byte_padding"))
+                LOGGER.debug(msg, n_bytes_written, "_zero_byte_padding")
 
             msg = "Wrote {0} bytes to geometry file."
-            LOGGER.debug(msg.format(n_bytes_written))
+            LOGGER.debug(msg, n_bytes_written)
 
             # Extra Data Types (for multi solver output)
-            # TODO
+            # not supported
 
         # write states
         self._write_states(filepath, write_settings)
@@ -6534,7 +6508,7 @@ class D3plot:
         # history vars
         n_sph_history_vars = 0
         if ArrayType.sph_history_vars in self.arrays:
-            n_sph_history_vars, _ = settings._count_array_state_var(
+            n_sph_history_vars, _ = settings.count_array_state_var(
                 ArrayType.sph_history_vars,
                 ["n_timesteps", "n_sph_particles", "n_sph_history_vars"],
                 False,
@@ -6601,7 +6575,7 @@ class D3plot:
         n_bytes_written += fp.write(settings.pack(n_particles))
         n_bytes_written += fp.write(settings.pack(nstgeom))
         if subver == 4:
-            # TODO verify
+            # This was never validated
             n_bytes_written += fp.write(
                 settings.pack(self.arrays[ArrayType.airbags_n_chambers].sum())
             )
@@ -6611,7 +6585,9 @@ class D3plot:
         D3plot._compare_n_bytes_checksum(n_bytes_written, n_bytes_expected)
 
         # typecode for variables
+        # pylint: disable = invalid-name
         INT_TC = 1
+        # pylint: disable = invalid-name
         FLOAT_TC = 2
         nlist_names_typecodes = [
             # airbag geometry data (ngeom)
@@ -6682,34 +6658,34 @@ class D3plot:
                 ArrayType.element_shell_part_indexes: ["n_shells"],
             },
         )
-        self._check_array_dims({ArrayType.node_coordinates: 1}, "x_y_z", 3)
+        self.check_array_dims({ArrayType.node_coordinates: 1}, "x_y_z", 3)
 
         array_dims = {
             ArrayType.element_solid_node_indexes: 0,
             ArrayType.element_solid_part_indexes: 0,
             ArrayType.element_solid_extra_nodes: 0,
         }
-        n_solids = self._check_array_dims(array_dims, "n_solids")
-        self._check_array_dims({ArrayType.element_solid_node_indexes: 1}, "n_element_nodes", 8)
-        self._check_array_dims({ArrayType.element_solid_extra_nodes: 1}, "n_extra_nodes", 2)
+        n_solids = self.check_array_dims(array_dims, "n_solids")
+        self.check_array_dims({ArrayType.element_solid_node_indexes: 1}, "n_element_nodes", 8)
+        self.check_array_dims({ArrayType.element_solid_extra_nodes: 1}, "n_extra_nodes", 2)
         array_dims = {
             ArrayType.element_tshell_node_indexes: 0,
             ArrayType.element_tshell_part_indexes: 0,
         }
-        self._check_array_dims(array_dims, "n_tshells")
-        self._check_array_dims({ArrayType.element_tshell_node_indexes: 1}, "n_element_nodes", 8)
+        self.check_array_dims(array_dims, "n_tshells")
+        self.check_array_dims({ArrayType.element_tshell_node_indexes: 1}, "n_element_nodes", 8)
         array_dims = {
             ArrayType.element_beam_node_indexes: 0,
             ArrayType.element_beam_part_indexes: 0,
         }
-        self._check_array_dims(array_dims, "n_beams")
-        self._check_array_dims({ArrayType.element_beam_node_indexes: 1}, "n_element_nodes", 5)
+        self.check_array_dims(array_dims, "n_beams")
+        self.check_array_dims({ArrayType.element_beam_node_indexes: 1}, "n_element_nodes", 5)
         array_dims = {
             ArrayType.element_shell_node_indexes: 0,
             ArrayType.element_shell_part_indexes: 0,
         }
-        self._check_array_dims(array_dims, "n_shells")
-        self._check_array_dims({ArrayType.element_shell_node_indexes: 1}, "n_element_nodes", 4)
+        self.check_array_dims(array_dims, "n_shells")
+        self.check_array_dims({ArrayType.element_shell_node_indexes: 1}, "n_element_nodes", 4)
 
         # NODES
         node_coordinates = (
@@ -6890,8 +6866,6 @@ class D3plot:
             nmmat = settings.header["nmmat"]
             n_bytes_written += fp.write(settings.pack(nmmat))
 
-        FORTRAN_OFFSET = 1
-
         # NODE IDS
         node_ids = (
             self.arrays[ArrayType.node_ids]
@@ -7010,20 +6984,18 @@ class D3plot:
         # check length
         # cannot use self._check_array_dims due to some lists
         dim_size = -1
-        for typename in array_dims.keys():
+        for typename in array_dims:
             array = self.arrays[typename]
             if dim_size < 0:
                 dim_size = len(array)
             else:
                 if len(array) != dim_size:
                     dimension_size_dict = {
-                        typename2: len(self.arrays[typename2]) for typename2 in array_dims.keys()
+                        typename2: len(self.arrays[typename2]) for typename2 in array_dims
                     }
                     msg = "Inconsistency in array dim '{0}' detected:\n{1}"
                     size_list = [
-                        "   - name: {0}, dim: {1}, size: {2}".format(
-                            typename, array_dims[typename], size
-                        )
+                        f"   - name: {typename}, dim: {array_dims[typename]}, size: {size}"
                         for typename, size in dimension_size_dict.items()
                     ]
                     raise ValueError(msg.format("n_rigid_bodies", "\n".join(size_list)))
@@ -7088,7 +7060,7 @@ class D3plot:
         }
         array_names = list(array_dims.keys())
         _check_array_occurrence(self, array_names, array_names)
-        self._check_array_dims(array_dims, "n_sph_nodes", nmsph)
+        self.check_array_dims(array_dims, "n_sph_nodes", nmsph)
 
         sph_node_indexes = self.arrays[ArrayType.sph_node_indexes] + FORTRAN_OFFSET
         sph_node_material_index = self.arrays[ArrayType.sph_node_material_index] + FORTRAN_OFFSET
@@ -7130,7 +7102,7 @@ class D3plot:
         }
         array_names = list(array_dims.keys())
         _check_array_occurrence(self, array_names, array_names)
-        self._check_array_dims(array_dims, "n_airbags")
+        self.check_array_dims(array_dims, "n_airbags")
 
         # get the arrays
         array_list = [
@@ -7174,21 +7146,21 @@ class D3plot:
             ArrayType.rigid_road_node_ids: 0,
             ArrayType.rigid_road_node_coordinates: 0,
         }
-        n_rigid_road_nodes = self._check_array_dims(array_dims, "rigid_road_n_nodes")
-        self._check_array_dims({ArrayType.rigid_road_node_coordinates: 1}, "x_y_z", 3)
+        n_rigid_road_nodes = self.check_array_dims(array_dims, "rigid_road_n_nodes")
+        self.check_array_dims({ArrayType.rigid_road_node_coordinates: 1}, "x_y_z", 3)
         array_dims = {
             ArrayType.rigid_road_n_segments: 0,
             ArrayType.rigid_road_segment_node_ids: 0,
             ArrayType.rigid_road_segment_road_id: 0,
         }
-        n_rigid_roads = self._check_array_dims(array_dims, "n_rigid_roads")
+        n_rigid_roads = self.check_array_dims(array_dims, "n_rigid_roads")
         n_bytes_written = 0
 
         # NODE COUNT
         n_bytes_written += fp.write(settings.pack(n_rigid_road_nodes))
 
         # SEGMENT COUNT
-        # TODO verify
+        # This was never verified
         n_total_segments = np.sum(
             len(segment_ids) for segment_ids in self.arrays[ArrayType.rigid_road_segment_node_ids]
         )
@@ -7199,7 +7171,7 @@ class D3plot:
 
         # MOTION FLAG - if motion data is output
         # by default let's just say ... yeah baby
-        # TODO verify
+        # This was never verified
         n_bytes_written += fp.write(settings.pack(1))
 
         # RIGID ROAD NODE IDS
@@ -7252,8 +7224,8 @@ class D3plot:
                 ArrayType.element_solid_node_indexes: 0,
                 ArrayType.element_solid_node10_extra_node_indexes: 0,
             }
-            self._check_array_dims(array_dims, "n_solids")
-            self._check_array_dims(
+            self.check_array_dims(array_dims, "n_solids")
+            self.check_array_dims(
                 {ArrayType.element_solid_node10_extra_node_indexes: 1}, "extra_node_ids", 2
             )
 
@@ -7279,8 +7251,8 @@ class D3plot:
                 ArrayType.element_shell_node8_element_index: 0,
                 ArrayType.element_shell_node8_extra_node_indexes: 0,
             }
-            self._check_array_dims(array_dims, "n_node8_shells")
-            self._check_array_dims(
+            self.check_array_dims(array_dims, "n_node8_shells")
+            self.check_array_dims(
                 {ArrayType.element_shell_node8_extra_node_indexes: 1}, "extra_node_ids", 4
             )
 
@@ -7311,8 +7283,8 @@ class D3plot:
                 ArrayType.element_solid_node20_element_index: 0,
                 ArrayType.element_solid_node20_extra_node_indexes: 0,
             }
-            self._check_array_dims(array_dims, "n_node20_solids")
-            self._check_array_dims(
+            self.check_array_dims(array_dims, "n_node20_solids")
+            self.check_array_dims(
                 {ArrayType.element_solid_node20_extra_node_indexes: 1}, "extra_node_ids", 12
             )
 
@@ -7343,8 +7315,8 @@ class D3plot:
                 ArrayType.element_solid_node27_element_index: 0,
                 ArrayType.element_solid_node27_extra_node_indexes: 0,
             }
-            self._check_array_dims(array_dims, "n_node27_solids")
-            self._check_array_dims(
+            self.check_array_dims(array_dims, "n_node27_solids")
+            self.check_array_dims(
                 {ArrayType.element_solid_node27_extra_node_indexes: 1}, "extra_node_ids", 19
             )
 
@@ -7392,7 +7364,7 @@ class D3plot:
         if _check_array_occurrence(
             self, list(array_dimensions.keys()), list(array_dimensions.keys())
         ):
-            self._check_array_dims(array_dimensions, "n_parts")
+            self.check_array_dims(array_dimensions, "n_parts")
 
             ntype = 90001
 
@@ -7438,7 +7410,7 @@ class D3plot:
         if _check_array_occurrence(
             self, list(array_dimensions.keys()), list(array_dimensions.keys())
         ):
-            self._check_array_dims(array_dimensions, "n_parts")
+            self.check_array_dims(array_dimensions, "n_parts")
 
             ntype = 90002
             n_bytes_written += fp.write(settings.pack(ntype))
@@ -7471,7 +7443,7 @@ class D3plot:
             # if any state array is present simply make up a timestep array
             if any(array_name in self.arrays for array_name in ArrayType.get_state_array_names()):
                 array_dims = {array_name: 0 for array_name in ArrayType.get_state_array_names()}
-                n_timesteps = self._check_array_dims(
+                n_timesteps = self.check_array_dims(
                     array_dimensions=array_dims, dimension_name="n_timesteps"
                 )
                 self._state_info.n_timesteps = n_timesteps
@@ -7492,6 +7464,7 @@ class D3plot:
         file_to_close: Union[None, typing.BinaryIO] = None
         if isinstance(filepath, str):
             if settings.single_file:
+                # pylint: disable = consider-using-with
                 state_fp = file_to_close = open(filepath + fmt_state_file_counter.format(1), "ab")
             else:
                 # create a new file per timestep
@@ -7527,7 +7500,7 @@ class D3plot:
                     )
 
                     # CFDDATA
-                    # TODO or not ...
+                    # not supported
 
                     # SOLIDS
                     n_bytes_written += self._write_states_solids(fp, i_timestep, settings)
@@ -7557,7 +7530,7 @@ class D3plot:
                     n_bytes_written += self._write_states_rigid_bodies(fp, i_timestep, settings)
 
                     # EXTRA DATA
-                    # TODO or not ...
+                    # not supported
 
                     # end mark
                     # at the end for single file buffer
@@ -7572,8 +7545,8 @@ class D3plot:
                             n_bytes_written += fp.write(zero_bytes)
 
                     # log
-                    msg = "_write_states wrote {0} bytes"
-                    LOGGER.debug(msg.format(n_bytes_written))
+                    msg = "_write_states wrote %d bytes"
+                    LOGGER.debug(msg, n_bytes_written)
                     n_timesteps_written += 1
 
         finally:
@@ -7603,7 +7576,7 @@ class D3plot:
             ArrayType.global_total_energy: 0,
             ArrayType.global_velocity: 0,
         }
-        self._check_array_dims(array_dims, "n_timesteps")
+        self.check_array_dims(array_dims, "n_timesteps")
 
         byte_checksum = 0
 
@@ -7645,7 +7618,7 @@ class D3plot:
 
         # GLOBAL VELOCITY
         if n_global_vars >= 6:
-            self._check_array_dims({ArrayType.global_velocity: 1}, "vx_vy_vz", 3)
+            self.check_array_dims({ArrayType.global_velocity: 1}, "vx_vy_vz", 3)
             array_type = ArrayType.global_velocity
             array = (
                 self.arrays[array_type][i_timestep]
@@ -7676,9 +7649,9 @@ class D3plot:
             ArrayType.part_mass: 0,
             ArrayType.part_hourglass_energy: 0,
         }
-        self._check_array_dims(array_dims, "n_timesteps")
+        self.check_array_dims(array_dims, "n_timesteps")
 
-        self._check_array_dims({ArrayType.part_velocity: 2}, "vx_vy_vz", 3)
+        self.check_array_dims({ArrayType.part_velocity: 2}, "vx_vy_vz", 3)
 
         n_parts = settings.header["nmmat"]
 
@@ -7690,23 +7663,10 @@ class D3plot:
             )
 
             if len(array):
-                # TODO verify
-                # dummy_array = np.full(default_shape, -1, dtype=settings.ftype)
-                # dummy_array[settings.unique_beam_part_indexes] = \
-                #     array[settings.unique_beam_part_indexes]
-                # dummy_array[settings.unique_shell_part_indexes] = \
-                #     array[settings.unique_shell_part_indexes]
-                # dummy_array[settings.unique_solid_part_indexes] = \
-                #     array[settings.unique_solid_part_indexes]
-                # dummy_array[settings.unique_tshell_part_indexes] = \
-                #     array[settings.unique_tshell_part_indexes]
-
-                # dummy_array = array[:settings.header["nmmat"]]
                 dummy_array = array
-
                 return fp.write(settings.pack(dummy_array, dtype_hint=np.floating))
-            else:
-                return 0
+
+            return 0
 
         # PART INTERNAL ENERGY
         if n_global_vars >= 6 + n_parts:
@@ -7742,13 +7702,13 @@ class D3plot:
             ArrayType.rigid_wall_force: 0,
             ArrayType.rigid_wall_position: 0,
         }
-        self._check_array_dims(array_dims, "n_timesteps")
+        self.check_array_dims(array_dims, "n_timesteps")
         array_dims = {
             ArrayType.rigid_wall_force: 1,
             ArrayType.rigid_wall_position: 1,
         }
-        self._check_array_dims(array_dims, "n_rigid_walls")
-        self._check_array_dims({ArrayType.rigid_wall_position: 2}, "x_y_z", 3)
+        self.check_array_dims(array_dims, "n_rigid_walls")
+        self.check_array_dims({ArrayType.rigid_wall_position: 2}, "x_y_z", 3)
 
         n_rigid_wall_vars = settings.header["n_rigid_wall_vars"]
         n_rigid_walls = settings.header["n_rigid_walls"]
@@ -7761,15 +7721,19 @@ class D3plot:
                 byte_checksum += fp.write(settings.pack(array, dtype_hint=np.floating))
 
         # check byte checksum
+        # pylint: disable = invalid-name
         TIME_WORDSIZE = 1
         byte_checksum_target = (TIME_WORDSIZE + settings.header["nglbv"]) * settings.wordsize
         if byte_checksum != byte_checksum_target:
-            msg = "byte checksum wrong: " "{0} (header) != {1} (checksum)"
-            raise RuntimeError(msg.format(byte_checksum_target, byte_checksum))
+            msg = (
+                "byte checksum wrong: "
+                f"{byte_checksum_target} (header) != {byte_checksum} (checksum)"
+            )
+            raise RuntimeError(msg)
 
         # log
-        msg = "{0} wrote {1} bytes."
-        LOGGER.debug(msg.format("_write_states_globals", byte_checksum))
+        msg = "%s wrote %d bytes."
+        LOGGER.debug(msg, "_write_states_globals", byte_checksum)
 
         return byte_checksum
 
@@ -7808,7 +7772,7 @@ class D3plot:
             ArrayType.node_residual_forces: 0,
             ArrayType.node_residual_moments: 0,
         }
-        self._check_array_dims(array_dims, "n_timesteps")
+        self.check_array_dims(array_dims, "n_timesteps")
         array_dims = {
             ArrayType.node_coordinates: 0,
             ArrayType.node_displacement: 1,
@@ -7821,13 +7785,13 @@ class D3plot:
             ArrayType.node_residual_forces: 1,
             ArrayType.node_residual_moments: 1,
         }
-        self._check_array_dims(array_dims, "n_nodes")
-        self._check_array_dims({ArrayType.node_heat_flux: 2}, "x_y_z", 3)
-        self._check_array_dims({ArrayType.node_displacement: 2}, "dx_dy_dz", 3)
-        self._check_array_dims({ArrayType.node_velocity: 2}, "vx_vy_vz", 3)
-        self._check_array_dims({ArrayType.node_acceleration: 2}, "ax_ay_az", 3)
-        self._check_array_dims({ArrayType.node_residual_forces: 2}, "fx_fy_fz", 3)
-        self._check_array_dims({ArrayType.node_residual_moments: 2}, "mx_my_mz", 3)
+        self.check_array_dims(array_dims, "n_nodes")
+        self.check_array_dims({ArrayType.node_heat_flux: 2}, "x_y_z", 3)
+        self.check_array_dims({ArrayType.node_displacement: 2}, "dx_dy_dz", 3)
+        self.check_array_dims({ArrayType.node_velocity: 2}, "vx_vy_vz", 3)
+        self.check_array_dims({ArrayType.node_acceleration: 2}, "ax_ay_az", 3)
+        self.check_array_dims({ArrayType.node_residual_forces: 2}, "fx_fy_fz", 3)
+        self.check_array_dims({ArrayType.node_residual_moments: 2}, "mx_my_mz", 3)
 
         byte_checksum = 0
 
@@ -7859,7 +7823,7 @@ class D3plot:
                 byte_checksum += fp.write(settings.pack(array, dtype_hint=np.floating))
             # 3 temperatures per node
             else:
-                self._check_array_dims({ArrayType.node_temperature: 2}, "node_layer", 3)
+                self.check_array_dims({ArrayType.node_temperature: 2}, "node_layer", 3)
                 byte_checksum += fp.write(settings.pack(array, dtype_hint=np.floating))
 
             # NODE HEAT FLUX
@@ -7921,6 +7885,7 @@ class D3plot:
         n_residual_forces_vars = settings.has_node_residual_forces * 3
         n_residual_moments_vars = settings.has_node_residual_moments * 3
 
+        # pylint: disable = invalid-name
         NDIM = 3
         byte_checksum_target = (
             (
@@ -7934,12 +7899,15 @@ class D3plot:
             * settings.header["numnp"]
         )
         if byte_checksum != byte_checksum_target:
-            msg = "byte checksum wrong: " "{0} (header) != {1} (checksum)"
-            raise RuntimeError(msg.format(byte_checksum_target, byte_checksum))
+            msg = (
+                "byte checksum wrong: "
+                "{byte_checksum_target} (header) != {byte_checksum} (checksum)"
+            )
+            raise RuntimeError(msg)
 
         # log
-        msg = "{0} wrote {1} bytes."
-        LOGGER.debug(msg.format("_write_states_nodes", byte_checksum))
+        msg = "%s wrote %d bytes."
+        LOGGER.debug(msg, "_write_states_nodes", byte_checksum)
 
         return byte_checksum
 
@@ -7965,13 +7933,13 @@ class D3plot:
             ArrayType.global_timesteps: 0,
             ArrayType.element_solid_thermal_data: 0,
         }
-        self._check_array_dims(array_dims, "n_timesteps")
+        self.check_array_dims(array_dims, "n_timesteps")
 
         array_dims = {
             ArrayType.element_solid_node_indexes: 0,
             ArrayType.element_solid_thermal_data: 1,
         }
-        self._check_array_dims(array_dims, "n_solids")
+        self.check_array_dims(array_dims, "n_solids")
 
         array = self.arrays[ArrayType.element_solid_thermal_data][i_timestep]
         n_bytes_written = fp.write(settings.pack(array, dtype_hint=np.floating))
@@ -7981,12 +7949,15 @@ class D3plot:
             settings.header["nt3d"] * abs(settings.header["nel8"]) * settings.wordsize
         )
         if n_bytes_expected != n_bytes_written:
-            msg = "byte checksum wrong: " "{0} (header) != {1} (checksum)"
-            raise RuntimeError(msg.format(n_bytes_expected, n_bytes_written))
+            msg = (
+                "byte checksum wrong: "
+                f"{n_bytes_expected} (header) != {n_bytes_written} (checksum)"
+            )
+            raise RuntimeError(msg)
 
         # log
-        msg = "{0} wrote {1} bytes."
-        LOGGER.debug(msg.format("_write_states_thermal_data", n_bytes_written))
+        msg = "%s wrote %d bytes."
+        LOGGER.debug(msg, "_write_states_thermal_data", n_bytes_written)
 
         return n_bytes_written
 
@@ -8051,7 +8022,7 @@ class D3plot:
             ArrayType.element_solid_plastic_strain_tensor: 0,
             ArrayType.element_solid_thermal_strain_tensor: 0,
         }
-        self._check_array_dims(array_dims, "n_timesteps")
+        self.check_array_dims(array_dims, "n_timesteps")
 
         array_dims = {
             ArrayType.element_solid_node_indexes: 0,
@@ -8062,7 +8033,7 @@ class D3plot:
             ArrayType.element_solid_plastic_strain_tensor: 1,
             ArrayType.element_solid_thermal_strain_tensor: 1,
         }
-        self._check_array_dims(array_dims, "n_solids")
+        self.check_array_dims(array_dims, "n_solids")
 
         array_dims = {
             ArrayType.element_solid_stress: 2,
@@ -8072,17 +8043,17 @@ class D3plot:
             ArrayType.element_solid_plastic_strain_tensor: 2,
             ArrayType.element_solid_thermal_strain_tensor: 2,
         }
-        self._check_array_dims(array_dims, "n_solid_layers")
+        self.check_array_dims(array_dims, "n_solid_layers")
 
-        self._check_array_dims({ArrayType.element_solid_stress: 3}, "σx_σy_σz_σxy_σyz_σxz", 6)
+        self.check_array_dims({ArrayType.element_solid_stress: 3}, "σx_σy_σz_σxy_σyz_σxz", 6)
 
-        self._check_array_dims({ArrayType.element_solid_strain: 3}, "εx_εy_εz_εxy_εyz_εxz", 6)
+        self.check_array_dims({ArrayType.element_solid_strain: 3}, "εx_εy_εz_εxy_εyz_εxz", 6)
 
-        self._check_array_dims(
+        self.check_array_dims(
             {ArrayType.element_solid_plastic_strain_tensor: 3}, "εx_εy_εz_εxy_εyz_εxz", 6
         )
 
-        self._check_array_dims(
+        self.check_array_dims(
             {ArrayType.element_solid_thermal_strain_tensor: 3}, "εx_εy_εz_εxy_εyz_εxz", 6
         )
 
@@ -8098,8 +8069,8 @@ class D3plot:
                 solid_data[:, :, 0:6] = array
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_write_states_solids, element_solid_stress", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_write_states_solids, element_solid_stress", trb_msg)
 
         # SOLID EFFECTIVE PSTRAIN
         if ArrayType.element_solid_effective_plastic_strain in self.arrays:
@@ -8108,11 +8079,9 @@ class D3plot:
                 solid_data[:, :, 6] = array
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
+                msg = "A failure in %s was caught:\n%s"
                 LOGGER.warning(
-                    msg.format(
-                        "_write_states_solids, element_solid_effective_plastic_strain", trb_msg
-                    )
+                    msg, "_write_states_solids, element_solid_effective_plastic_strain", trb_msg
                 )
 
         # SOLID HISTORY VARIABLES
@@ -8131,9 +8100,9 @@ class D3plot:
                 solid_data[:, :, 7 : 7 + n_solid_history_variables] = array
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
+                msg = "A failure in %s was caught:\n%s"
                 LOGGER.warning(
-                    msg.format("_write_states_solids, element_solid_history_variables", trb_msg)
+                    msg, "_write_states_solids, element_solid_history_variables", trb_msg
                 )
 
         # SOLID STRAIN
@@ -8144,8 +8113,8 @@ class D3plot:
                 solid_data[:, :, offset : offset + 6] = array
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
-                LOGGER.warning(msg.format("_write_states_solids, element_solid_strain", trb_msg))
+                msg = "A failure in %s was caught:\n%s"
+                LOGGER.warning(msg, "_write_states_solids, element_solid_strain", trb_msg)
 
         # PLASTIC STRAIN TENSOR
         if (
@@ -8158,9 +8127,9 @@ class D3plot:
                 solid_data[:, :, offset : offset + 6] = array
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
+                msg = "A failure in %s was caught:\n%s"
                 LOGGER.warning(
-                    msg.format("_write_states_solids, element_solid_plastic_strain_tensor", trb_msg)
+                    msg, "_write_states_solids, element_solid_plastic_strain_tensor", trb_msg
                 )
 
         # THERMAL STRAIN TENSOR
@@ -8179,9 +8148,9 @@ class D3plot:
                 solid_data[:, :, offset : offset + 6] = array
             except Exception:
                 trb_msg = traceback.format_exc()
-                msg = "A failure in {0} was caught:\n{1}"
+                msg = "A failure in %s was caught:\n%s"
                 LOGGER.warning(
-                    msg.format("_write_states_solids, element_solid_thermal_strain_tensor", trb_msg)
+                    msg, "_write_states_solids, element_solid_thermal_strain_tensor", trb_msg
                 )
 
         n_bytes_written = fp.write(settings.pack(solid_data, dtype_hint=np.floating))
@@ -8191,12 +8160,15 @@ class D3plot:
             settings.header["nv3d"] * abs(settings.header["nel8"]) * settings.wordsize
         )
         if n_bytes_expected != n_bytes_written:
-            msg = "byte checksum wrong: " "{0} (header) != {1} (checksum)"
-            raise RuntimeError(msg.format(n_bytes_expected, n_bytes_written))
+            msg = (
+                "byte checksum wrong: "
+                f"{n_bytes_expected} (header) != {n_bytes_written} (checksum)"
+            )
+            raise RuntimeError(msg)
 
         # log
-        msg = "{0} wrote {1} bytes."
-        LOGGER.debug(msg.format("_write_states_solids", n_bytes_written))
+        msg = "%s wrote %d bytes."
+        LOGGER.debug(msg, "_write_states_solids", n_bytes_written)
 
         return n_bytes_written
 
@@ -8245,7 +8217,7 @@ class D3plot:
             ArrayType.element_tshell_effective_plastic_strain: 0,
             ArrayType.element_tshell_history_variables: 0,
         }
-        self._check_array_dims(array_dims, "n_timesteps")
+        self.check_array_dims(array_dims, "n_timesteps")
 
         array_dims = {
             ArrayType.element_tshell_node_indexes: 0,
@@ -8254,13 +8226,13 @@ class D3plot:
             ArrayType.element_tshell_effective_plastic_strain: 1,
             ArrayType.element_tshell_history_variables: 1,
         }
-        self._check_array_dims(array_dims, "n_tshells")
+        self.check_array_dims(array_dims, "n_tshells")
 
-        self._check_array_dims({ArrayType.element_tshell_stress: 3}, "σx_σy_σz_σxy_σyz_σxz", 6)
+        self.check_array_dims({ArrayType.element_tshell_stress: 3}, "σx_σy_σz_σxy_σyz_σxz", 6)
 
-        self._check_array_dims({ArrayType.element_tshell_strain: 2}, "upper_lower", 2)
+        self.check_array_dims({ArrayType.element_tshell_strain: 2}, "upper_lower", 2)
 
-        self._check_array_dims({ArrayType.element_tshell_strain: 3}, "εx_εy_εz_εxy_εyz_εxz", 6)
+        self.check_array_dims({ArrayType.element_tshell_strain: 3}, "εx_εy_εz_εxy_εyz_εxz", 6)
 
         has_stress = settings.header["ioshl1"] == 1000
         has_pstrain = settings.header["ioshl2"] == 1000
@@ -8308,12 +8280,15 @@ class D3plot:
             settings.header["nv3dt"] * abs(settings.header["nelth"]) * settings.wordsize
         )
         if n_bytes_expected != n_bytes_written:
-            msg = "byte checksum wrong: " "{0} (header) != {1} (checksum)"
-            raise RuntimeError(msg.format(n_bytes_expected, n_bytes_written))
+            msg = (
+                "byte checksum wrong: "
+                f"{n_bytes_expected} (header) != {n_bytes_written} (checksum)"
+            )
+            raise RuntimeError(msg)
 
         # log
-        msg = "{0} wrote {1} bytes."
-        LOGGER.debug(msg.format("_write_states_tshells", n_bytes_written))
+        msg = "%s wrote %d bytes."
+        LOGGER.debug(msg, "_write_states_tshells", n_bytes_written)
 
         return n_bytes_written
 
@@ -8366,7 +8341,7 @@ class D3plot:
             ArrayType.element_beam_axial_strain: 0,
             ArrayType.element_beam_history_vars: 0,
         }
-        self._check_array_dims(array_dims, "n_timesteps")
+        self.check_array_dims(array_dims, "n_timesteps")
         array_dims = {
             ArrayType.element_beam_axial_force: 1,
             ArrayType.element_beam_shear_force: 1,
@@ -8378,9 +8353,9 @@ class D3plot:
             ArrayType.element_beam_axial_strain: 1,
             ArrayType.element_beam_history_vars: 1,
         }
-        self._check_array_dims(array_dims, "n_beams")
-        self._check_array_dims({ArrayType.element_beam_shear_force: 2}, "fs_ft", 2)
-        self._check_array_dims({ArrayType.element_beam_bending_moment: 2}, "ms_mt", 2)
+        self.check_array_dims(array_dims, "n_beams")
+        self.check_array_dims({ArrayType.element_beam_shear_force: 2}, "fs_ft", 2)
+        self.check_array_dims({ArrayType.element_beam_bending_moment: 2}, "ms_mt", 2)
         array_dims = {
             ArrayType.element_beam_shear_stress: 2,
             ArrayType.element_beam_axial_stress: 2,
@@ -8388,9 +8363,9 @@ class D3plot:
             ArrayType.element_beam_axial_strain: 2,
             ArrayType.element_beam_history_vars: 2,
         }
-        n_beam_layers = self._check_array_dims(array_dims, "n_beam_layers")
-        self._check_array_dims({ArrayType.element_beam_shear_stress: 3}, "σrs_σtr", 2)
-        self._check_array_dims(
+        n_beam_layers = self.check_array_dims(array_dims, "n_beam_layers")
+        self.check_array_dims({ArrayType.element_beam_shear_stress: 3}, "σrs_σtr", 2)
+        self.check_array_dims(
             {ArrayType.element_beam_history_vars: 2}, "n_modes", n_beam_layers + 3
         )
 
@@ -8469,12 +8444,15 @@ class D3plot:
         # check bytes
         n_bytes_expected = settings.header["nv1d"] * settings.header["nel2"] * settings.wordsize
         if n_bytes_expected != n_bytes_written:
-            msg = "byte checksum wrong: " "{0} (header) != {1} (checksum)"
-            raise RuntimeError(msg.format(n_bytes_expected, n_bytes_written))
+            msg = (
+                "byte checksum wrong: "
+                f"{n_bytes_expected} (header) != {n_bytes_written} (checksum)"
+            )
+            raise RuntimeError(msg)
 
         # log
-        msg = "{0} wrote {1} bytes."
-        LOGGER.debug(msg.format("_write_states_tshells", n_bytes_written))
+        msg = "%s wrote %d bytes."
+        LOGGER.debug(msg, "_write_states_tshells", n_bytes_written)
 
         return n_bytes_written
 
@@ -8551,7 +8529,7 @@ class D3plot:
             ArrayType.element_shell_internal_energy: 0,
             ArrayType.element_shell_strain: 0,
         }
-        self._check_array_dims(array_dims, "n_timesteps")
+        self.check_array_dims(array_dims, "n_timesteps")
 
         array_dims = {
             ArrayType.element_shell_stress: 1,
@@ -8565,28 +8543,28 @@ class D3plot:
             ArrayType.element_shell_internal_energy: 1,
             ArrayType.element_shell_strain: 1,
         }
-        n_reduced_shells = self._check_array_dims(array_dims, "n_shells")
+        n_reduced_shells = self.check_array_dims(array_dims, "n_shells")
         if not is_d3part and n_reduced_shells != n_shells - n_rigid_shells:
             msg = (
                 "Parts with mattyp 20 (rigid material) were specified."
                 " For these parts no state data is output in dyna."
                 " The state arrays are thus expected output data for only"
-                " {0} shells and not {1}."
+                f" {n_shells - n_rigid_shells} shells and not {n_reduced_shells}."
             )
-            raise ValueError(msg.format(n_shells - n_rigid_shells, n_reduced_shells))
+            raise ValueError(msg)
 
         array_dims = {
             ArrayType.element_shell_stress: 2,
             ArrayType.element_shell_effective_plastic_strain: 2,
             ArrayType.element_shell_history_vars: 2,
         }
-        n_shell_layers = self._check_array_dims(array_dims, "n_shell_layers")
+        n_shell_layers = self.check_array_dims(array_dims, "n_shell_layers")
 
-        self._check_array_dims({ArrayType.element_shell_stress: 3}, "σx_σy_σz_σxy_σyz_σxz", 6)
-        self._check_array_dims({ArrayType.element_shell_bending_moment: 2}, "mx_my_mxy", 3)
-        self._check_array_dims({ArrayType.element_shell_shear_force: 2}, "qx_qy")
-        self._check_array_dims({ArrayType.element_shell_strain: 2}, "upper_lower", 2)
-        self._check_array_dims({ArrayType.element_shell_strain: 3}, "εx_εy_εz_εxy_εyz_εxz", 6)
+        self.check_array_dims({ArrayType.element_shell_stress: 3}, "σx_σy_σz_σxy_σyz_σxz", 6)
+        self.check_array_dims({ArrayType.element_shell_bending_moment: 2}, "mx_my_mxy", 3)
+        self.check_array_dims({ArrayType.element_shell_shear_force: 2}, "qx_qy")
+        self.check_array_dims({ArrayType.element_shell_strain: 2}, "upper_lower", 2)
+        self.check_array_dims({ArrayType.element_shell_strain: 3}, "εx_εy_εz_εxy_εyz_εxz", 6)
 
         # allocate buffer
         shell_data = np.zeros((n_reduced_shells, n_shell_vars), dtype=settings.ftype)
@@ -8726,12 +8704,15 @@ class D3plot:
         # *(settings.header["nel4"]-settings.n_rigid_shells)\
         n_bytes_expected = settings.header["nv2d"] * n_reduced_shells * settings.wordsize
         if n_bytes_expected != n_bytes_written:
-            msg = "byte checksum wrong: " "{0} (header) != {1} (checksum)"
-            raise RuntimeError(msg.format(n_bytes_expected, n_bytes_written))
+            msg = (
+                "byte checksum wrong: "
+                f"{n_bytes_expected} (header) != {n_bytes_written} (checksum)"
+            )
+            raise RuntimeError(msg)
 
         # log
-        msg = "{0} wrote {1} bytes."
-        LOGGER.debug(msg.format("_write_states_shells", n_bytes_written))
+        msg = "%s wrote %d bytes."
+        LOGGER.debug(msg, "_write_states_shells", n_bytes_written)
 
         return n_bytes_written
 
@@ -8754,13 +8735,13 @@ class D3plot:
                 ArrayType.global_timesteps: 0,
                 ArrayType.node_is_alive: 0,
             }
-            self._check_array_dims(array_dims, "n_timesteps")
+            self.check_array_dims(array_dims, "n_timesteps")
 
             array_dims = {
                 ArrayType.node_coordinates: 0,
                 ArrayType.node_is_alive: 1,
             }
-            self._check_array_dims(array_dims, "n_nodes")
+            self.check_array_dims(array_dims, "n_nodes")
 
             n_nodes = settings.header["numnp"]
 
@@ -8795,31 +8776,31 @@ class D3plot:
                 ArrayType.element_beam_is_alive: 0,
                 ArrayType.element_tshell_is_alive: 0,
             }
-            self._check_array_dims(array_dims, "n_timesteps")
+            self.check_array_dims(array_dims, "n_timesteps")
 
             array_dims = {
                 ArrayType.element_solid_node_indexes: 0,
                 ArrayType.element_solid_is_alive: 1,
             }
-            self._check_array_dims(array_dims, "n_solids")
+            self.check_array_dims(array_dims, "n_solids")
 
             array_dims = {
                 ArrayType.element_beam_node_indexes: 0,
                 ArrayType.element_beam_is_alive: 1,
             }
-            self._check_array_dims(array_dims, "n_beams")
+            self.check_array_dims(array_dims, "n_beams")
 
             array_dims = {
                 ArrayType.element_shell_node_indexes: 0,
                 ArrayType.element_shell_is_alive: 1,
             }
-            self._check_array_dims(array_dims, "n_shells")
+            self.check_array_dims(array_dims, "n_shells")
 
             array_dims = {
                 ArrayType.element_tshell_node_indexes: 0,
                 ArrayType.element_tshell_is_alive: 1,
             }
-            self._check_array_dims(array_dims, "n_tshells")
+            self.check_array_dims(array_dims, "n_tshells")
 
             n_solids = settings.header["nel8"]
             n_tshells = settings.header["nelth"]
@@ -8867,17 +8848,20 @@ class D3plot:
             ) * settings.wordsize
 
         else:
-            msg = "Invalid mdlopt flag during write process: {0}"
-            raise RuntimeError(msg.format(settings.mdlopt))
+            msg = f"Invalid mdlopt flag during write process: {settings.mdlopt}"
+            raise RuntimeError(msg)
 
         # check bytes
         if n_bytes_expected != n_bytes_written:
-            msg = "byte checksum wrong: " "{0} (header) != {1} (checksum)"
-            raise RuntimeError(msg.format(n_bytes_expected, n_bytes_written))
+            msg = (
+                "byte checksum wrong: "
+                f"{n_bytes_expected} (header) != {n_bytes_written} (checksum)"
+            )
+            raise RuntimeError(msg)
 
         # log
-        msg = "{0} wrote {1} bytes."
-        LOGGER.debug(msg.format("_write_states_deletion_info", n_bytes_written))
+        msg = "%s wrote %d bytes."
+        LOGGER.debug(msg, "_write_states_deletion_info", n_bytes_written)
 
         return n_bytes_written
 
@@ -8917,7 +8901,7 @@ class D3plot:
             ArrayType.sph_strain: 0,
             ArrayType.sph_mass: 0,
         }
-        self._check_array_dims(array_dims, "n_timesteps")
+        self.check_array_dims(array_dims, "n_timesteps")
 
         array_dims = {
             ArrayType.sph_node_indexes: 0,
@@ -8932,9 +8916,9 @@ class D3plot:
             ArrayType.sph_strain: 1,
             ArrayType.sph_mass: 1,
         }
-        n_particles = self._check_array_dims(array_dims, "n_particles")
-        self._check_array_dims({ArrayType.sph_stress: 2}, "σx_σy_σz_σxy_σyz_σxz", 6)
-        self._check_array_dims({ArrayType.sph_strain: 2}, "εx_εy_εz_εxy_εyz_εxz", 6)
+        n_particles = self.check_array_dims(array_dims, "n_particles")
+        self.check_array_dims({ArrayType.sph_stress: 2}, "σx_σy_σz_σxy_σyz_σxz", 6)
+        self.check_array_dims({ArrayType.sph_strain: 2}, "εx_εy_εz_εxy_εyz_εxz", 6)
 
         n_sph_variables = settings.header["numsph"]
 
@@ -9034,12 +9018,15 @@ class D3plot:
             * settings.wordsize
         )
         if n_bytes_expected != n_bytes_written:
-            msg = "byte checksum wrong: " "{0} (header) != {1} (checksum)"
-            raise RuntimeError(msg.format(n_bytes_expected, n_bytes_written))
+            msg = (
+                "byte checksum wrong: "
+                f"{n_bytes_expected} (header) != {n_bytes_written} (checksum)"
+            )
+            raise RuntimeError(msg)
 
         # log
-        msg = "{0} wrote {1} bytes."
-        LOGGER.debug(msg.format("_write_states_sph", n_bytes_written))
+        msg = "%s wrote %d bytes."
+        LOGGER.debug(msg, "_write_states_sph", n_bytes_written)
 
         return n_bytes_written
 
@@ -9073,14 +9060,14 @@ class D3plot:
             ArrayType.airbag_n_active_particles: 0,
             ArrayType.airbag_bag_volume: 0,
         }
-        self._check_array_dims(array_dims, "n_timesteps")
+        self.check_array_dims(array_dims, "n_timesteps")
 
         array_dims = {
             ArrayType.airbags_ids: 0,
             ArrayType.airbag_n_active_particles: 1,
             ArrayType.airbag_bag_volume: 1,
         }
-        n_airbags = self._check_array_dims(array_dims, "n_airbags")
+        n_airbags = self.check_array_dims(array_dims, "n_airbags")
         assert n_airbags == settings.header["npefg"] % 1000
 
         array_dims = {
@@ -9096,7 +9083,7 @@ class D3plot:
             ArrayType.airbag_particle_position: 0,
             ArrayType.airbag_particle_velocity: 0,
         }
-        self._check_array_dims(array_dims, "n_timesteps")
+        self.check_array_dims(array_dims, "n_timesteps")
 
         array_dims = {
             ArrayType.airbag_particle_gas_id: 1,
@@ -9110,11 +9097,11 @@ class D3plot:
             ArrayType.airbag_particle_position: 1,
             ArrayType.airbag_particle_velocity: 1,
         }
-        n_particles = self._check_array_dims(array_dims, "n_particles")
+        n_particles = self.check_array_dims(array_dims, "n_particles")
 
-        self._check_array_dims({ArrayType.airbag_particle_position: 2}, "x_y_z", 3)
+        self.check_array_dims({ArrayType.airbag_particle_position: 2}, "x_y_z", 3)
 
-        self._check_array_dims({ArrayType.airbag_particle_velocity: 2}, "vx_vy_vz", 3)
+        self.check_array_dims({ArrayType.airbag_particle_velocity: 2}, "vx_vy_vz", 3)
 
         # Info:
         # we cast integers to floats here (no conversion, just a cast)
@@ -9236,12 +9223,15 @@ class D3plot:
         # check bytes
         n_bytes_expected = (2 * n_airbags + n_particles * 14) * settings.wordsize
         if n_bytes_expected != n_bytes_written:
-            msg = "byte checksum wrong: " "{0} (header) != {1} (checksum)"
-            raise RuntimeError(msg.format(n_bytes_expected, n_bytes_written))
+            msg = (
+                "byte checksum wrong: "
+                f"{n_bytes_expected} (header) != {n_bytes_written} (checksum)"
+            )
+            raise RuntimeError(msg)
 
         # log
-        msg = "{0} wrote {1} bytes."
-        LOGGER.debug(msg.format("_write_states_airbags", n_bytes_written))
+        msg = "%s wrote %d bytes."
+        LOGGER.debug(msg, "_write_states_airbags", n_bytes_written)
 
         return n_bytes_written
 
@@ -9265,18 +9255,18 @@ class D3plot:
             ArrayType.rigid_road_displacement: 0,
             ArrayType.rigid_road_velocity: 0,
         }
-        self._check_array_dims(array_dims, "n_rigid_roads")
+        self.check_array_dims(array_dims, "n_rigid_roads")
 
         array_dims = {
             ArrayType.rigid_road_segment_road_id: 0,
             ArrayType.rigid_road_displacement: 1,
             ArrayType.rigid_road_velocity: 1,
         }
-        n_rigid_roads = self._check_array_dims(array_dims, "n_rigid_roads")
+        n_rigid_roads = self.check_array_dims(array_dims, "n_rigid_roads")
 
-        self._check_array_dims({ArrayType.rigid_road_displacement: 2}, "x_y_z", 3)
+        self.check_array_dims({ArrayType.rigid_road_displacement: 2}, "x_y_z", 3)
 
-        self._check_array_dims({ArrayType.rigid_road_velocity: 2}, "vx_vy_vz", 3)
+        self.check_array_dims({ArrayType.rigid_road_velocity: 2}, "vx_vy_vz", 3)
 
         rigid_road_data = np.zeros((n_rigid_roads, 2, 3), dtype=settings.ftype)
 
@@ -9295,12 +9285,15 @@ class D3plot:
         # check bytes
         n_bytes_expected = settings.header["nv1d"] * settings.header["nel2"] * settings.wordsize
         if n_bytes_expected != n_bytes_written:
-            msg = "byte checksum wrong: " "{0} (header) != {1} (checksum)"
-            raise RuntimeError(msg.format(n_bytes_expected, n_bytes_written))
+            msg = (
+                "byte checksum wrong: "
+                f"{n_bytes_expected} (header) != {n_bytes_written} (checksum)"
+            )
+            raise RuntimeError(msg)
 
         # log
-        msg = "{0} wrote {1} bytes."
-        LOGGER.debug(msg.format("_write_states_rigid_road", n_bytes_written))
+        msg = "%s wrote %d bytes."
+        LOGGER.debug(msg, "_write_states_rigid_road", n_bytes_written)
 
         return n_bytes_written
 
@@ -9340,7 +9333,7 @@ class D3plot:
             ArrayType.rigid_body_acceleration: 0,
             ArrayType.rigid_body_rot_acceleration: 0,
         }
-        self._check_array_dims(array_dims, "n_timesteps")
+        self.check_array_dims(array_dims, "n_timesteps")
 
         array_dims = {
             ArrayType.rigid_body_part_indexes: 1,
@@ -9351,19 +9344,19 @@ class D3plot:
             ArrayType.rigid_body_acceleration: 1,
             ArrayType.rigid_body_rot_acceleration: 1,
         }
-        n_rigid_bodies = self._check_array_dims(array_dims, "n_rigid_bodies")
+        n_rigid_bodies = self.check_array_dims(array_dims, "n_rigid_bodies")
 
-        self._check_array_dims({ArrayType.rigid_body_coordinates: 2}, "x_y_z", 3)
+        self.check_array_dims({ArrayType.rigid_body_coordinates: 2}, "x_y_z", 3)
 
-        self._check_array_dims({ArrayType.rigid_body_rotation_matrix: 2}, "matrix", 9)
+        self.check_array_dims({ArrayType.rigid_body_rotation_matrix: 2}, "matrix", 9)
 
-        self._check_array_dims({ArrayType.rigid_body_velocity: 2}, "vx_vy_vz", 3)
+        self.check_array_dims({ArrayType.rigid_body_velocity: 2}, "vx_vy_vz", 3)
 
-        self._check_array_dims({ArrayType.rigid_body_rot_velocity: 2}, "rvx_rvy_rvz", 3)
+        self.check_array_dims({ArrayType.rigid_body_rot_velocity: 2}, "rvx_rvy_rvz", 3)
 
-        self._check_array_dims({ArrayType.rigid_body_acceleration: 2}, "ax_ay_az", 3)
+        self.check_array_dims({ArrayType.rigid_body_acceleration: 2}, "ax_ay_az", 3)
 
-        self._check_array_dims({ArrayType.rigid_body_rot_acceleration: 2}, "rax_ray_raz", 3)
+        self.check_array_dims({ArrayType.rigid_body_rot_acceleration: 2}, "rax_ray_raz", 3)
 
         # allocate block
         rigid_body_data = (
@@ -9424,18 +9417,39 @@ class D3plot:
         # check bytes
         n_bytes_expected = settings.header["nv1d"] * settings.header["nel2"] * settings.wordsize
         if n_bytes_expected != n_bytes_written:
-            msg = "byte checksum wrong: " "{0} (header) != {1} (checksum)"
-            raise RuntimeError(msg.format(n_bytes_expected, n_bytes_written))
+            msg = (
+                "byte checksum wrong: "
+                f"{n_bytes_expected} (header) != {n_bytes_written} (checksum)"
+            )
+            raise RuntimeError(msg)
 
         # log
-        msg = "{0} wrote {1} bytes."
-        LOGGER.debug(msg.format("_write_states_rigid_bodies", n_bytes_written))
+        msg = "%s wrote %d bytes."
+        LOGGER.debug(msg, "_write_states_rigid_bodies", n_bytes_written)
 
         return n_bytes_written
 
-    def _check_array_dims(
+    def check_array_dims(
         self, array_dimensions: Dict[str, int], dimension_name: str, dimension_size: int = -1
     ):
+        """This function checks if multiple arrays share an array dimensions
+        with the same size.
+
+        Parameters
+        ----------
+        array_dimensions: Dict[str, int]
+            Array name and expected number of dimensions as dict
+        dimension_name: str
+            Name of the array dimension for error messages
+        dimension_size: int
+            Optional expected size. If not set then all entries must equal
+            the first value collected.
+
+        Raises
+        ------
+        ValueError
+            If dimensions do not match in any kind of way.
+        """
 
         dimension_size_dict = {}
 
@@ -9447,8 +9461,11 @@ class D3plot:
             array = self.arrays[typename]
 
             if dimension_index >= array.ndim:
-                msg = "Array '{0}' requires at least {1} dimensions ({2})"
-                raise ValueError(msg.format(typename, dimension_index, dimension_name))
+                msg = (
+                    f"Array '{typename}' requires at least "
+                    f"{dimension_index} dimensions ({dimension_name})"
+                )
+                raise ValueError(msg)
 
             dimension_size_dict[typename] = array.shape[dimension_index]
 
@@ -9461,35 +9478,31 @@ class D3plot:
             }
 
             if arrays_with_wrong_dims:
-                msg = "The dimension {0} of the following arrays is expected to have size {1}:\n{2}"
+                msg = "The dimension %s of the following arrays is expected to have size %d:\n%s"
                 msg_arrays = [
-                    " - name: {0} dim: {1} size: {2}".format(
-                        typename, array_dimensions[typename], size
-                    )
+                    f" - name: {typename} dim: {array_dimensions[typename]} size: {size}"
                     for typename, size in arrays_with_wrong_dims.items()
                 ]
-                raise ValueError(msg.format(dimension_name, dimension_size, "\n".join(msg_arrays)))
+                raise ValueError(msg, dimension_name, dimension_size, "\n".join(msg_arrays))
 
         # dynamic dimensions
         else:
             if dimension_size_dict:
-                unique_sizes = np.unique([size for size in dimension_size_dict.values()])
+                unique_sizes = np.unique(list(dimension_size_dict.values()))
                 if len(unique_sizes) > 1:
-                    msg = "Inconsistency in array dim '{0}' detected:\n{1}"
+                    msg = "Inconsistency in array dim '%d' detected:\n%s"
                     size_list = [
-                        "   - name: {0}, dim: {1}, size: {2}".format(
-                            typename, array_dimensions[typename], size
-                        )
+                        f"   - name: {typename}, dim: {array_dimensions[typename]}, size: {size}"
                         for typename, size in dimension_size_dict.items()
                     ]
-                    raise ValueError(msg.format(dimension_name, "\n".join(size_list)))
-                elif len(unique_sizes) == 1:
+                    raise ValueError(msg, dimension_name, "\n".join(size_list))
+                if len(unique_sizes) == 1:
                     dimension_size = unique_sizes[0]
 
         if dimension_size < 0:
             return 0
-        else:
-            return dimension_size
+
+        return dimension_size
 
     @staticmethod
     def _compare_n_bytes_checksum(n_bytes_written: int, n_bytes_expected: int):
@@ -9508,8 +9521,11 @@ class D3plot:
             If the byte count doesn't match.
         """
         if n_bytes_expected != n_bytes_written:
-            msg = "byte checksum wrong: " "{0} (header) != {1} (checksum)"
-            raise RuntimeError(msg.format(n_bytes_expected, n_bytes_written))
+            msg = (
+                "byte checksum wrong: "
+                f"{n_bytes_expected} (header) != {n_bytes_written} (checksum)"
+            )
+            raise RuntimeError(msg)
 
     def _get_zero_byte_padding(self, n_bytes_written: int, block_size_bytes: int):
         """Compute the zero byte-padding at the end of files
@@ -9531,8 +9547,8 @@ class D3plot:
             remaining_bytes = n_bytes_written % block_size_bytes
             n_bytes_to_fill = block_size_bytes - remaining_bytes if remaining_bytes != 0 else 0
             return b"\x00" * n_bytes_to_fill
-        else:
-            return b""
+
+        return b""
 
     def compare(self, d3plot2, array_eps: Union[float, None] = None):
         """Compare two d3plots and print the info
@@ -9572,6 +9588,9 @@ class D3plot:
             element_shell_internal_energy Δmax = 188.41957092285156
 
         """
+
+        # pylint: disable = too-many-nested-blocks
+
         assert isinstance(d3plot2, D3plot)
         d3plot1 = self
 
@@ -9611,7 +9630,7 @@ class D3plot:
                 # compare arrays
                 if isinstance(array1, np.ndarray):
                     if array1.shape != array2.shape:
-                        comparison = "shape mismatch {0} != {1}".format(array1.shape, array2.shape)
+                        comparison = f"shape mismatch {array1.shape} != {array2.shape}"
                     else:
                         if np.issubdtype(array1.dtype, np.number) and np.issubdtype(
                             array2.dtype, np.number
@@ -9708,8 +9727,8 @@ class D3plot:
         elif ArrayType.part_titles_ids in self.arrays:
             d3plot_part_ids = self.arrays[ArrayType.part_titles_ids]
         else:
-            msg = "D3plot does neither contain '{0}' nor '{1}'"
-            raise RuntimeError(msg.format(ArrayType.part_ids, ArrayType.part_titles_ids))
+            msg = "D3plot does neither contain '%s' nor '%s'"
+            raise RuntimeError(msg, ArrayType.part_ids, ArrayType.part_titles_ids)
 
         # if we filter parts we can stop here
         if filter_type == FilterType.PART:
@@ -9737,8 +9756,8 @@ class D3plot:
         elif filter_type == FilterType.SOLID:
             entity_part_indexes = self.arrays[ArrayType.element_solid_part_indexes]
         else:
-            msg = "Invalid filter_type '{0}'. Use lasso.dyna.FilterType."
-            raise ValueError(msg.format(filter_type))
+            msg = "Invalid filter_type '%s'. Use lasso.dyna.FilterType."
+            raise ValueError(msg, filter_type)
 
         mask = np.isin(entity_part_indexes, part_indexes)
         return mask

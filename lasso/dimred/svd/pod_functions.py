@@ -14,26 +14,26 @@ def svd_step_and_dim(s_mat: np.ndarray, k=10) -> np.ndarray:
 
     Parameters
     ----------
-    s_mat : ndarray
+    s_mat: ndarray
         2D array on which the svds operation shall be performed
-    k : int, 10, optinal.
+    k: int, 10, optinal.
         The size of the POD
 
     Returns
     -------
-    V : ndarray
+    v: ndarray
         Array containing the right reduced order basis
     """
     small_mat = csc_matrix(s_mat.astype(np.float64))
 
-    _, _, V = svds(small_mat, k=k)
+    _, _, v = svds(small_mat, k=k)
 
-    V = V[::-1, :]
+    v = v[::-1, :]
 
-    return V
+    return v
 
 
-def calculate_V_and_Betas(
+def calculate_v_and_betas(
     stacked_sub_displ: np.ndarray,
     progress_bar: Union[None, Progress, PlaceHolderBar] = None,
     task_id: Union[None, TaskID] = None,
@@ -49,7 +49,7 @@ def calculate_V_and_Betas(
 
     Returns
     -------
-    V_big: np.ndarray
+    v_big: np.ndarray
         Reduced order basis to transform betas bag into subsamples
     betas: np.ndarray
         Projected simulation runs
@@ -79,16 +79,16 @@ def calculate_V_and_Betas(
     if task_id is None and progress_bar:
         return "Progress requires a task ID"
 
-    V_big = np.zeros((k, big_mat.shape[1], big_mat.shape[2]))
+    v_big = np.zeros((k, big_mat.shape[1], big_mat.shape[2]))
     if progress_bar:
         progress_bar.advance(task_id)  # type: ignore
         for step in range(big_mat.shape[1] - 1):
-            V_big[:, step + 1] = svd_step_and_dim(big_mat[:, step + 1], k)
+            v_big[:, step + 1] = svd_step_and_dim(big_mat[:, step + 1], k)
             progress_bar.advance(task_id)  # type: ignore
     else:
         for step in range(big_mat.shape[1] - 1):
-            V_big[:, step + 1] = svd_step_and_dim(big_mat[:, step + 1], k)
+            v_big[:, step + 1] = svd_step_and_dim(big_mat[:, step + 1], k)
 
-    betas_big = np.einsum("stn, ktn -> stk", big_mat, V_big)
+    betas_big = np.einsum("stn, ktn -> stk", big_mat, v_big)
 
-    return V_big, betas_big
+    return v_big, betas_big

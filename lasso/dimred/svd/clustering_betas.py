@@ -1,14 +1,15 @@
 from typing import Sequence, Tuple, Union
 
 import numpy as np
-from lasso.dimred.svd.KeywordTypes import ClusterType, DetectorType
 from sklearn.cluster import DBSCAN, OPTICS, KMeans, SpectralClustering
 from sklearn.ensemble import IsolationForest
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.svm import OneClassSVM
 
+from .keyword_types import ClusterType, DetectorType
 
-def __apply_SpectralClustering(betas, runids, datasets, idsets, random_state=11, **kwargs):
+
+def __apply_spectral_clustering(betas, runids, datasets, idsets, random_state=11, **kwargs):
     """
     Method to group the input Betas.
     Default keyword arguments: affinity='nearest_neighbors', random_state=11
@@ -30,7 +31,7 @@ def __apply_SpectralClustering(betas, runids, datasets, idsets, random_state=11,
     --------
     Detailed Documentation of the function parameters can be found on sklearn.
     Link: https://scikit-learn.org/stable/modules/generated/sklearn.cluster.SpectralClustering.html#sklearn.cluster.SpectralClustering
-    """  # noqa
+    """  # noqa pylint: disable = line-too-long
     clustering = SpectralClustering(random_state=random_state, **kwargs).fit(betas)
 
     indexes = clustering.labels_
@@ -45,7 +46,7 @@ def __apply_SpectralClustering(betas, runids, datasets, idsets, random_state=11,
         idsets.append(clump_runs.tolist())
 
 
-def __apply_KMeans(betas, runids, datasets, idsets, random_state=11, **kwargs):
+def __apply_k_means(betas, runids, datasets, idsets, random_state=11, **kwargs):
     """
     Method to group the input Betas.
     Recommended keyword arguments: n_clusters=3, random_state=11
@@ -67,7 +68,7 @@ def __apply_KMeans(betas, runids, datasets, idsets, random_state=11, **kwargs):
     --------
     Detailed Documentation of the function parameters can be found on sklearn.
     Link: https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html#sklearn.cluster.KMeans
-    """  # noqa: E501
+    """  # noqa: E501 pylint: disable = line-too-long
     kmeans = KMeans(random_state=random_state, **kwargs).fit(betas)
     indexes = kmeans.labels_
 
@@ -81,7 +82,7 @@ def __apply_KMeans(betas, runids, datasets, idsets, random_state=11, **kwargs):
         idsets.append(clump_runs.tolist())
 
 
-def __apply_DBSCAN(betas, runids, datasets, idsets, **kwargs):
+def __apply_dbscan(betas, runids, datasets, idsets, **kwargs):
     """
     Method to group the input Betas.
     Defautl keyword arguments: eps=0.08
@@ -103,7 +104,7 @@ def __apply_DBSCAN(betas, runids, datasets, idsets, **kwargs):
     --------
     Detailed Documentation of the function parameters can be found on sklearn.
     Link: https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html#sklearn.cluster.DBSCAN
-    """  # noqa: E501
+    """  # noqa: E501 pylint: disable = line-too-long
     deutsche_bahn = DBSCAN(**kwargs).fit(betas)
     indexes = deutsche_bahn.labels_
 
@@ -117,7 +118,7 @@ def __apply_DBSCAN(betas, runids, datasets, idsets, **kwargs):
         idsets.append(clump_runs.tolist())
 
 
-def __apply_OPTICS(betas, runids, datasets, idsets, **kwargs):
+def __apply_optics(betas, runids, datasets, idsets, **kwargs):
     """
     Method to group the input Betas.
     Default keyword parameters: eps=0.05, min_cluster_size=10
@@ -139,7 +140,7 @@ def __apply_OPTICS(betas, runids, datasets, idsets, **kwargs):
     -------
     Detailed Documentation of the function parameters can be found on sklearn.
     Link: https://scikit-learn.org/stable/modules/generated/sklearn.cluster.OPTICS.html#sklearn.cluster.OPTICS
-    """  # noqa: E501
+    """  # noqa: E501 pylint: disable = line-too-long
     lense = OPTICS(**kwargs).fit(betas)
     indexes = lense.labels_
 
@@ -153,7 +154,7 @@ def __apply_OPTICS(betas, runids, datasets, idsets, **kwargs):
         idsets.append(clump_runs.tolist())
 
 
-def __detect_outliers_IsolationForest(
+def __detect_outliers_isolation_forest(
     betas, ids, beta_clusters, id_clusters, random_state=11, **kwargs
 ):
     """
@@ -184,7 +185,7 @@ def __detect_outliers_IsolationForest(
     --------
     Detailed Documentation of the function parameters can be found on sklearn.
     Link: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html
-    """  # noqa: E501
+    """  # noqa: E501 pylint: disable = line-too-long
     outcasts = IsolationForest(random_state=random_state, **kwargs).fit(betas).predict(betas)
 
     outlier_key = np.where(outcasts == -1)[0]
@@ -195,7 +196,7 @@ def __detect_outliers_IsolationForest(
     return betas[inlier_key], ids[inlier_key]
 
 
-def __detect_outliers_LocalOutlierFactor(betas, ids, beta_clusters, id_clusters, **kwargs):
+def __detect_outliers_local_outlier_factor(betas, ids, beta_clusters, id_clusters, **kwargs):
     """
     Detects outliers based on the LocalOutlierFactor algorythm from sklearn.
     Detected outliers will be appended into the provided lists
@@ -224,7 +225,7 @@ def __detect_outliers_LocalOutlierFactor(betas, ids, beta_clusters, id_clusters,
     --------
     Detailed Documentation of the function parameters can be found on sklearn.
     Link:https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.LocalOutlierFactor.html#sklearn.neighbors.LocalOutlierFactor
-    """  # noqa
+    """  # noqa pylint: disable = line-too-long
     outcasts = LocalOutlierFactor(**kwargs).fit_predict(betas)
 
     outlier_key = np.where(outcasts == -1)[0]
@@ -235,7 +236,7 @@ def __detect_outliers_LocalOutlierFactor(betas, ids, beta_clusters, id_clusters,
     return betas[inlier_key], ids[inlier_key]
 
 
-def __detect_outliers_OneClassSVM(betas, ids, beta_clusters, id_clusters, **kwargs):
+def __detect_outliers_one_class_svm(betas, ids, beta_clusters, id_clusters, **kwargs):
     """
     Detects outliers based on the OneClassSVM algorythm from sklearn.
     Detected outliers will be appended into the provided lists
@@ -265,7 +266,7 @@ def __detect_outliers_OneClassSVM(betas, ids, beta_clusters, id_clusters, **kwar
     --------
     Detailed Documentation of the function parameters can be found on sklearn.
     Link: https://scikit-learn.org/stable/modules/generated/sklearn.svm.OneClassSVM.html#sklearn.svm.OneClassSVM
-    """  # noqa: E501
+    """  # noqa: E501 pylint: disable = line-too-long
 
     outcasts = OneClassSVM(**kwargs).fit_predict(betas)
 
@@ -303,7 +304,10 @@ def __experimental_outlier_detector(betas, ids, **kwargs):
     --------
     Detailed Documentation of the function parameters can be found on sklearn.
     Link:https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.LocalOutlierFactor.html#sklearn.neighbors.LocalOutlierFactor
-    """  # noqa
+    """  # noqa pylint: disable = line-too-long
+
+    # pylint: disable = too-many-locals
+
     loops = betas.shape[1] - 2
     alertlist = []
     for dadoop in range(loops):
@@ -323,7 +327,7 @@ def __experimental_outlier_detector(betas, ids, **kwargs):
 
     innocents = np.full(ids.shape, True)
 
-    if not (the_judged.shape == (0,)):
+    if the_judged.shape != (0,):
         judged_index = np.array([np.where(ids == convict)[0] for convict in the_judged])[:, 0]
 
         innocents[judged_index] = False
@@ -364,8 +368,7 @@ def list_detectors_and_cluster():
     See Also
     --------
     list_detectors_and_cluster(keyword)"""
-    global __detector_dict
-    global __cluster_dict
+
     print("Implemented Detectors:")
     for entry in __detector_dict:
         print("   " + entry)
@@ -374,7 +377,7 @@ def list_detectors_and_cluster():
         print("   " + entry)
 
 
-def document_algorythm(keyword):
+def document_algorithm(keyword):
     """
     prints out the docstring of the function related to the input keyword
 
@@ -387,33 +390,31 @@ def document_algorythm(keyword):
     --------
     list_detectors_and_cluster()
     """
-
-    global __doc_dict
     print(__doc_dict[keyword])
 
 
 __doc_dict = {
-    DetectorType.IsolationForest: __detect_outliers_IsolationForest.__doc__,
-    DetectorType.OneClassSVM: __detect_outliers_OneClassSVM.__doc__,
-    DetectorType.LocalOutlierFactor: __detect_outliers_LocalOutlierFactor.__doc__,
+    DetectorType.IsolationForest: __detect_outliers_isolation_forest.__doc__,
+    DetectorType.OneClassSVM: __detect_outliers_one_class_svm.__doc__,
+    DetectorType.LocalOutlierFactor: __detect_outliers_local_outlier_factor.__doc__,
     # DetectorType.Experimental: __experimental_outlier_detector.__doc__,
-    ClusterType.OPTICS: __apply_OPTICS.__doc__,
-    ClusterType.DBSCAN: __apply_DBSCAN.__doc__,
-    ClusterType.KMeans: __apply_KMeans.__doc__,
-    ClusterType.SpectralClustering: __apply_SpectralClustering.__doc__,
+    ClusterType.OPTICS: __apply_optics.__doc__,
+    ClusterType.DBSCAN: __apply_dbscan.__doc__,
+    ClusterType.KMeans: __apply_k_means.__doc__,
+    ClusterType.SpectralClustering: __apply_spectral_clustering.__doc__,
 }
 
 __detector_dict = {
-    DetectorType.IsolationForest: __detect_outliers_IsolationForest,
-    DetectorType.OneClassSVM: __detect_outliers_OneClassSVM,
-    DetectorType.LocalOutlierFactor: __detect_outliers_LocalOutlierFactor,
+    DetectorType.IsolationForest: __detect_outliers_isolation_forest,
+    DetectorType.OneClassSVM: __detect_outliers_one_class_svm,
+    DetectorType.LocalOutlierFactor: __detect_outliers_local_outlier_factor,
     # DetectorType.Experimental: __experimental_outlier_detector
 }
 __cluster_dict = {
-    ClusterType.OPTICS: __apply_OPTICS,
-    ClusterType.DBSCAN: __apply_DBSCAN,
-    ClusterType.KMeans: __apply_KMeans,
-    ClusterType.SpectralClustering: __apply_SpectralClustering,
+    ClusterType.OPTICS: __apply_optics,
+    ClusterType.DBSCAN: __apply_dbscan,
+    ClusterType.KMeans: __apply_k_means,
+    ClusterType.SpectralClustering: __apply_spectral_clustering,
 }
 
 
@@ -436,7 +437,7 @@ def create_cluster_arg_dict(args: Sequence[str]) -> Union[Tuple[str, dict], str]
 
     # first argument must be cluster type
     cluster_key = args[0].lower()
-    cluster_arg_dict = dict()
+    cluster_arg_dict = {}
     cluster_type = None
     param_type = []
 
@@ -447,8 +448,8 @@ def create_cluster_arg_dict(args: Sequence[str]) -> Union[Tuple[str, dict], str]
         # check if amount of parameters is valid
         err_msg = (
             "Invalid cluster arguments, first argument must be the chosen clustering algorithm,"
+            " and each optional subsequent parameter must be followed by its type and value"
         )
-        err_msg += " and each optional subsequent parameter must be followed by its type and value"
         return err_msg
     if len(args) > 1:
         # check if we even have parameters
@@ -461,9 +462,9 @@ def create_cluster_arg_dict(args: Sequence[str]) -> Union[Tuple[str, dict], str]
             cluster_type = cluster_option
 
     if not cluster_type:
-        err_msg = "No existing clustering method matching {0}".format(args[0])
-        err_msg += (
-            "\n possible clustering methods are: " + str(ClusterType.get_cluster_type_name())[1:-1]
+        err_msg = (
+            f"No existing clustering method matching {args[0]}"
+            f"possible clustering methods are: {str(ClusterType.get_cluster_type_name())[1:-1]}"
         )
         return err_msg
 
@@ -477,14 +478,15 @@ def create_cluster_arg_dict(args: Sequence[str]) -> Union[Tuple[str, dict], str]
         elif p_t == "int":
             v_type = int
         else:
-            err_msg = "Clustering: Invalid type identifier {0}".format(p_t)
+            err_msg = f"Clustering: Invalid type identifier {p_t}"
             return err_msg
 
         try:
             val = v_type(values[ind])
         except ValueError:
-            err_msg = "Clustering: Invalid value {0} for parameter {1} of type {2}".format(
-                values[ind], param, v_type
+            err_msg = (
+                f"Clustering: Invalid value {values[ind]} "
+                f"for parameter {param} of type {v_type}"
             )
             return err_msg
         cluster_arg_dict[param] = val
@@ -511,7 +513,7 @@ def create_detector_arg_dict(args: Sequence[str]) -> Union[Tuple[str, dict], str
 
     # first argument must be detector type:
     detector_key = args[0].lower()
-    detector_arg_dict = dict()
+    detector_arg_dict = {}
     detector_type = None
     param_type = []
 
@@ -522,9 +524,9 @@ def create_detector_arg_dict(args: Sequence[str]) -> Union[Tuple[str, dict], str
         # check if amount of parameters is valid
         err_msg = (
             "Invalid outlier detector arguments, first argument must be "
-            + "the chosen detector algorithm,"
+            "the chosen detector algorithm, and each optional subsequent "
+            "parameter must be followed by its type and value"
         )
-        err_msg += " and each optional subsequent parameter must be followed by its type and value"
         return err_msg
     if len(args) > 1:
         # check if we even have parameters
@@ -537,10 +539,10 @@ def create_detector_arg_dict(args: Sequence[str]) -> Union[Tuple[str, dict], str
             detector_type = detector_option
 
     if not detector_type:
-        err_msg = "No existing outlier detection method matching {0}".format(args[0])
-        err_msg += (
-            "\n possible outlier detection methods are: "
-            + str(DetectorType.get_detector_type_name())[1:-1]
+        err_msg = (
+            f"No existing outlier detection method matching {args[0]} "
+            f"possible outlier detection methods are: "
+            f"{str(DetectorType.get_detector_type_name())[1:-1]}"
         )
         return err_msg
 
@@ -554,14 +556,15 @@ def create_detector_arg_dict(args: Sequence[str]) -> Union[Tuple[str, dict], str
         elif p_t == "int":
             v_type = int
         else:
-            err_msg = "Outlier Detection: Invalid type identifier {0}".format(p_t)
+            err_msg = f"Outlier Detection: Invalid type identifier {p_t}"
             return err_msg
 
         try:
             val = v_type(values[ind])
         except ValueError:
-            err_msg = "Outlier Detection: Invalid value {0} for parameter {1} of type {2}".format(
-                values[ind], param, v_type
+            err_msg = (
+                f"Outlier Detection: Invalid value {values[ind]} "
+                "for parameter {param} of type {v_type}"
             )
             return err_msg
         detector_arg_dict[param] = val
@@ -575,8 +578,8 @@ def group_betas(
     scale_betas=False,
     cluster=None,
     detector=None,
-    cluster_params=dict(),
-    detector_params=dict(),
+    cluster_params=None,
+    detector_params=None,
 ) -> Union[Tuple[list, list], str]:
     """
     Base function to to group betas into groups, detect outliers. Provides that all different
@@ -632,8 +635,13 @@ def group_betas(
         Example of different used outlier detection algorythms
     """
 
-    global __detector_dict
-    global __cluster_dict
+    # pylint: disable = too-many-arguments, too-many-locals, too-many-branches
+
+    if cluster_params is None:
+        cluster_params = {}
+
+    if detector_params is None:
+        detector_params = {}
 
     beta_clusters = []
     id_clusters = []
@@ -644,7 +652,7 @@ def group_betas(
     if detector == "Experimental":
 
         experimental_results = __detector_dict[detector](betas, beta_index, **detector_params)
-        if not type(experimental_results) is bool:
+        if not isinstance(experimental_results, bool):
             outlier_betas, outlier_index, inlier_index = experimental_results
             beta_clusters.append(betas[outlier_index])
             id_clusters.append(outlier_betas.tolist())
@@ -664,15 +672,17 @@ def group_betas(
             )
 
         except TypeError as key_err:
-            err_msg = "During Outlier Detection, a TypeError came up: \n"
-            err_msg += str(key_err)
-            err_msg += "\nPlease check your outlier detection arguments"
+            err_msg = (
+                f"During Outlier Detection, a TypeError came up:\n{str(key_err)}\n"
+                "Please check your outlier detection arguments"
+            )
             return err_msg
 
         except ValueError as val_err:
-            err_msg = "During Outlier Detection, a ValueError came up: \n"
-            err_msg += str(val_err)
-            err_msg += "\nPlease check your outlier detection arguments"
+            err_msg = (
+                f"During Outlier Detection, a ValueError came up:\n{str(val_err)}\n"
+                "Please check your outlier detection arguments"
+            )
             return err_msg
     else:
         betas_det, index_det = betas, beta_index
@@ -683,16 +693,17 @@ def group_betas(
                 betas_det, index_det, beta_clusters, id_clusters, **cluster_params
             )
         except TypeError as key_err:
-
-            err_msg = "During Clustering, a TypeError came up: \n"
-            err_msg += str(key_err)
-            err_msg += "\nPlease check your clustering arguments"
+            err_msg = (
+                f"During Clustering, a TypeError came up:\n{str(key_err)}\n"
+                "Please check your outlier detection arguments"
+            )
             return err_msg
 
         except ValueError as val_err:
-            err_msg = "During clustering, a ValueError came up: \n"
-            err_msg += str(val_err)
-            err_msg += "\nPlease check your clustering arguments"
+            err_msg = (
+                f"During Clustering, a ValueError came up:\n{str(val_err)}\n"
+                "Please check your outlier detection arguments"
+            )
             return err_msg
     else:
         beta_clusters, id_clusters = [*beta_clusters, betas_det], [*id_clusters, index_det]

@@ -38,8 +38,8 @@ def _match_modes(
     """
 
     matches = []
-    mode1_hash_indexes = [iHash for iHash in range(len(hashes1))]
-    mode2_hash_indexes = [iHash for iHash in range(len(hashes2))]
+    mode1_hash_indexes = list(range(len(hashes1)))
+    mode2_hash_indexes = list(range(len(hashes2)))
 
     for i_hash in mode1_hash_indexes:
 
@@ -89,18 +89,16 @@ def is_orientation_flip_required(eigenvectors1: np.ndarray, eigenvectors2: np.nd
 
     # one eigenmode only
     if eigenvectors1.ndim == 1:
-
         knn_error_basic = np.dot(eigenvectors1, eigenvectors2)
         return knn_error_basic < 0
 
     # multiple eigenmodes
-    else:
-        n_modes = min(eigenvectors1.shape[1], eigenvectors2.shape[1])
-        errors = [
-            np.dot(eigenvectors1[:, i_mode], eigenvectors2[:, i_mode]) for i_mode in range(n_modes)
-        ]
+    n_modes = min(eigenvectors1.shape[1], eigenvectors2.shape[1])
+    errors = [
+        np.dot(eigenvectors1[:, i_mode], eigenvectors2[:, i_mode]) for i_mode in range(n_modes)
+    ]
 
-        return np.array([err < 0 for err in errors])
+    return np.array([err < 0 for err in errors])
 
 
 def _compute_mode_similarities(
@@ -129,9 +127,11 @@ def _compute_mode_similarities(
     -------
     mode_similarities : list(float)
         similarities of the matched modes
-    """
 
-    # TODO integrate functions with unequal sampling
+    Notes
+    -----
+        This function cannot deal with unequal sampling of the input hashes.
+    """
 
     mode_similarities = []
     for i_hash, j_hash in matches:
@@ -150,7 +150,7 @@ def _compute_mode_similarities(
         else:
             mode_ = hashes2[j_hash, 1, :]
 
-        # TODO Warning x is usually originally hashes[i_mode, 0]
+        # Warning: x is usually originally hashes[i_mode, 0]
         x = np.linspace(0, 1, hashes1.shape[2])
         norm1 = curve_normalizer(x, hashes1[i_hash, 1])
         norm2 = curve_normalizer(x, mode_)
@@ -167,6 +167,7 @@ def _compute_mode_similarities(
 def _join_hash_comparison_thread_files(
     comparison_filepath: str, thread_filepaths: Sequence[str], n_runs: int
 ):
+    # pylint: disable = too-many-locals
 
     if os.path.exists(comparison_filepath):
         if os.path.isfile(comparison_filepath):
@@ -197,10 +198,10 @@ def _join_hash_comparison_thread_files(
             compression="gzip",
         )
 
-        for i_thread in range(len(thread_filepaths)):
+        for thread_filepath in thread_filepaths:
 
             # open thread file
-            with h5py.File(thread_filepaths[i_thread], "r") as thread_file:
+            with h5py.File(thread_filepath, "r") as thread_file:
 
                 # insert matrix entries
                 matrix_indexes = thread_file["matrix_indexes"]
@@ -216,7 +217,7 @@ def _join_hash_comparison_thread_files(
                     ds_weights[i_row, i_col] = (thread_weights[i_row] + thread_weights[i_col]) / 2
 
             # delete thread file
-            os.remove(thread_filepaths[i_thread])
+            os.remove(thread_filepath)
 
 
 def run_hash_comparison(
@@ -225,7 +226,23 @@ def run_hash_comparison(
     n_threads: int = 1,
     print_progress: bool = False,
 ):
-    """ """
+    """Compare two hashes of a simulation run part
+
+    Parameters
+    ----------
+    comparison_filepath: str
+        filepath to the hdf5 in which the result of the comparison will be
+        stored
+    hashes_filepaths: List[str]
+        filepath to the stored hashes
+    n_threads: int
+        number of threads used for the comparison
+    print_progress: bool
+        whether to print the progress
+    """
+
+    # pylint: disable = too-many-locals, too-many-statements
+
     assert n_threads > 0
 
     # fixed settings
@@ -235,6 +252,7 @@ def run_hash_comparison(
     # the actual function starts way much down
 
     def _threading_run_comparison(run_indices, comparison_filepath, comm_q):
+        # pylint: disable = too-many-statements
 
         n_comparisons_thread = len(run_indices)
 
@@ -254,7 +272,7 @@ def run_hash_comparison(
             "filepaths",
             data=hashes_filepaths_ascii,
             shape=(len(hashes_filepaths_ascii), 1),
-            dtype="S{}".format(max_len),
+            dtype=f"S{max_len}",
         )
 
         n_modes_estimated = 25
@@ -290,7 +308,7 @@ def run_hash_comparison(
             compression=hdf5_dataset_compression,
         )
 
-        def _save_data(computed_results, hdf5_file, counter):
+        def _save_data(computed_results, counter):
 
             start = counter + 1 - len(computed_results)
             for i_result, result in enumerate(computed_results):
@@ -369,7 +387,7 @@ def run_hash_comparison(
 
             # save to file occasionally
             if counter % 500 == 0:
-                _save_data(computed_results, hdf5_file, counter)
+                _save_data(computed_results, counter)
 
             # print status
             if comm_q and not comm_q.full():
@@ -385,7 +403,7 @@ def run_hash_comparison(
 
         # dump at end (if anything was computed)
         if counter:
-            _save_data(computed_results, hdf5_file, counter)
+            _save_data(computed_results, counter)
 
     # <-- FUNCTION STARTS HERE
 
@@ -413,7 +431,7 @@ def run_hash_comparison(
 
         # run threads
         thread_filepaths = [
-            comparison_filepath + "_thread%d" % i_thread for i_thread in range(n_threads)
+            comparison_filepath + f"_thread{i_thread}" for i_thread in range(n_threads)
         ]
         threads = [
             multiprocessing.Process(
@@ -422,7 +440,8 @@ def run_hash_comparison(
             )
             for i_thread, matrix_indexes in enumerate(thread_matrix_entries)
         ]
-        [thread.start() for thread in threads]
+        for thread in threads:
+            thread.start()
 
         # logging
         if print_progress:
@@ -444,45 +463,39 @@ def run_hash_comparison(
                         thread_stats[i_thread] = comm_q.get(False)
 
                 # print msg
-                msg = (
-                    "| "
-                    + "".join(
-                        "Thread {0}: {1}% ({2}/{3}) {4}s | ".format(
-                            i_thread,
-                            "%.1f" % (100 * stats["i_entry"] / stats["n_entries"],),
-                            stats["i_entry"],
-                            stats["n_entries"],
-                            "%.2f" % stats["computation_time"],
-                        )
-                        for i_thread, stats in enumerate(thread_stats)
+                # pylint: disable = consider-using-f-string
+                thread_msg_list = [
+                    (
+                        f"Thread {i_thread}: "
+                        f"{(100 * stats['i_entry'] / stats['n_entries']):.1f}% "
+                        f"({stats['i_entry']}/{stats['n_entries']}) "
+                        f"{stats['computation_time']:.2f}s | "
                     )
-                    + "\r"
-                )
+                    for i_thread, stats in enumerate(thread_stats)
+                ]
+                msg = "| " + "".join(thread_msg_list) + "\r"
                 print(msg, end="")
                 time.sleep(0.35)
 
             # print completion message
-            msg = (
-                "| "
-                + "".join(
-                    "Thread {0}: {1}% ({2}/{3}) {4}s | ".format(
-                        i_thread,
-                        "%d" % 100,
-                        stats["n_entries"],
-                        stats["n_entries"],
-                        "%.2f" % stats["computation_time"],
-                    )
-                    for i_thread, stats in enumerate(thread_stats)
+            thread_msg_list = [
+                (
+                    f"Thread {i_thread}: "
+                    f"{(100 * stats['i_entry'] / stats['n_entries']):.1f}% "
+                    f"({stats['i_entry']}/{stats['n_entries']}) "
+                    f"{stats['computation_time']:.2f}s | "
                 )
-                + "\r"
-            )
+                for i_thread, stats in enumerate(thread_stats)
+            ]
+            msg = "| " + "".join(thread_msg_list) + "\r"
             print(msg, end="")
 
             print("")
             print("done.")
 
         # join thread worker files
-        [thread.join() for thread in threads]
+        for thread in threads:
+            thread.join()
         _join_hash_comparison_thread_files(comparison_filepath, thread_filepaths, n_runs)
 
 
@@ -521,12 +534,14 @@ def is_mode_match(
         the entire model).
     """
 
+    # pylint: disable = too-many-locals
+
     # if the jensen-shannon-divergence is below this value
     # then a mode switch is assumed
     distance_limit = 0.1
 
     # number of bins for probability distribution
-    nBins = 25
+    n_bins = 25
 
     # (1) match sub-samples in xyz
     # tree = KDTree(xyz1)
@@ -545,7 +560,7 @@ def is_mode_match(
     # bin the values
     xmin = min(tmp1.min(), tmp2.min())
     xmax = max(tmp1.max(), tmp2.max())
-    bins = np.linspace(xmin, xmax, nBins)
+    bins = np.linspace(xmin, xmax, n_bins)
     indexes_p1 = np.digitize(tmp1, bins)
     indexes_p2 = np.digitize(tmp2, bins)
     p1 = np.bincount(indexes_p1) / len(tmp1)
@@ -592,7 +607,6 @@ def curve_normalizer(x: np.ndarray, y: np.ndarray):
 def compute_hashes(
     eig_vecs: np.ndarray,
     result_field: np.ndarray,
-    # elem_size,
     n_points: int = 100,
     bandwidth: float = 0.05,
 ) -> List[Tuple[np.ndarray, np.ndarray]]:
@@ -605,11 +619,11 @@ def compute_hashes(
     result_field : np.ndarray
         result field to hash
     n_points : resolution of the hash
-        number of equidistant points to use for smoothing
-        (TODO) automate this selection from the mesh size
+        Number of equidistant points to use for smoothing.
+        Should be determined from the mesh size (2.5 times average elem size).
     bandwidth : float
-        bandwidth in percent of the kernel
-        (TODO) choose 5 times global element size median
+        Bandwidth in percent of the kernel.
+        Recommended as 5 times global element size median.
 
     Returns
     -------
@@ -619,16 +633,15 @@ def compute_hashes(
         For comparison, only y is usually used.
     """
 
-    assert eig_vecs.shape[0] == len(result_field), "{} != {}".format(
-        eig_vecs.shape[0], len(result_field)
-    )
+    assert eig_vecs.shape[0] == len(result_field), f"{eig_vecs.shape[0]} != {len(result_field)}"
 
-    # TODO vectorize to speed it up
+    # Note: needs to be vectorized to speed it up
+
     hash_functions = []
-    for iEigen in range(eig_vecs.shape[1]):
+    for i_eigen in range(eig_vecs.shape[1]):
 
-        xmin = eig_vecs[:, iEigen].min()
-        xmax = eig_vecs[:, iEigen].max()
+        xmin = eig_vecs[:, i_eigen].min()
+        xmax = eig_vecs[:, i_eigen].max()
 
         x = np.linspace(xmin, xmax, n_points)
         y = np.zeros(n_points)
@@ -637,7 +650,7 @@ def compute_hashes(
         c = -0.5 / local_bandwidth**2
 
         for ii, point in enumerate(x):
-            y[ii] = np.dot(result_field, np.exp(c * np.square(point - eig_vecs[:, iEigen])))
+            y[ii] = np.dot(result_field, np.exp(c * np.square(point - eig_vecs[:, i_eigen])))
         y /= np.sqrt(2 * np.pi) * bandwidth
 
         hash_functions.append((x, y))

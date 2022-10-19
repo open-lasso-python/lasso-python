@@ -1,11 +1,11 @@
 from unittest import TestCase
-from lasso.dimred.svd.pod_functions import calculate_V_and_Betas
+from lasso.dimred.svd.pod_functions import calculate_v_and_betas
 import numpy as np
 from typing import Tuple
 
 
 class PodFunctionsTest(TestCase):
-    def test_calculate_V_and_Betas(self):
+    def test_calculate_v_and_betas(self):
         """Verify svd works
         Test for:
         - returns V and B of correct shape
@@ -15,14 +15,14 @@ class PodFunctionsTest(TestCase):
         rand_samples = np.random.rand(1, 5, 100, 3)
 
         # should return error message string
-        err_msg = calculate_V_and_Betas(rand_samples)
+        err_msg = calculate_v_and_betas(rand_samples)
         self.assertTrue(isinstance(err_msg, str))
 
         # random input for 5 samples, 5 timesteps, 100 nodes, 3 dimensions
         test_shape = (5, 5, 100, 3)
         samples, timesteps, nodes, dimensions = test_shape
         rand_samples = np.random.rand(samples, timesteps, nodes, dimensions)
-        result = calculate_V_and_Betas(rand_samples)
+        result = calculate_v_and_betas(rand_samples)
 
         # returns Tuple containing v_rob and betas
         self.assertTrue(isinstance(result, Tuple))

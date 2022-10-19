@@ -7,12 +7,12 @@ from typing import Sequence, Union
 import numpy as np
 
 from lasso.dimred.svd.html_str_eles import (
-    const_string,
-    overhead_string,
-    script_string,
-    trace_string,
+    CONST_STRING,
+    OVERHEAD_STRING,
+    SCRIPT_STRING,
+    TRACE_STRING,
 )
-from lasso.plotting.plotting import _read_file
+from lasso.plotting.plot_shell_mesh import _read_file
 
 
 def timestamp() -> str:
@@ -36,6 +36,7 @@ def timestamp() -> str:
     return t_str
 
 
+# pylint: disable = inconsistent-return-statements
 def plot_clusters_js(
     beta_cluster: Sequence,
     id_cluster: Union[np.ndarray, Sequence],
@@ -79,6 +80,8 @@ def plot_clusters_js(
         If **write=False** returns .hmtl file as string, else None
     """
 
+    # pylint: disable = too-many-arguments, too-many-locals
+
     if not isinstance(img_path, str):
         img_path = ""
 
@@ -114,6 +117,7 @@ def plot_clusters_js(
             id_group.append(nr)
         id_nr.append(id_group)
 
+    # pylint: disable = consider-using-f-string
     _three_min_ = '<script type="text/javascript">%s</script>' % _read_file(
         os.path.join(
             # move path to "~/lasso/"
@@ -122,7 +126,7 @@ def plot_clusters_js(
         )
     )
 
-    html_str_formatted = overhead_string + const_string.format(
+    html_str_formatted = OVERHEAD_STRING + CONST_STRING.format(
         _three_min_=_three_min_, _path_str_=img_path, _runIdEntries_=id_nr
     )
     for index, cluster in enumerate(beta_cluster):
@@ -134,7 +138,7 @@ def plot_clusters_js(
         else:
             name = "cluster {i}".format(i=index)
             color = colorlist[(index - 1) % 10]
-        formated_trace = trace_string.format(
+        formated_trace = TRACE_STRING.format(
             _traceNr_="trace{i}".format(i=index),
             _name_=name,
             _color_=color,
@@ -143,14 +147,14 @@ def plot_clusters_js(
             _y_=np.around(cluster[:, 1], decimals=5).tolist(),
             _z_=np.around(cluster[:, 2], decimals=5).tolist(),
         )
-        tracelist.append("trace{i}".format(i=index))
+        tracelist.append(f"trace{index}")
         html_str_formatted += formated_trace
     trace_list_string = "    traceList = ["
     for trace in tracelist:
         trace_list_string += trace + ", "
     trace_list_string += "]"
     html_str_formatted += trace_list_string
-    html_str_formatted += script_string
+    html_str_formatted += SCRIPT_STRING
 
     if write:
         os.makedirs(save_path, exist_ok=True)
@@ -158,13 +162,11 @@ def plot_clusters_js(
         # Timestamp for differentiating different viz / not override previous viz
         stamp = timestamp() if mark_timestamp else ""
 
-        f = open(save_path + "/" + stamp + filename + ".html", "w")
-        f.write(html_str_formatted)
-        f.close()
+        output_filepath = os.path.join(save_path, stamp + filename + ".html")
+        with open(output_filepath, "w", encoding="utf-8") as f:
+            f.write(html_str_formatted)
         if show_res:
-            webbrowser.open(
-                "file://" + os.path.realpath(save_path + "/" + stamp + filename + ".html")
-            )
+            webbrowser.open("file://" + os.path.realpath(output_filepath))
     else:
         # only needed for testcases
         return html_str_formatted

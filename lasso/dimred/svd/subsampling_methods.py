@@ -1,15 +1,15 @@
+import os
 import random
 import time
 from typing import List, Sequence, Tuple, Union
-import os
+
 import numpy as np
-from lasso.dyna import ArrayType, D3plot
 from sklearn.neighbors import NearestNeighbors
 
+from ...dyna import ArrayType, D3plot
 
-def _mark_dead_eles(
-    node_indexes: np.ndarray, alive_shells: np.ndarray, node_coordinates: np.ndarray
-) -> np.ndarray:
+
+def _mark_dead_eles(node_indexes: np.ndarray, alive_shells: np.ndarray) -> np.ndarray:
     """
     Returns a mask to filter out elements mark as 'no alive'
 
@@ -20,8 +20,6 @@ def _mark_dead_eles(
     alive_nodes: ndarray
         Array containing float value representing if element is alive.
         Expected for D3plot.arrays[ArrayType.element_shell_is_alive] or equivalent for beams etc
-    node_coordinates: ndarray
-        Array containing the node coordinates
 
     Returns
     -------
@@ -41,18 +39,6 @@ def _mark_dead_eles(
     ele_filter_bool = ele_filter == 1
 
     dead_nodes = np.unique(node_indexes[ele_filter_bool])
-
-    # node_coordinate_mask = np.zeros((node_coordinates.shape[0]), dtype=np.int)
-    # node_coordinate_mask[unique_shells] = 1
-
-    # new_unique_shells = np.arange(len(unique_shells))
-    #
-    # shell_mapping = np.zeros(unique_shells.max() + 1, dtype=np.int)
-    # shell_mapping[unique_shells] = new_unique_shells
-
-    # new_shell_nodes = shell_mapping[shell_node_indexes[ele_filter_bool]]
-    # new_shell_part_indexes = shell_part_indexes[ele_filter_bool]
-    # new_shell_node_coords = node_coordinates[unique_shells]
 
     return dead_nodes
 
@@ -81,6 +67,8 @@ def _extract_shell_parts(
         If an error occurs, a string containing the error msg is returned instead
     """
 
+    # pylint: disable = too-many-locals, too-many-statements
+
     # convert into list
     part_list = list(part_list)
 
@@ -100,22 +88,22 @@ def _extract_shell_parts(
 
     if ArrayType.element_shell_is_alive in d3plot.arrays:
         dead_shell_mask = _mark_dead_eles(
-            shell_node_indexes, d3plot.arrays[ArrayType.element_shell_is_alive], node_coordinates
+            shell_node_indexes, d3plot.arrays[ArrayType.element_shell_is_alive]
         )
         alive_mask[dead_shell_mask] = False
     if ArrayType.element_beam_is_alive in d3plot.arrays:
         dead_beam_mask = _mark_dead_eles(
-            beam_node_indexes, d3plot.arrays[ArrayType.element_beam_is_alive], node_coordinates
+            beam_node_indexes, d3plot.arrays[ArrayType.element_beam_is_alive]
         )
         alive_mask[dead_beam_mask] = False
     if ArrayType.element_solid_is_alive in d3plot.arrays:
         dead_solid_mask = _mark_dead_eles(
-            solid_node_indexes, d3plot.arrays[ArrayType.element_solid_is_alive], node_coordinates
+            solid_node_indexes, d3plot.arrays[ArrayType.element_solid_is_alive]
         )
         alive_mask[dead_solid_mask] = False
     if ArrayType.element_tshell_is_alive in d3plot.arrays:
         dead_tshell_mask = _mark_dead_eles(
-            tshell_node_indexes, d3plot.arrays[ArrayType.element_tshell_is_alive], node_coordinates
+            tshell_node_indexes, d3plot.arrays[ArrayType.element_tshell_is_alive]
         )
         alive_mask[dead_tshell_mask] = False
 
@@ -225,9 +213,9 @@ def create_reference_subsample(
             state_array_filter=[ArrayType.node_displacement, ArrayType.element_shell_is_alive],
         )
     except Exception:
-        err_msg = "Failed to load {}! Please make sure it is a D3plot file.".format(load_path)
-        err_msg += "\nThis might be due to {} being a timestep of a plot".format(
-            os.path.split(load_path)[1]
+        err_msg = (
+            f"Failed to load {load_path}! Please make sure it is a D3plot file. "
+            f"This might be due to {os.path.split(load_path)[1]} being a timestep of a plot"
         )
         return err_msg
 
@@ -235,9 +223,8 @@ def create_reference_subsample(
     result = _extract_shell_parts(parts, plot)
     if isinstance(result, str):
         return result
-    else:
-        coordinates = result[0]
 
+    coordinates = result[0]
     if coordinates.shape[0] < nr_samples:
         err_msg = "Number of nodes is lower than desired samplesize"
         return err_msg
@@ -283,17 +270,18 @@ def remap_random_subsample(
             state_array_filter=[ArrayType.node_displacement, ArrayType.element_shell_is_alive],
         )
     except Exception:
-        err_msg = "Failed to load {}! Please make sure it is a D3plot file.".format(load_path)
-        err_msg += "\nThis might be due to {} being a timestep of a plot".format(
-            os.path.split(load_path)[1]
+        err_msg = (
+            f"Failed to load {load_path}! Please make sure it is a D3plot file. "
+            f"This might be due to {os.path.split(load_path)[1]} being a timestep of a plot"
         )
         return err_msg
+
     t_load = time.time() - t_null
     result = _extract_shell_parts(parts, plot)
     if isinstance(result, str):
         return result
-    else:
-        coordinates, displacement = result[0], result[1]
+
+    coordinates, displacement = result[0], result[1]
 
     quarantine_zone = NearestNeighbors(n_neighbors=1, n_jobs=4).fit(coordinates)
     _, quarantined_index = quarantine_zone.kneighbors(reference_subsample)

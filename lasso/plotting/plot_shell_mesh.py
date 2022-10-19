@@ -53,6 +53,8 @@ def plot_shell_mesh(
         html code for plotting as string
     """
 
+    # pylint: disable = too-many-locals, too-many-statements
+
     assert node_coordinates.ndim == 2
     assert node_coordinates.shape[1] == 3
     assert shell_node_indexes.ndim == 2
@@ -192,6 +194,7 @@ def plot_shell_mesh(
     _html_chroma_js = script_string_js.format(jszip_chroma_format)
     _html_jquery_js = script_string_js.format(jszip_jquery_format)
 
+    # pylint: disable = consider-using-f-string
     return """
 <!DOCTYPE html>
 <html lang="en">

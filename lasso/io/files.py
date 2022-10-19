@@ -23,6 +23,8 @@ def open_file_or_filepath(
     f: file object
     """
     if isinstance(path_or_file, str):
+        # We open this file in binary mode anyway so no encoding is needed.
+        # pylint: disable = unspecified-encoding
         f = file_to_close = open(path_or_file, mode)
     else:
         f = path_or_file
@@ -78,5 +80,5 @@ def collect_files(
 
     if len(found_files) == 1:
         return found_files[0]
-    else:
-        return found_files
+
+    return found_files

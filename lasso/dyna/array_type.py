@@ -285,6 +285,13 @@ class ArrayType:
 
     @staticmethod
     def get_state_array_names() -> typing.List[str]:
+        """Get the names of all state arrays
+
+        Returns:
+        --------
+        state_array_names: List[str]
+            list of state array names
+        """
         return [
             # global
             ArrayType.global_timesteps,

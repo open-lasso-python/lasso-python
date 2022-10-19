@@ -4,7 +4,7 @@ from typing import Any, Dict, Tuple, Union
 import numpy as np
 import rich
 
-from ..io.BinaryBuffer import BinaryBuffer
+from ..io.binary_buffer import BinaryBuffer
 from ..logging import get_logger
 
 LOGGER = get_logger(__file__)
@@ -33,13 +33,13 @@ def get_digit(number: int, i_digit: int) -> int:
     """
     digit_list = []
 
+    # pylint: disable = inconsistent-return-statements
     def _get_digit_recursive(x: int):
         if x < 10:
             digit_list.append(x)
             return x
-        else:
-            _get_digit_recursive(x // 10)
-            digit_list.append(x % 10)
+        _get_digit_recursive(x // 10)
+        digit_list.append(x % 10)
 
     # do the thing
     _get_digit_recursive(number)
@@ -84,21 +84,18 @@ def d3plot_filetype_from_integer(value: int) -> D3plotFiletype:
     }
 
     if value not in valid_entries:
-        err_msg = "Invalid filetype value of {0}. Expected one of: {1}"
-        raise ValueError(
-            err_msg.format(
-                value,
-                ",".join(
-                    "{1} ({0})".format(key, value.value)
-                    for key, value in D3plotFiletype.__members__.items()
-                    if value.value != 4
-                ),
-            )
+        valid_filetypes = ",".join(
+            f"{key} ({value.value})"
+            for key, value in D3plotFiletype.__members__.items()
+            if value.value != 4
         )
+        err_msg = f"Invalid filetype value of {value}. Expected one of: {valid_filetypes}"
+        raise ValueError(err_msg)
 
     return valid_entries[value]
 
 
+# pylint: disable = too-many-instance-attributes
 class D3plotHeader:
     """Class for reading only header information of a d3plot"""
 
@@ -302,7 +299,7 @@ class D3plotHeader:
         """
 
         LOGGER.debug("_read_file_buffer start")
-        LOGGER.debug(f"filepath: {filepath}")
+        LOGGER.debug("filepath: %s", filepath)
 
         # load first 64 single words
         n_words_header = 64
@@ -374,15 +371,16 @@ class D3plotHeader:
             19684
         """
 
+        # pylint: disable = too-many-locals, too-many-branches, too-many-statements
+
         LOGGER.debug("_load_file start")
-        LOGGER.debug(f"file: {file}")
+        LOGGER.debug("file: %s", file)
 
         if not isinstance(file, (str, BinaryBuffer)):
             err_msg = "Argument 'file' must have type 'str' or 'lasso.io.BinaryBuffer'."
             raise ValueError(err_msg)
 
         # get the memory
-        # TODO rewrite this
         if isinstance(file, str):
             bb = self._read_file_buffer(file)
             self.n_header_bytes = len(bb)
@@ -391,7 +389,7 @@ class D3plotHeader:
             self.wordsize, self.itype, self.ftype = self._determine_file_settings(bb)
             self.n_header_bytes = self._determine_n_bytes(bb, self.wordsize)
 
-        LOGGER.debug(f"n_header_bytes: {self.n_header_bytes}")
+        LOGGER.debug("n_header_bytes: %d", self.n_header_bytes)
 
         # read header
         header_words = {
@@ -502,7 +500,7 @@ class D3plotHeader:
 
         # ndim
         ndim = self.raw_header["ndim"]
-        if ndim == 5 or ndim == 7:
+        if ndim in (5, 7):
             self.has_material_type_section = True
             ndim = 3
             # self.raw_header['elem_connectivity_unpacked'] = True
@@ -512,19 +510,18 @@ class D3plotHeader:
         if 5 < ndim < 8:
             ndim = 3
             self.has_rigid_road_surface = True
-        if ndim == 8 or ndim == 9:
+        if ndim in (8, 9):
             ndim = 3
             self.has_rigid_body_data = True
             if self.raw_header["ndim"] == 9:
                 self.has_rigid_road_surface = True
                 self.has_reduced_rigid_body_data = True
-        if ndim != 2 and ndim != 3:
-            raise RuntimeError("Invalid header entry ndim: %d" % self.raw_header["ndim"])
+        if ndim not in (2, 3):
+            raise RuntimeError(f"Invalid header entry ndim: {self.raw_header['ndim']}")
 
         self.n_nodes = self.raw_header["numnp"]
         self.legacy_code_type = self.raw_header["icode"]
         self.n_global_vars = self.raw_header["nglbv"]
-        # TODO decompose further
 
         # it
         # - mass scaling
@@ -682,7 +679,7 @@ class D3plotHeader:
             self.has_element_strain = get_digit(self.raw_header["idtdt"], 4) == 1
         else:
             # took a 1000 years to figure this out ...
-            # TODO 4 gaussian points are not considered
+            # Warning: 4 gaussian points are not considered
             if self.n_shell_vars > 0:
                 if (
                     self.n_shell_vars
@@ -825,8 +822,7 @@ class D3plotHeader:
         """
         if "nmmat" in self.raw_header:
             return self.raw_header["nmmat"] == 76_893_465
-        else:
-            return False
+        return False
 
     @property
     def n_rigid_wall_vars(self) -> int:
@@ -840,6 +836,12 @@ class D3plotHeader:
 
     @property
     def n_solid_layers(self) -> int:
+        """number of solid layers
+
+        Returns
+        -------
+        n_solid_layers: int
+        """
         n_solid_base_vars = (
             6 * self.has_solid_stress + self.has_solid_pstrain + self.n_solid_history_vars
         )
@@ -885,9 +887,7 @@ class D3plotHeader:
                     storage_dict[name] = ""
 
             else:
-                raise RuntimeError(
-                    "Encountered unknown dtype {} during reading.".format(str(data[1]))
-                )
+                raise RuntimeError(f"Encountered unknown dtype {str(data[1])} during reading.")
 
         return storage_dict
 
@@ -926,16 +926,16 @@ class D3plotHeader:
             value = bb.read_number(44, np.int32)
             if value > 1000:
                 value -= 1000
-            if (
-                value == D3plotFiletype.D3PLOT.value
-                or value == D3plotFiletype.D3PART.value
-                or value == D3plotFiletype.D3EIGV.value
+            if value in (
+                D3plotFiletype.D3PLOT.value,
+                D3plotFiletype.D3PART.value,
+                D3plotFiletype.D3EIGV.value,
             ):
                 word_size = 4
                 itype = np.int32
                 ftype = np.float32
 
-                LOGGER.debug(f"wordsize={word_size} itype={itype} ftype={ftype}")
+                LOGGER.debug("wordsize=%d itype=%s ftype=%s", word_size, itype, ftype)
                 LOGGER.debug("_determine_file_settings end")
 
                 return word_size, itype, ftype
@@ -944,23 +944,23 @@ class D3plotHeader:
             value = bb.read_number(88, np.int64)
             if value > 1000:
                 value -= 1000
-            if (
-                value == D3plotFiletype.D3PLOT.value
-                or value == D3plotFiletype.D3PART.value
-                or value == D3plotFiletype.D3EIGV.value
+            if value in (
+                D3plotFiletype.D3PLOT.value,
+                D3plotFiletype.D3PART.value,
+                D3plotFiletype.D3EIGV.value,
             ):
                 word_size = 8
                 itype = np.int64
                 ftype = np.float64
 
-                LOGGER.debug(f"wordsize={word_size} itype={itype} ftype={ftype}")
+                LOGGER.debug("wordsize=%d itype=%s ftype=%s", word_size, itype, ftype)
                 LOGGER.debug("_determine_file_settings end")
 
                 return word_size, itype, ftype
 
-            raise RuntimeError("Unknown file type '{0}'.".format(value))
+            raise RuntimeError(f"Unknown file type '{value}'.")
 
-        LOGGER.debug(f"wordsize={word_size} itype={itype} ftype={ftype}")
+        LOGGER.debug("wordsize=%d itype=%s ftype=%s", word_size, itype, ftype)
         LOGGER.debug("_determine_file_settings end")
 
         return word_size, itype, ftype

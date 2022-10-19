@@ -1,20 +1,22 @@
-import platform
-import shutil
+import argparse
 import glob
-import re
-import sys
-import typing
 import logging
 import os
-import psutil
-import argparse
-import time
-from typing import Union, List
-from concurrent import futures
+import platform
+import re
+import shutil
 import subprocess
+import sys
+import time
+import typing
+from concurrent import futures
+from typing import List, Union
 
-from lasso.logging import str_error, str_running, str_success, str_warn, str_info
+import psutil
 
+from ..logging import str_error, str_info, str_running, str_success, str_warn
+
+# pylint: disable = too-many-lines
 
 DC_STAGE_SETUP = "SETUP"
 DC_STAGE_IMPORT = "IMPORT"
@@ -62,10 +64,9 @@ def str2bool(value) -> bool:
         return value
     if value.lower() in ("yes", "true", "t", "y", "1"):
         return True
-    elif value.lower() in ("no", "false", "f", "n", "0"):
+    if value.lower() in ("no", "false", "f", "n", "0"):
         return False
-    else:
-        raise argparse.ArgumentTypeError("Boolean value expected.")
+    raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
 def parse_diffcrash_args():
@@ -101,14 +102,14 @@ def parse_diffcrash_args():
         type=str,
         nargs="?",
         default=DC_STAGES[0],
-        help="At which specific stage to start the analysis ({0}).".format(", ".join(DC_STAGES)),
+        help=f"At which specific stage to start the analysis ({', '.join(DC_STAGES)}).",
     )
     parser.add_argument(
         "--end-stage",
         type=str,
         nargs="?",
         default=DC_STAGES[-1],
-        help="At which specific stage to stop the analysis ({0}).".format(", ".join(DC_STAGES)),
+        help=f"At which specific stage to stop the analysis ({', '.join(DC_STAGES)}).",
     )
     parser.add_argument(
         "--diffcrash-home",
@@ -116,8 +117,10 @@ def parse_diffcrash_args():
         default=os.environ["DIFFCRASHHOME"] if "DIFFCRASHHOME" in os.environ else "",
         nargs="?",
         required=False,
-        help="Home directory where Diffcrash is installed."
-        + " Uses environment variable 'DIFFCRASHHOME' if unspecified.",
+        help=(
+            "Home directory where Diffcrash is installed."
+            " Uses environment variable 'DIFFCRASHHOME' if unspecified."
+        ),
     )
     parser.add_argument(
         "--use-id-mapping",
@@ -156,7 +159,7 @@ def parse_diffcrash_args():
 
     if len(sys.argv) < 2:
         parser.print_help()
-        exit(0)
+        sys.exit(0)
 
     return parser.parse_args(sys.argv[1:])
 
@@ -177,13 +180,15 @@ def run_subprocess(args):
     -----
         Suppresses stderr.
     """
-    devnull = open(os.devnull, "wb")
-    return subprocess.Popen(args, stderr=devnull).wait()
+    return subprocess.Popen(args, stderr=subprocess.DEVNULL).wait()
 
 
-class DiffcrashRun(object):
+class DiffcrashRun:
     """Class for handling the settings of a diffcrash run"""
 
+    # pylint: disable = too-many-instance-attributes
+
+    # pylint: disable = too-many-arguments
     def __init__(
         self,
         project_dir: str,
@@ -296,15 +301,15 @@ class DiffcrashRun(object):
         # streamHandler.setFormatter(self._log_formatter)
 
         # create file log channel
-        fileHandler = logging.FileHandler(self.logfile_filepath)
-        fileHandler.setLevel(logging.INFO)
-        fileHandler.setFormatter(self._log_formatter)
+        file_handler = logging.FileHandler(self.logfile_filepath)
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(self._log_formatter)
 
         # create logger
         logger = logging.getLogger("DiffcrashRun")
         logger.setLevel(logging.INFO)
         # logger.addHandler(streamHandler)
-        logger.addHandler(fileHandler)
+        logger.addHandler(file_handler)
 
         return logger
 
@@ -338,8 +343,9 @@ class DiffcrashRun(object):
         self.logger.info(self._msg_option.format("crash-code", crash_code))
 
         if not crash_code_ok:
-            err_msg = "Invalid crash code '{0}'. Please use one of: {1}".format(
-                crash_code, str(valid_crash_codes)
+            err_msg = (
+                f"Invalid crash code '{crash_code}'. "
+                f"Please use one of: {str(valid_crash_codes)}"
             )
             self.logger.error(err_msg)
             raise RuntimeError(str_error(err_msg))
@@ -355,7 +361,7 @@ class DiffcrashRun(object):
         self.logger.info(msg)
 
         if not reference_run_ok:
-            err_msg = "Filepath '{0}' is not a file.".format(reference_run)
+            err_msg = f"Filepath '{reference_run}' is not a file."
             self.logger.error(err_msg)
             raise RuntimeError(str_error(err_msg))
 
@@ -431,8 +437,8 @@ class DiffcrashRun(object):
 
         if not simulation_runs_ok:
             err_msg = (
-                "No simulation files could be found with the specified "
-                + "patterns. Check the argument 'simulation_runs'."
+                "No simulation files could be found with the specified patterns. "
+                "Check the argument 'simulation_runs'."
             )
             self.logger.error(err_msg)
             raise RuntimeError(str_error(err_msg))
@@ -442,20 +448,17 @@ class DiffcrashRun(object):
     def _parse_config_file(self, config_file) -> Union[str, None]:
 
         _msg_config_file = ""
-        if len(config_file) > 0:
-
-            if not os.path.isfile(config_file):
-                config_file = None
-                _msg_config_file = "Can not find config file '{}'".format(config_file)
-            else:
-                config_file = config_file
+        if len(config_file) > 0 and not os.path.isfile(config_file):
+            config_file = None
+            _msg_config_file = f"Can not find config file '{config_file}'"
 
         # missing config file
         else:
 
             config_file = None
             _msg_config_file = (
-                "Config file missing. Consider specifying the path with the option '--config-file'."
+                "Config file missing. "
+                "Consider specifying the path with the option '--config-file'."
             )
 
         msg = self._msg_option.format("config-file", config_file)
@@ -464,28 +467,22 @@ class DiffcrashRun(object):
 
         if _msg_config_file:
             print(str_warn(_msg_config_file))
-            self.logger.warn(_msg_config_file)
+            self.logger.warning(_msg_config_file)
 
         return config_file
 
     def _parse_parameter_file(self, parameter_file) -> Union[None, str]:
 
         _msg_parameter_file = ""
-        if len(parameter_file) > 0:
-
-            if not os.path.isfile(parameter_file):
-                parameter_file = None
-                _msg_parameter_file = "Can not find parameter file '{}'".format(parameter_file)
-            else:
-                parameter_file = parameter_file
-
+        if len(parameter_file) > 0 and not os.path.isfile(parameter_file):
+            parameter_file = None
+            _msg_parameter_file = f"Can not find parameter file '{parameter_file}'"
         # missing parameter file
         else:
-
             parameter_file = None
             _msg_parameter_file = (
                 "Parameter file missing. Consider specifying the "
-                + "path with the option '--parameter-file'."
+                "path with the option '--parameter-file'."
             )
 
         msg = self._msg_option.format("parameter-file", parameter_file)
@@ -494,7 +491,7 @@ class DiffcrashRun(object):
 
         if _msg_parameter_file:
             print(str_warn(_msg_parameter_file))
-            self.logger.warn(_msg_parameter_file)
+            self.logger.warning(_msg_parameter_file)
 
         return parameter_file
 
@@ -503,7 +500,7 @@ class DiffcrashRun(object):
         print(str_info(self._msg_option.format("n-processes", n_processes)))
 
         if n_processes <= 0:
-            err_msg = "n-processes is '{0}' but must be at least 1.".format(n_processes)
+            err_msg = f"n-processes is '{n_processes}' but must be at least 1."
             self.logger.error(err_msg)
             raise ValueError(str_error(err_msg))
 
@@ -596,7 +593,7 @@ class DiffcrashRun(object):
 
         # check return code
         if return_code != 0:
-            err_msg = "Running Setup ... done in {0:.2f}s".format(time.time() - start_time)
+            err_msg = f"Running Setup ... done in {time.time() - start_time:.2f}s"
             print(str_error(err_msg))
             self.logger.error(err_msg)
 
@@ -607,8 +604,7 @@ class DiffcrashRun(object):
         # check log
         messages = self.check_if_logfiles_show_success("DFC_Setup.log")
         if messages:
-
-            err_msg = "Running Setup ... done in {0:.2f}s".format(time.time() - start_time)
+            err_msg = f"Running Setup ... done in {time.time() - start_time:.2f}s"
             print(str_error(err_msg))
             self.logger.error(err_msg)
 
@@ -622,7 +618,7 @@ class DiffcrashRun(object):
             raise RuntimeError(str_error(err_msg))
 
         # print success
-        msg = "Running Setup ... done in {0:.2f}s".format(time.time() - start_time)
+        err_msg = f"Running Setup ... done in {time.time() - start_time:.2f}s"
         print(str_success(msg))
         self.logger.info(msg)
 
@@ -635,6 +631,8 @@ class DiffcrashRun(object):
             multiprocessing pool
         """
 
+        # pylint: disable = too-many-locals, too-many-branches, too-many-statements
+
         # list of arguments to run in the command line
         import_arguments = []
 
@@ -644,6 +642,7 @@ class DiffcrashRun(object):
 
         # assemble arguments for running the import
         # entry 0 is the reference run, thus we start at 1
+        # pylint: disable = consider-using-enumerate
         for i_filepath in range(len(self.simulation_runs)):
 
             # parameter file missing
@@ -706,6 +705,7 @@ class DiffcrashRun(object):
             percentage = n_new_imports_finished / len(return_code_futures) * 100
 
             if n_imports_finished != n_new_imports_finished:
+                # pylint: disable = consider-using-f-string
                 msg = "Running Imports ... [{0}/{1}] - {2:3.2f}%\r".format(
                     n_new_imports_finished, len(return_code_futures), percentage
                 )
@@ -726,17 +726,17 @@ class DiffcrashRun(object):
             for i_run, return_code in enumerate(return_codes):
                 if return_code != 0:
                     _err_msg = str_error(
-                        "Run {0} failed to import with error code '{1}'.".format(i_run, return_code)
+                        f"Run {i_run} failed to import with error code '{return_code}'."
                     )
                     print(str_error(_err_msg))
                     self.logger.error(_err_msg)
                     n_failed_runs += 1
 
-            err_msg = "Running Imports ... done in {0:.2f}s   ".format(time.time() - start_time)
+            err_msg = f"Running Imports ... done in {time.time() - start_time:.2f}s   "
             print(str_error(err_msg))
             self.logger.error(err_msg)
 
-            err_msg = "Import of {0} runs failed.".format(n_failed_runs)
+            err_msg = f"Import of {n_failed_runs} runs failed."
             self.logger.error(err_msg)
             raise RuntimeError(str_error(err_msg))
 
@@ -745,7 +745,7 @@ class DiffcrashRun(object):
         if messages:
 
             # print failure
-            msg = "Running Imports ... done in {0:.2f}s   ".format(time.time() - start_time)
+            msg = f"Running Imports ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
             self.logger.info(msg)
 
@@ -754,16 +754,14 @@ class DiffcrashRun(object):
                 self.logger.error(msg)
                 print(str_error(msg))
 
-            err_msg = "At least one import failed. Please check the log files in '{0}'.".format(
-                self.logfile_dir
+            err_msg = (
+                f"At least one import failed. Please check the log files in '{self.logfile_dir}'."
             )
             self.logger.error(err_msg)
             raise RuntimeError(str_error(err_msg))
 
         # print success
-        print(
-            str_success("Running Imports ... done in {0:.2f}s   ").format(time.time() - start_time)
-        )
+        print(str_success(f"Running Imports ... done in {time.time() - start_time:.2f}s   "))
 
     def run_math(self, pool: futures.ThreadPoolExecutor):
         """Run diffcrash math
@@ -783,16 +781,16 @@ class DiffcrashRun(object):
             run_subprocess,
             [os.path.join(self.diffcrash_home, "DFC_Math_" + self.crash_code), self.project_dir],
         )
-        returnCode = return_code_future.result()
+        return_code = return_code_future.result()
 
         # check return code
-        if returnCode != 0:
+        if return_code != 0:
 
-            msg = "Running Math ... done in {0:.2f}s   ".format(time.time() - start_time)
+            msg = f"Running Math ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
             self.logger.error(msg)
 
-            err_msg = "Caught a nonzero return code '{0}'".format(returnCode)
+            err_msg = f"Caught a nonzero return code '{return_code}'"
             self.logger.error(err_msg)
             raise RuntimeError(str_error(err_msg))
 
@@ -801,7 +799,7 @@ class DiffcrashRun(object):
         if messages:
 
             # print failure
-            msg = "Running Math ... done in {0:.2f}s   ".format(time.time() - start_time)
+            msg = f"Running Math ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
             self.logger.error(msg)
 
@@ -811,15 +809,14 @@ class DiffcrashRun(object):
                 self.logger.error(msg)
 
             err_msg = (
-                "Logfile does indicate a failure. Please check the log files in '{0}'.".format(
-                    self.logfile_dir
-                )
+                "Logfile does indicate a failure. "
+                f"Please check the log files in '{self.logfile_dir}'."
             )
             self.logger.error(err_msg)
             raise RuntimeError(str_error(err_msg))
 
         # print success
-        msg = "Running Math ... done in {0:.2f}s   ".format(time.time() - start_time)
+        msg = f"Running Math ... done in {time.time() - start_time:.2f}s   "
         print(str_success(msg))
         self.logger.info(msg)
 
@@ -876,14 +873,15 @@ class DiffcrashRun(object):
 
         # check return code
         if any(rc != 0 for rc in return_codes):
-            msg = "Running Export ... done in {0:.2f}s   ".format(time.time() - start_time)
+            msg = f"Running Export ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
             self.logger.error(msg)
 
             for i_export, export_return_code in enumerate(return_codes):
                 if export_return_code != 0:
-                    msg = "Return code of export '{0}' was nonzero: '{1}'".format(
-                        export_item_list[i_export], export_return_code
+                    msg = (
+                        f"Return code of export '{export_item_list[i_export]}' "
+                        f"was nonzero: '{export_return_code}'"
                     )
                     self.logger.error(msg)
                     print(str_error(msg))
@@ -897,7 +895,7 @@ class DiffcrashRun(object):
         if messages:
 
             # print failure
-            msg = "Running Export ... done in {0:.2f}s   ".format(time.time() - start_time)
+            msg = f"Running Export ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
             self.logger.error(msg)
 
@@ -906,14 +904,15 @@ class DiffcrashRun(object):
                 print(str_error(msg))
                 self.logger.error(msg)
 
-            msg = "At least one export failed. Please check the log files in '{0}'.".format(
-                self.logfile_dir
+            msg = (
+                "At least one export failed. "
+                f"Please check the log files in '{self.logfile_dir}'."
             )
             self.logger.error(msg)
             raise RuntimeError(str_error(msg))
 
         # print success
-        msg = "Running Export ... done in {0:.2f}s   ".format(time.time() - start_time)
+        msg = f"Running Export ... done in {time.time() - start_time:.2f}s   "
         print(str_success(msg))
         self.logger.info(msg)
 
@@ -952,7 +951,7 @@ class DiffcrashRun(object):
         if return_code != 0:
 
             # print failure
-            msg = "Running Matrix ... done in {0:.2f}s   ".format(time.time() - start_time)
+            msg = f"Running Matrix ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
             self.logger.error(msg)
 
@@ -965,7 +964,7 @@ class DiffcrashRun(object):
         if messages:
 
             # print failure
-            msg = "Running Matrix ... done in {0:.2f}s   ".format(time.time() - start_time)
+            msg = f"Running Matrix ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
             self.logger.info(msg)
 
@@ -974,12 +973,12 @@ class DiffcrashRun(object):
                 print(str_error(msg))
                 self.logger.error(msg)
 
-            msg = "DFC_Matrix failed. Please check the log files in '{0}'.".format(self.logfile_dir)
+            msg = f"DFC_Matrix failed. Please check the log files in '{self.logfile_dir}'."
             self.logger.error(msg)
             raise RuntimeError(str_error(msg))
 
         # print success
-        msg = "Running Matrix ... done in {0:.2f}s   ".format(time.time() - start_time)
+        msg = f"Running Matrix ... done in {time.time() - start_time:.2f}s   "
         print(str_success(msg))
         self.logger.info(msg)
 
@@ -1015,7 +1014,7 @@ class DiffcrashRun(object):
 
         # check return code
         if return_code != 0:
-            msg = "Running Eigen ... done in {0:.2f}s   ".format(time.time() - start_time)
+            msg = f"Running Eigen ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
             self.logger.error(msg)
 
@@ -1028,7 +1027,7 @@ class DiffcrashRun(object):
         if messages:
 
             # print failure
-            msg = "Running Eigen ... done in {0:.2f}s   ".format(time.time() - start_time)
+            msg = f"Running Eigen ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
             self.logger.error(msg)
 
@@ -1037,12 +1036,12 @@ class DiffcrashRun(object):
                 print(str_error(msg))
                 self.logger.error(msg)
 
-            msg = "DFC_Eigen failed. Please check the log files in '{0}'.".format(self.logfile_dir)
+            msg = f"DFC_Eigen failed. Please check the log files in '{self.logfile_dir}'."
             self.logger.error(msg)
             raise RuntimeError(str_error(msg))
 
         # print success
-        msg = "Running Eigen ... done in {0:.2f}s   ".format(time.time() - start_time)
+        msg = f"Running Eigen ... done in {time.time() - start_time:.2f}s   "
         print(str_success(msg))
         self.logger.info(msg)
 
@@ -1081,7 +1080,7 @@ class DiffcrashRun(object):
 
         # check return code
         if return_code != 0:
-            msg = "Running Merge ... done in {0:.2f}s   ".format(time.time() - start_time)
+            msg = f"Running Merge ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
             self.logger.info(msg)
 
@@ -1092,7 +1091,7 @@ class DiffcrashRun(object):
         # check logfiles
         messages = self.check_if_logfiles_show_success("DFC_Merge_All.log")
         if messages:
-            msg = "Running Merge ... done in {0:.2f}s   ".format(time.time() - start_time)
+            msg = f"Running Merge ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
             self.logger.error(msg)
 
@@ -1100,14 +1099,12 @@ class DiffcrashRun(object):
                 print(str_error(msg))
                 self.logger.info(msg)
 
-            msg = "DFC_Merge_All failed. Please check the log files in '{0}'.".format(
-                self.logfile_dir
-            )
+            msg = "DFC_Merge_All failed. Please check the log files in '{self.logfile_dir}'."
             self.logger.error(msg)
             raise RuntimeError(str_error(msg))
 
         # print success
-        msg = "Running Merge ... done in {0:.2f}s   ".format(time.time() - start_time)
+        msg = f"Running Merge ... done in {time.time() - start_time:.2f}s   "
         print(str_success(msg))
         self.logger.info(msg)
 
@@ -1124,7 +1121,7 @@ class DiffcrashRun(object):
         success : `bool`
         """
 
-        with open(logfile, "r") as fp:
+        with open(logfile, "r", encoding="utf-8") as fp:
             for line in fp:
                 if "successfully" in line:
                     return True
@@ -1139,27 +1136,25 @@ class DiffcrashRun(object):
         """
 
         # creates default inputfile for DFC_Merge
-        merge_input_file = open(os.path.join(directory, "merge_all.txt"), "w")
-        # 	merge_input_file.write("\"" + directory + "/\"\n")
-        merge_input_file.write("eigen_all        ! Name of eigen input file\n")
-        merge_input_file.write(
-            "mode_            ! Name of Output file "
-            + "(string will be apended with mode information)\n"
-        )
-        merge_input_file.write("1 1              ! Mode number to be generated\n")
-        merge_input_file.write("'d+ d-'          ! Mode type to be generated\n")
-        # TIMESTEPSFILE         optional
-        merge_input_file.write(
-            "                 ! Optional: Timestepfile (specify timesteps used for merge)\n"
-        )
-        # PARTSFILE             optional
-        merge_input_file.write(
-            "                 ! Optional: Partlistfile (specify parts used for merge)\n"
-        )
-        #    merge_input_file.write("1.5 300\n") #pfactor pmax  optional
-        merge_input_file.close()
+        filepath = os.path.join(directory, "merge_all.txt")
+        with open(filepath, "w", encoding="utf-8") as merge_input_file:
+            merge_input_file.write("eigen_all        ! Name of eigen input file\n")
+            merge_input_file.write(
+                "mode_            ! Name of Output file "
+                + "(string will be apended with mode information)\n"
+            )
+            merge_input_file.write("1 1              ! Mode number to be generated\n")
+            merge_input_file.write("'d+ d-'          ! Mode type to be generated\n")
+            # TIMESTEPSFILE         optional
+            merge_input_file.write(
+                "                 ! Optional: Timestepfile (specify timesteps used for merge)\n"
+            )
+            # PARTSFILE             optional
+            merge_input_file.write(
+                "                 ! Optional: Partlistfile (specify parts used for merge)\n"
+            )
 
-        return os.path.join(directory, "merge_all.txt")
+        return filepath
 
     def _create_eigen_input_file(self, directory: str) -> str:
         """Create an input file for the eigen executable
@@ -1170,21 +1165,19 @@ class DiffcrashRun(object):
         """
 
         # creates default inputfile for DFC_Eigen
-        eigen_input_file = open(os.path.join(directory, "eigen_all.txt"), "w")
-        # 	eigen_input_file.write("\"" + project_dir + "/\"\n")
-        eigen_input_file.write("matrix_all\n")
-        eigen_input_file.write('""\n')
-        eigen_input_file.write("1 1000\n")
-        eigen_input_file.write('""\n')
-        eigen_input_file.write("0 0\n")
-        eigen_input_file.write('""\n')
-        eigen_input_file.write("eigen_all\n")
+        filepath = os.path.join(directory, "eigen_all.txt")
+        with open(filepath, "w", encoding="utf-8") as eigen_input_file:
+            eigen_input_file.write("matrix_all\n")
+            eigen_input_file.write('""\n')
+            eigen_input_file.write("1 1000\n")
+            eigen_input_file.write('""\n')
+            eigen_input_file.write("0 0\n")
+            eigen_input_file.write('""\n')
+            eigen_input_file.write("eigen_all\n")
+            eigen_input_file.write('""\n')
+            eigen_input_file.write("0 0\n")
 
-        eigen_input_file.write('""\n')
-        eigen_input_file.write("0 0\n")
-        eigen_input_file.close()
-
-        return os.path.join(directory, "eigen_all.txt")
+        return filepath
 
     def _create_matrix_input_file(self, directory: str) -> str:
         """Create an input file for the matrix executable
@@ -1195,15 +1188,14 @@ class DiffcrashRun(object):
         """
 
         # creates default inputfile for DFC_Matrix
-        matrix_input_file = open(os.path.join(directory, "matrix.txt"), "w")
-        matrix_input_file.write("0 1000        !    Initial and final time stept to consider\n")
-        matrix_input_file.write('""          !    not used\n')
-        matrix_input_file.write('""          !    not used\n')
-        # 	matrix_input_file.write("\"" + project_dir + "/\"\n")
-        matrix_input_file.write("matrix_all    !    Name of matrix file set (Output)\n")
-        matrix_input_file.close()
+        filepath = os.path.join(directory, "matrix.txt")
+        with open(filepath, "w", encoding="utf-8") as matrix_input_file:
+            matrix_input_file.write("0 1000        !    Initial and final time stept to consider\n")
+            matrix_input_file.write('""          !    not used\n')
+            matrix_input_file.write('""          !    not used\n')
+            matrix_input_file.write("matrix_all    !    Name of matrix file set (Output)\n")
 
-        return os.path.join(directory, "matrix.txt")
+        return filepath
 
     def clear_project_dir(self):
         """Clears the entire project dir"""
@@ -1236,7 +1228,13 @@ class DiffcrashRun(object):
         # Just to make it clear, this is not code from LASSO
         # ...
 
-        with open(config_file, "r") as conf:
+        # pylint: disable = too-many-locals
+        # pylint: disable = consider-using-enumerate
+        # pylint: disable = too-many-nested-blocks
+        # pylint: disable = too-many-branches
+        # pylint: disable = too-many-statements
+
+        with open(config_file, "r", encoding="utf-8") as conf:
             conf_lines = conf.readlines()
         line = 0
 
@@ -1255,10 +1253,10 @@ class DiffcrashRun(object):
                             element_start = i + 1
                         if conf_lines[line][i] == ">":
                             element_end = i
-                    ELEM = conf_lines[line][element_start:element_end]
+                    elem = conf_lines[line][element_start:element_end]
                     check = conf_lines[line + j][:-1]
 
-                    if check.find(ELEM) >= 0:
+                    if check.find(elem) >= 0:
                         line = line + j + 1
                         j = 1
                         break
@@ -1267,64 +1265,64 @@ class DiffcrashRun(object):
                     pos = -1
                     for n in range(0, len(items)):
                         if items[n].startswith("!"):
-                            msg = "FOUND at {0}".format(n)
+                            msg = f"FOUND at {n}"
                             print(msg)
                             self.logger.info(msg)
                             pos = n
                             break
-                        else:
-                            pos = len(items)
+                        pos = len(items)
+
                     for n in range(0, pos):
                         if items[n] == "PDMX" or items[n] == "pdmx":
                             break
-                        elif items[n] == "PDXMX" or items[n] == "pdxmx":
+                        if items[n] == "PDXMX" or items[n] == "pdxmx":
                             break
-                        elif items[n] == "PDYMX" or items[n] == "pdymx":
+                        if items[n] == "PDYMX" or items[n] == "pdymx":
                             break
-                        elif items[n] == "PDZMX" or items[n] == "pdzmx":
+                        if items[n] == "PDZMX" or items[n] == "pdzmx":
                             break
-                        elif items[n] == "PDIJ" or items[n] == "pdij":
+                        if items[n] == "PDIJ" or items[n] == "pdij":
                             break
-                        elif items[n] == "STDDEV" or items[n] == "stddev":
+                        if items[n] == "STDDEV" or items[n] == "stddev":
                             break
-                        elif items[n] == "NCOUNT" or items[n] == "ncount":
+                        if items[n] == "NCOUNT" or items[n] == "ncount":
                             break
-                        elif items[n] == "MISES_MX" or items[n] == "mises_mx":
+                        if items[n] == "MISES_MX" or items[n] == "mises_mx":
                             break
-                        elif items[n] == "MISES_IJ" or items[n] == "mises_ij":
+                        if items[n] == "MISES_IJ" or items[n] == "mises_ij":
                             break
 
                     for k in range(n, pos):
-                        POSTVAL = None
+                        postval = None
                         for m in range(0, n):
                             if items[m] == "coordinates":
                                 items[m] = "geometry"
-                            if POSTVAL is None:
-                                POSTVAL = items[m]
+                            if postval is None:
+                                postval = items[m]
                             else:
-                                POSTVAL = POSTVAL + "_" + items[m]
-                        POSTVAL = POSTVAL.strip("_")
+                                postval = postval + "_" + items[m]
+                        postval = postval.strip("_")
 
                         # hotfix
                         # sometimes the engine writes 'Geometry' instead of 'geometry'
-                        POSTVAL = POSTVAL.lower()
+                        postval = postval.lower()
 
                         items[k] = items[k].strip()
 
                         if items[k] != "" and items[k] != "\r":
-                            if POSTVAL.lower() == "sigma":
+                            if postval.lower() == "sigma":
                                 export_item_list.append(
-                                    ELEM + "_" + POSTVAL + "_" + "001_" + items[k].lower()
+                                    elem + "_" + postval + "_" + "001_" + items[k].lower()
                                 )
                                 export_item_list.append(
-                                    ELEM + "_" + POSTVAL + "_" + "002_" + items[k].lower()
+                                    elem + "_" + postval + "_" + "002_" + items[k].lower()
                                 )
                                 export_item_list.append(
-                                    ELEM + "_" + POSTVAL + "_" + "003_" + items[k].lower()
+                                    elem + "_" + postval + "_" + "003_" + items[k].lower()
                                 )
                             else:
                                 export_item_list.append(
-                                    ELEM + "_" + POSTVAL + "_" + items[k].lower()
+                                    elem + "_" + postval + "_" + items[k].lower()
                                 )
                         if export_item_list[-1].endswith("\r"):
                             export_item_list[-1] = export_item_list[-1][:-1]
@@ -1356,7 +1354,6 @@ class DiffcrashRun(object):
         logfiles = glob.glob(os.path.join(self.logfile_dir, pattern))
         for filepath in logfiles:
             if not self.is_logfile_successful(filepath):
-                # logger.warning()
                 messages.append(_msg_logfile_nok.format(filepath))
 
         return messages

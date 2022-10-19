@@ -23,12 +23,21 @@ import numpy as np
 
 from .fz_config import FemzipArrayType, FemzipVariableCategory, get_last_int_of_line
 
+# During next refactoring we should take a look at reducing the file size.
+# pylint: disable = too-many-lines
+
+# The c-structs python wrappers set variables outside of the init method which
+# is okay.
+# pylint: disable = attribute-defined-outside-init
+
 
 class FemzipException(Exception):
-    pass
+    """Custom exception specifically for anything going wrong in femzip"""
 
 
 class FemzipError(Structure):
+    """Struct representing femzip errors in c-code"""
+
     _fields_ = [
         ("ier", c_int32),
         ("msg", c_char_p),
@@ -36,6 +45,8 @@ class FemzipError(Structure):
 
 
 class VariableInfo(Structure):
+    """Struct for details about a single femzip variable"""
+
     _fields_ = [
         ("var_index", c_int32),
         ("name", c_char_p),
@@ -45,6 +56,8 @@ class VariableInfo(Structure):
 
 
 class FemzipFileMetadata(Structure):
+    """This struct contains metadata about femzip files."""
+
     _fields_ = [
         ("version_zip", c_float),
         ("activity_flag", c_int32),
@@ -76,6 +89,8 @@ class FemzipFileMetadata(Structure):
 
 
 class FemzipBufferInfo(Structure):
+    """This struct describes necessary buffer sizes for reading the file"""
+
     _fields_ = [
         ("n_timesteps", c_uint64),
         ("timesteps", POINTER(c_float)),
@@ -89,6 +104,10 @@ class FemzipBufferInfo(Structure):
 
 
 class FemzipAPIStatus(Structure):
+    """This struct summarizes the state of the femzip API library. The library
+    has a shared, global state which is stored in static variables. The state
+    of the gloval vars is tracked by this struct."""
+
     _fields_ = [
         ("is_file_open", c_int32),
         ("is_geometry_read", c_int32),
@@ -99,6 +118,8 @@ class FemzipAPIStatus(Structure):
 
 
 class FemzipAPI:
+    """FemzipAPI contains wrapper functions around the femzip library."""
+
     _api: Union[None, CDLL] = None
 
     @staticmethod
@@ -127,6 +148,16 @@ class FemzipAPI:
 
     @property
     def api(self) -> CDLL:
+        """Returns the loaded, shared object library of the native interface
+
+        Returns
+        -------
+        shared_object_lib: CDLL
+            Loaded shared object library.
+        """
+
+        # pylint: disable = too-many-statements
+
         if self._api is None:
 
             bin_dirpath = (
@@ -252,7 +283,7 @@ class FemzipAPI:
         state_filter_parsed = (
             {entry if entry >= 0 else entry + n_timesteps for entry in state_filter}
             if state_filter is not None
-            else {entry for entry in range(n_timesteps)}
+            else set(range(n_timesteps))
         )
 
         # filter invalid indexes
@@ -304,6 +335,8 @@ class FemzipAPI:
             {'is_file_open': 1, 'is_geometry_read': 1, 'is_states_open': 0,
             'i_timestep_state': -1, 'i_timestep_activity': -1}
         """
+        # We access some internal members to do some magic.
+        # pylint: disable = protected-access
         return {field_name: getattr(struct, field_name) for field_name, _ in struct._fields_}
 
     @staticmethod
@@ -329,7 +362,8 @@ class FemzipAPI:
             >>> err2.msg
             b'Oops'
         """
-
+        # We access some internal members to do some magic.
+        # pylint: disable = protected-access
         assert src._fields_ == dest._fields_
 
         for field_name, _ in src._fields_:
@@ -357,6 +391,7 @@ class FemzipAPI:
         buffer_info_parsed = self.get_buffer_info(filepath) if buffer_info is None else buffer_info
 
         # allocate memory
+        # pylint: disable = invalid-name
         BufferType = c_int32 * (buffer_info_parsed.size_titles)
         buffer = BufferType()
 
@@ -406,9 +441,10 @@ class FemzipAPI:
 
         # filter timesteps
         state_filter_valid = self._parse_state_filter(state_filter, buffer_info.n_timesteps)
-        logging.debug(f"state filter: {state_filter_valid}")
+        logging.debug("state filter: %s", state_filter_valid)
 
         # allocate memory
+        # pylint: disable = invalid-name
         StateBufferType = c_float * buffer_info.size_activity
         BufferType = c_float * (buffer_info.size_activity * len(state_filter_valid))
         buffer_c = BufferType()
@@ -416,7 +452,7 @@ class FemzipAPI:
         # major looping
         n_timesteps_read = 0
         for i_timestep in range(buffer_info.n_timesteps):
-            logging.debug("i_timestep {0}".format(i_timestep))
+            logging.debug("i_timestep %d", i_timestep)
 
             # walk forward in buffer
             state_buffer_ptr = StateBufferType.from_buffer(
@@ -489,6 +525,7 @@ class FemzipAPI:
             err_msg = "The state buffer must have a float format '<f' instead of '{0}'."
             raise ValueError(err_msg.format(state_buffer.format))
 
+        # pylint: disable = invalid-name
         StateBufferType = c_float * buffer_info.size_state
         state_buffer_c = (
             StateBufferType() if state_buffer is None else StateBufferType.from_buffer(state_buffer)
@@ -578,7 +615,7 @@ class FemzipAPI:
         """
         start_time = time.time()
         has_license = self.api.has_femunziplib_license() == 1
-        logging.debug("License check duration: {0}s".format(time.time() - start_time))
+        logging.debug("License check duration: %fs", (time.time() - start_time))
         return has_license
 
     def is_sidact_file(self, filepath: str) -> bool:
@@ -645,6 +682,7 @@ class FemzipAPI:
         # we need to copy the timesteps from C to Python
         buffer_info_2 = FemzipBufferInfo()
 
+        # pylint: disable = invalid-name
         TimestepsType = c_float * buffer_info.n_timesteps
         timesteps_buffer = TimestepsType()
         for i_timestep in range(buffer_info.n_timesteps):
@@ -696,6 +734,7 @@ class FemzipAPI:
         buffer_info = self.get_buffer_info(filepath) if buffer_info is None else buffer_info
 
         # allocate memory
+        # pylint: disable = invalid-name
         GeomBufferType = c_int * (buffer_info.size_geometry + buffer_info.size_titles)
         buffer = GeomBufferType()
 
@@ -749,6 +788,7 @@ class FemzipAPI:
         )
 
         # allocate buffer
+        # pylint: disable = invalid-name
         BufferType = c_float * (buffer_info_parsed.size_state * n_states_to_allocate)
         buffer = BufferType()
 
@@ -829,6 +869,10 @@ class FemzipAPI:
         n_airbags: int,
         file_metadata: FemzipFileMetadata,
     ) -> int:
+        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-locals
+        # pylint: disable=too-many-branches
+        # pylint: disable=too-many-statements
 
         buffer_size_state = 0
         var_indexes_to_remove: Set[int] = set()
@@ -840,9 +884,9 @@ class FemzipAPI:
 
                 variable_multiplier = 1
                 if (
-                    FemzipArrayType.node_displacement.value in variable_name
-                    or FemzipArrayType.node_velocities.value in variable_name
-                    or FemzipArrayType.node_accelerations.value in variable_name
+                    FemzipArrayType.NODE_DISPLACEMENT.value in variable_name
+                    or FemzipArrayType.NODE_VELOCITIES.value in variable_name
+                    or FemzipArrayType.NODE_ACCELERATIONS.value in variable_name
                 ):
                     variable_multiplier = 3
 
@@ -874,7 +918,7 @@ class FemzipAPI:
                 file_metadata.variable_infos[i_var].var_size = array_size
                 buffer_size_state += array_size
             elif variable_category == FemzipVariableCategory.PART:
-                logging.debug(f"n_parts: {n_parts}")
+                logging.debug("n_parts: %d", n_parts)
                 array_size = n_parts * 7 + n_rigid_walls * n_rigid_wall_vars
                 file_metadata.variable_infos[i_var].var_size = array_size
                 buffer_size_state += array_size
@@ -891,8 +935,8 @@ class FemzipAPI:
                 file_metadata.variable_infos[i_var].var_size = array_size
                 buffer_size_state += array_size
             else:
-                warn_msg = "Femzip variable category '{0}' is not supported"
-                logging.warn(warn_msg.format(variable_category))
+                warn_msg = "Femzip variable category '%s' is not supported"
+                logging.warning(warn_msg, variable_category)
                 var_indexes_to_remove.add(i_var)
 
         # one more for end marker
@@ -912,6 +956,11 @@ class FemzipAPI:
         file_metadata: FemzipFileMetadata,
     ) -> Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray]:
 
+        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-locals
+        # pylint: disable=too-many-branches
+        # pylint: disable=too-many-statements
+
         # decompose array
         result_arrays: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray] = {}
         var_pos = 0
@@ -924,10 +973,10 @@ class FemzipAPI:
             variable_category = FemzipVariableCategory.from_int(var_info.var_type)
 
             if variable_category == FemzipVariableCategory.NODE:
-                if (
-                    variable_type.value == FemzipArrayType.node_displacement.value
-                    or variable_type.value == FemzipArrayType.node_velocities.value
-                    or variable_type.value == FemzipArrayType.node_accelerations.value
+                if variable_type.value in (
+                    FemzipArrayType.NODE_DISPLACEMENT.value,
+                    FemzipArrayType.NODE_VELOCITIES.value,
+                    FemzipArrayType.NODE_ACCELERATIONS.value,
                 ):
                     array_size = file_metadata.number_of_nodes * 3
                     var_array = all_vars_array[:, var_pos : var_pos + array_size].reshape(
@@ -1053,14 +1102,17 @@ class FemzipAPI:
             required.
         """
 
+        # pylint: disable = too-many-arguments
+        # pylint: disable = too-many-locals
+
         # fetch metadata if required
         n_timesteps = file_metadata.number_of_timesteps
-        logging.info(f"file_metadata: {self.struct_to_dict(file_metadata)}")
+        logging.info("file_metadata: %s", self.struct_to_dict(file_metadata))
 
         # log variable names
         for i_var in range(file_metadata.number_of_variables):
             var_info = file_metadata.variable_infos[i_var]
-            logging.debug(self.struct_to_dict(var_info))
+            logging.debug("%s", self.struct_to_dict(var_info))
 
         # estimate float buffer size
         buffer_size_state = self._get_variables_state_buffer_size(
@@ -1071,29 +1123,31 @@ class FemzipAPI:
             n_airbags=n_airbags,
             file_metadata=file_metadata,
         )
-        logging.info(f"buffer_size_state: {buffer_size_state}")
+        logging.info("buffer_size_state: %s", buffer_size_state)
 
         # specify which states to read
         states_to_copy = (
             {i_timestep for i_timestep in state_filter if i_timestep < n_timesteps + 1}
             if state_filter is not None
-            else {i_timestep for i_timestep in range(n_timesteps)}
+            else set(range(n_timesteps))
         )
-        logging.info(f"states_to_copy: {states_to_copy}")
+        logging.info("states_to_copy: %s", states_to_copy)
 
         # take timesteps into account
         buffer_size = len(states_to_copy) * buffer_size_state
-        logging.info(f"buffer_size: {buffer_size}")
+        logging.info("buffer_size: %s", buffer_size)
 
         # allocate memory
+        # pylint: disable = invalid-name
         BufferType = c_float * buffer_size
         buffer = BufferType()
 
         # do the thing
+        # pylint: disable = invalid-name
         BufferStateType = c_float * buffer_size_state
         n_timesteps_read = 0
         for i_timestep in range(n_timesteps):
-            logging.info("timestep: {0}".format(i_timestep))
+            logging.info("timestep: %d", i_timestep)
 
             buffer_ptr_state = BufferStateType.from_buffer(
                 buffer, sizeof(c_float) * n_timesteps_read * buffer_size_state
@@ -1168,6 +1222,8 @@ class FemzipAPI:
 
 
 class FemzipD3plotArrayMapping:
+    """Contains information about how to map femzip arrays to d3plot arrays"""
+
     d3plot_array_type: str
     i_integration_point: Union[int, None]
     i_var_index: Union[int, None]
@@ -1188,6 +1244,8 @@ class FemzipD3plotArrayMapping:
 
 
 class FemzipArrayMetadata:
+    """Contains metadata about femzip arrays"""
+
     array_type: FemzipArrayType
     category: FemzipVariableCategory
     d3plot_mappings: List[FemzipD3plotArrayMapping]
@@ -1205,6 +1263,18 @@ class FemzipArrayMetadata:
         self.d3plot_mappings = d3plot_mappings
 
     def match(self, fz_name: str) -> bool:
+        """Checks if the given name matches the array
+
+        Parameters
+        ----------
+        fz_name: str
+            femzip array name
+
+        Returns
+        -------
+        match: bool
+            If the array metadata instance matches the given array
+        """
         return self.array_type.value in fz_name
 
     def parse(self, fz_var_name: str, fz_var_index: int) -> None:
@@ -1223,11 +1293,11 @@ class FemzipArrayMetadata:
         matches = pattern.findall(fz_var_name)
 
         if not len(matches) == 1:
-            err_msg = "Could not match femzip array name: {0}"
-            raise RuntimeError(err_msg.format(fz_var_name))
+            err_msg = f"Could not match femzip array name: {fz_var_name}"
+            raise RuntimeError(err_msg)
         if not len(matches[0]) == 2:
-            err_msg = "Could not match femzip array name: {0}"
-            raise RuntimeError(err_msg.format(fz_var_name))
+            err_msg = f"Could not match femzip array name: {fz_var_name}"
+            raise RuntimeError(err_msg)
 
         # first group contains
         # - var name

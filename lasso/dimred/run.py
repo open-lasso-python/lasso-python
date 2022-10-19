@@ -11,6 +11,7 @@ from lasso.dimred.dimred_run import (
 
 
 def main():
+    """Runs the dimensionality reduction CLI"""
 
     # parse command line stuff
     parser = parse_dimred_args()
@@ -39,11 +40,6 @@ def main():
             cluster_args=parser.cluster_args,
             outlier_args=parser.outlier_args,
         )
-
-        # remove old stuff
-        # if start_stage_index == 0:
-        #     diffcrash_run.clear_project_dir()
-        # diffcrash_run.create_project_dirs()
 
         # do the thing
         console.print()

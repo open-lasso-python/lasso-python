@@ -1,12 +1,15 @@
 import glob
 import struct
 
+# We disable pylint here since this code is ancient code from LSTC and has the
+# respective quality. I tried rewriting it but could not understand it at all
+# in time.
+# pylint: skip-file
+
 
 class LsdaError(Exception):
     """This is only here, so I can raise an error in case the data type
     sizes are not what I expect"""
-
-    pass
 
 
 class _Diskfile:
@@ -102,7 +105,6 @@ class _Diskfile:
         length = self.lengthsize + self.commandsize + len(dir)
         s = struct.pack(self.lcunpack, length, Lsda.CD)
         self.fp.write(s)
-        # TODO
         if type(dir) is str:
             self.fp.write(bytes(dir, "utf-8"))
         else:

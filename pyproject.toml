@@ -49,12 +49,22 @@ build-backend = "poetry.core.masonry.api"
 disable = [
     # Disable missing module docstring since we provide docs through the
     # docstrings of classes and functions.
-    "missing-module-docstring"
+    "missing-module-docstring",
+    # We have a lot of classes just holding information so we are not bothered
+    # by them having less than two public methods.
+    "too-few-public-methods",
+    # A lot can go wrong under the hood so we catch broadly in multiple places
+    # to report nice errors and skip failing parts if possible.
+    "broad-except",
+    # We have a lot of lines which are self-similar but which are okay that way.
+    "duplicate-code",
 ]
 
 [tool.pylint.basic]
 # Test files and classes don't need linting
 ignore-pattern="^(_|test_|Test)"
+# Allow single or double char variable names
+good-names-rgxs="^[_a-z][_a-z0-9]?$"
 
 [tool.flake8]
 ignore = "E203"
