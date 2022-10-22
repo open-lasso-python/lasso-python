@@ -9,7 +9,7 @@ tasks:
   lint:
     desc: Lints the code and reports on issues.
     cmds:
-      - python3 -m poetry run black --check lasso
+      - poetry run black --check lasso
       # E501:
       #   We disable too long lines in ArrayType since the docstrings for arrays
       #   must be behind the arrays for sphinx, thus lines cannot be shortened.
@@ -21,16 +21,16 @@ tasks:
       #   Allowing operators such as '+' after a new line instead of putting it
       #   on the previous one, complex condition chains are more understandable.
       - |
-        python3 -m poetry run flake8 lasso \
+        poetry run flake8 lasso \
           --ignore="E203,W503" \
           --per-file-ignores="lasso/dyna/ArrayType.py:E501" \
           --show-source \
           --statistics \
           --count
-      - python3 -m poetry run pylint lasso
+      - poetry run pylint lasso
 
   build:
-    desc: Builds the puthon package
+    desc: Builds the python package
     cmds:
       - poetry build
 
