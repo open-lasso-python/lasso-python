@@ -263,12 +263,6 @@ Tutorial
     Your output should look similar to this:
 
     ::
-
-
-        ==== LASSO - AI ====
-
-        visit us: www.lasso.de/en
-        mail: lasso@lasso.de
     
         ┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
         ┃ n-processes      ┃ 5                                                        ┃
@@ -341,12 +335,6 @@ Tutorial
 
     ::
 
-
-        ==== LASSO - AI ====
-
-        visit us: www.lasso.de/en
-        mail: lasso@lasso.de
-    
         ┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
         ┃ n-processes      ┃ 5                                                        ┃
         │ reference-run    │ user/tutorial/plots/plot0.fz                             │
