@@ -5,24 +5,16 @@
 |LASSO| Python Library
 ======================
 
-This is the free Python Library from LASSO GmbH (https://www.lasso.de/en). 
-The repository contains a fraction of our internal codebase for public use.
+This python library is designed for general purpose usage in the field of Computer Aided Engineering (CAE).
+It's name originates from the original initiator and donator of the project `Lasso GmbH`_.
 
-Contact
+
+Community
 =======
 
-**You like our work?** Contact Us:
-
-    |HOME| `Website`_
-
-    |MAIL| `Mail`_
-
-    |LINKEDIN| `LinkedIn`_
-
-Discussions on: 
+Join our open-source community on:
 
     |DISCORD| `Discord`_
-
 
 Installation
 ============
@@ -47,16 +39,12 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
-* `Privacy Policy`_
 
 .. |LASSO| image:: lasso-logo.svg 
     :target: https://www.lasso.de/en
 
-.. _Mail: lasso@lasso.de
-.. _LinkedIn: https://www.linkedin.com/company/lasso-gmbh
-.. _Website:  https://www.lasso.de/en
-.. _Discord:  https://discord.gg/GeHu79b
-.. _Privacy Policy: https://www.lasso.de/en/privacy-protection/
+.. _Lasso GmbH: https://www.lasso.de/en
+.. _Discord:  https://discord.gg/YJNPRjHG
 
 .. |MAIL| image:: icon-mail.svg 
     :target: lasso@lasso.de
