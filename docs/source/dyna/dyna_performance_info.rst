@@ -9,7 +9,7 @@ D3plot
 ~~~~~~
 
     Benchmark:
-        The d3plot reader is bazingly fast by using several memory tricks.
+        The d3plot reader is blazingly fast by using several memory tricks.
         While postprocessors build up an internal datastructure during reading,
         this reader avoids this and simply references memory within the files. 
         In consequence performance benchmarks show that the runtime

@@ -72,6 +72,7 @@ Check out the following facts:
     </div>
     </div>
   <script>
+#TODO: check why path is included here with codie
   path = "https://www.lasso.de/fileadmin/ressources/ml-embedding-images/"
   imgType = "png"
   const plotDiv = document.getElementById("plotDiv")
@@ -178,7 +179,7 @@ Quick Start
                       [--outlier-args [OUTLIER_ARGS [OUTLIER_ARGS ...]]]
                       [simulation_runs [simulation_runs ...]]
 
-        Python utility script for dimensionality reduction written by LASSO GmbH.
+        Python utility script for dimensionality reduction.
 
         positional arguments:
           simulation_runs       Simulation runs or patterns used to search for

@@ -1,5 +1,5 @@
 
-lasso.dimred (pro only)
+lasso.dimred
 =======================
 
 The dimred module consists of a command line utility as well as several
