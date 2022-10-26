@@ -72,7 +72,6 @@ Check out the following facts:
     </div>
     </div>
   <script>
-#TODO: check why path is included here with codie
   path = "https://www.lasso.de/fileadmin/ressources/ml-embedding-images/"
   imgType = "png"
   const plotDiv = document.getElementById("plotDiv")
@@ -264,7 +263,10 @@ Tutorial
     Your output should look similar to this:
 
     ::
-    
+
+
+        ==== OPEN - LASSO ====
+
         ┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
         ┃ n-processes      ┃ 5                                                        ┃
         │ reference-run    │ user/tuorial/plots/plot0.fz                              │
@@ -335,6 +337,9 @@ Tutorial
     Your output should look like this:
 
     ::
+
+
+        ==== OPEN - LASSO ====
 
         ┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
         ┃ n-processes      ┃ 5                                                        ┃

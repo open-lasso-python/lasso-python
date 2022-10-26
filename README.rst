@@ -1,5 +1,5 @@
 
-Lasso Python Library
+|LASSO| Python Library
 ======================
 
 |test-main| |test-dev|

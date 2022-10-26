@@ -1,5 +1,5 @@
 #TODO: Still Beta? ask codie
-lasso.femzip (beta)
+lasso.femzip
 ===================
 
 Documentation of the Femzip module. 

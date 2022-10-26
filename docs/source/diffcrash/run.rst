@@ -26,6 +26,8 @@ How to use the utility?
 
        ==== D I F F C R A S H ====
 
+        an open lasso utility script
+
         usage: run.py [-h] --reference-run REFERENCE_RUN
                     [--exclude-runs [EXCLUDE_RUNS [EXCLUDE_RUNS ...]]] --crash-code
                     CRASH_CODE [--start-stage [START_STAGE]]
@@ -95,6 +97,7 @@ Example
             
             ==== D I F F C R A S H ==== 
 
+        an open lasso utility script
             
         [/] diffcrash-home  : /sw/Linux/diffcrash/V6.1.24
         [/] project-dir     : test-example-project
