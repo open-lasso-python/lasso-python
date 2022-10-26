@@ -38,10 +38,8 @@ def get_application_header():
 
     return """
 
-       ==== LASSO - AI ====
+       ==== OPEN - LASSO ====
 
-       visit us: [link=http://www.lasso.de/en]www.lasso.de/en[/link]
-       mail: lasso@lasso.de
     """
 
 
@@ -77,7 +75,7 @@ def parse_dimred_args():
     """
 
     parser = argparse.ArgumentParser(
-        description="Python utility script for dimensionality reduction written by LASSO GmbH."
+        description="Python utility script for dimensionality reduction written by OPEN LASSO."
     )
 
     parser.add_argument(
