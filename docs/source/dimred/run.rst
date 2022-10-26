@@ -178,7 +178,7 @@ Quick Start
                       [--outlier-args [OUTLIER_ARGS [OUTLIER_ARGS ...]]]
                       [simulation_runs [simulation_runs ...]]
 
-        Python utility script for dimensionality reduction written by LASSO GmbH.
+        Python utility script for dimensionality reduction.
 
         positional arguments:
           simulation_runs       Simulation runs or patterns used to search for
@@ -265,11 +265,8 @@ Tutorial
     ::
 
 
-        ==== LASSO - AI ====
+        ==== OPEN - LASSO ====
 
-        visit us: www.lasso.de/en
-        mail: lasso@lasso.de
-    
         ┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
         ┃ n-processes      ┃ 5                                                        ┃
         │ reference-run    │ user/tuorial/plots/plot0.fz                              │
@@ -342,11 +339,8 @@ Tutorial
     ::
 
 
-        ==== LASSO - AI ====
+        ==== OPEN - LASSO ====
 
-        visit us: www.lasso.de/en
-        mail: lasso@lasso.de
-    
         ┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
         ┃ n-processes      ┃ 5                                                        ┃
         │ reference-run    │ user/tutorial/plots/plot0.fz                             │

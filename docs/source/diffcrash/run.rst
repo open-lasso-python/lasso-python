@@ -8,11 +8,10 @@ What is Diffcrash?
     Diffcrash_ is a software from Sidact_ which is designed
     for robustness analysis of simulation runs. It can be used as 
     a set of independent executables or as a postprocessor plugin.
-    Diffcrash_ itself must be licensed. Please therefore contact either
-    Sidact_ directly or LASSO_. This commmand line utility makes 
+    Diffcrash_ itself must be licensed. Please therefore contact
+    Sidact_ directly. This commmand line utility makes
     running a Diffcrash analysis much easier.
 
-    .. _LASSO: https://www.lasso.de/en
     .. _Sidact: http://www.sidact.com/
     .. _Diffcrash: http://www.sidact.com/diffcrash.html
 
@@ -25,10 +24,9 @@ How to use the utility?
 
         python -m lasso.diffcrash.run --help
 
-
        ==== D I F F C R A S H ====
 
-       a LASSO GmbH utility script
+        an open lasso utility script
 
         usage: run.py [-h] --reference-run REFERENCE_RUN
                     [--exclude-runs [EXCLUDE_RUNS [EXCLUDE_RUNS ...]]] --crash-code
@@ -40,7 +38,7 @@ How to use the utility?
                     [--n-processes [N_PROCESSES]]
                     [simulation_runs [simulation_runs ...]]
 
-        Python utility script for Diffcrash written by LASSO GmbH.
+        Python utility script for Diffcrash.
 
         positional arguments:
         simulation_runs       Simulation runs or patterns used to search for
@@ -99,7 +97,7 @@ Example
             
             ==== D I F F C R A S H ==== 
 
-            a LASSO GmbH utility script
+        an open lasso utility script
             
         [/] diffcrash-home  : /sw/Linux/diffcrash/V6.1.24
         [/] project-dir     : test-example-project
