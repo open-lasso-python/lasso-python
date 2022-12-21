@@ -7,6 +7,10 @@ import rich
 from ..io.binary_buffer import BinaryBuffer
 from ..logging import get_logger
 
+# We have a lot of docstrings here but even if not so, we want to contain the
+# code here.
+# pylint: disable=too-many-lines
+
 LOGGER = get_logger(__file__)
 
 
