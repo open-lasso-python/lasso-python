@@ -97,151 +97,353 @@ def d3plot_filetype_from_integer(value: int) -> D3plotFiletype:
 
 # pylint: disable = too-many-instance-attributes
 class D3plotHeader:
-    """Class for reading only header information of a d3plot"""
+    """Class for reading only header information of a d3plot
+
+    Attributes
+    ----------
+    filepath: str
+        Filepath of the processed file.
+    itype: np.dtype
+        Integer type of d3plot.
+    ftype: np.dtype
+        Floating point type of d3plot.
+    wordsize: int
+        size of words in bytes (4 = single precision, 8 = double precision).
+    raw_header: Dict[str, Any]
+        Raw header data as dict.
+    external_numbers_dtype: np.dtype
+        Integer type of user ids.
+    n_header_bytes: int
+        Number of bytes of header (at least 256 or more).
+    title: str
+        Main title.
+    title2: str
+        Optional, secondary title.
+    runtime: int
+        Runtime of the d3plot as timestamp.
+    filetype: D3plotFiletype
+        Filetype such as d3plot or d3part.
+    source_version: int
+        Source version of LS-Dyna.
+    release_version: str
+        Release version of LS-Dyna.
+    version: float
+        Version of LS-Dyna.
+    extra_long_header: bool
+        If header was longer than default.
+    n_dimensions: int
+        Number of dimensions, usually three.
+    n_global_vars: int
+        How many global vars for each state.
+    n_adapted_element_pairs: int
+        How many adapted element pairs.
+    has_node_deletion_data: bool
+        If node deletion data is present.
+    has_element_deletion_data: bool
+        If element deletion data is present.
+    has_numbering_section: bool
+        If a user numbering section is present.
+    has_material_type_section: bool
+        If material type section was written.
+    n_numbering_section_words: int
+        Amount of words for numbering section.
+    has_invariant_numbering: bool
+        If invariant numbering is used whatever that means.
+    quadratic_elems_has_full_connectivity: bool
+        If quadric elements have full connectivity.
+    quadratic_elems_has_data_at_integration_points: bool
+        If quadric elements data is at integration points.
+    n_post_branches: int
+        Unused and unknown.
+    n_types: Tuple[int, ...]
+        Behind geometry these are integers indicating additional data such as
+        part names.
+    n_parts: int
+        Obviously number of parts.
+    n_nodes: int
+        Number of nodes.
+    has_node_temperatures: bool
+        If node temperature is present.
+    has_node_temperature_layers: bool
+        If node temperatures are layered.
+    has_node_heat_flux: bool
+        If node heat flux is present.
+    has_node_mass_scaling: bool
+        Mass scaling is written.
+    has_node_displacement: bool
+        Node displacement is written.
+    has_node_velocity: bool
+        Node velocity is written.
+    has_node_acceleration: bool
+        Node acceleration is written.
+    has_node_temperature_gradient: bool
+        Node temperature gradient is written.
+    has_node_residual_forces: bool
+        Node residual forces are written.
+    has_node_residual_moments: bool
+        Node residual moments are written.
+    has_node_max_contact_penetration_absolute: bool
+        Node contact penetration info exist.
+    has_node_max_contact_penetration_relative: bool
+        Node relative contact penetration info was written.
+    has_node_contact_energy_density: int
+        Node energy density was written.
+    n_shell_tshell_layers: int
+        Number of layers for shells and thick shells.
+    n_shell_tshell_history_vars: int
+        Number of history vars for shells and thick shells.
+    has_shell_tshell_stress: bool
+        If shells and thick shells have stresses.
+    has_shell_tshell_pstrain: bool
+        If shells and thick shells have eff. plastic strain.
+    has_element_strain: bool
+        If all elements have strain.
+    has_solid_shell_plastic_strain_tensor: bool
+        If solids have plastic strain tensor.
+    has_solid_shell_thermal_strain_tensor: bool
+        If solids have thermal strain tensor.
+    n_solids: int
+        Number of solids.
+    n_solid_vars: int
+        Number of solid variables per element and state.
+    n_solid_materials: int
+        Number of solid materials/parts.
+    n_solid_history_vars: int
+        Number of solid history variables.
+    n_solid_thermal_vars: int
+        Number of solid thermal variables.
+    n_solids_20_node_hexas: int
+        Number of 20-node solid hexas.
+    n_solids_27_node_hexas: int
+        Number of 27-node solid hexas.
+    n_solids_21_node_pentas: int
+        Number of 21-node solid pentas.
+    n_solids_15_node_tetras: int
+        Number of 15-node solid tetras.
+    n_solids_20_node_tetras: int
+        Number of 20-node solid tetras.
+    n_solids_40_node_pentas: int
+        Number of 40-node solid pentas.
+    n_solids_64_node_hexas: int
+        Number of 64-node solid hexas.
+    has_solid_2_extra_nodes: bool
+        If two extra nodes were written for solids.
+    has_solid_stress: bool
+        If solid stress is present.
+    has_solid_pstrain: bool
+        If solid eff. plastic strain is present.
+    has_quadratic_solids: bool
+        If quadratic solids were used.
+    has_cubic_solids: bool
+        If cubic solids were used.
+    has_solid_internal_energy_density: bool
+        If solids have internal energy density.
+    n_solid_layers: int
+        Number of solid layers.
+    n_shells: int
+        Number of shells.
+    n_shell_vars: int
+        Number of shell vars per element and state.
+    n_shell_materials: int
+        Number of shell materials/parts.
+    n_shells_8_nodes: int
+        Number of 8-node shells.
+    has_shell_four_inplane_gauss_points: bool
+        If shells have four inplace gaussian integration points.
+    has_shell_forces: bool
+        If shell forces are present.
+    has_shell_extra_variables: bool
+        If extra shell variables such as forces are present.
+    has_shell_internal_energy_density: bool
+        If shell internal energy density is present.
+    n_thick_shells: int
+        Number of thick shell elements.
+    n_thick_shell_vars: int
+        Number of thick shell element vars.
+    n_thick_shell_materials: int
+        Number of thick shell materials/parts.
+    has_thick_shell_energy_density: bool
+        If thick shells have energy density.
+    thick_shell_energy_density_position: int
+        Nnused.
+    n_beams: int
+        Number of beam elements.
+    n_beam_vars: int
+        Number of state variables per beam element.
+    n_beam_materials: int
+        Number of beam materials.
+    n_beam_history_vars: int
+        Number of beam history variables.
+    n_airbags: int
+        Number of airbags.
+    has_airbag_n_chambers: bool
+        If airbags have number of chambers var.
+    has_rigid_road_surface: bool
+        If rigid road surface was written.
+    has_rigid_body_data: bool
+        If rigid body section was written.
+    has_reduced_rigid_body_data: bool
+        If the reduced set of rigid body data was written.
+    n_rigid_wall_vars: int
+        Number of rigid wall vars.
+    n_sph_nodes: int
+        Number of sph nodes.
+    n_sph_materials: int
+        Number of sph materials.
+    n_ale_materials: int
+        Number of ale materials.
+    n_ale_fluid_groups: int
+        Number of ale fluid groups.
+    has_cfd_data: bool
+        If CFD-Data was written.
+    has_multi_solver_data: bool
+        If multi-solver data was written.
+    cfd_extra_data: int
+        If cfd data contains extra section.
+    legacy_code_type: int
+        Originally a code indicator but unused nowadays.
+    unused_numst: int
+        Unused and not explained in docs.
+    """
 
     # meta
-    filepath: str = ""  #: filepath of file
+    filepath: str = ""
 
     # file info
-    itype: np.dtype = np.int32  #: integer type of d3plot
-    ftype: np.dtype = np.float32  #: floating point type of d3plot
-    wordsize: int = 4  #: size of words in bytes (4 = single precision, 8 = double precision)
-    raw_header: Dict[str, Any] = {}  #: raw header data as dict
-    external_numbers_dtype = np.int32  #: integer type of user ids
-    n_header_bytes: int = 0  #: number of bytes of header (at least 256 or more)
+    itype: np.dtype = np.int32
+    ftype: np.dtype = np.float32
+    wordsize: int = 4
+    raw_header: Dict[str, Any] = {}
+    external_numbers_dtype = np.int32
+    n_header_bytes: int = 0
 
     # header
-    title: str = ""  #: main title
-    title2: str = ""  #: optional, secondary title
-    runtime: int = 0  #: runtime of the d3plot as timestamp
-    filetype: D3plotFiletype = D3plotFiletype.D3PLOT  #: filetype such as d3plot or d3part
+    title: str = ""
+    title2: str = ""
+    runtime: int = 0
+    filetype: D3plotFiletype = D3plotFiletype.D3PLOT
 
-    source_version: int = 0  #: source version of LS-Dyna
-    release_version: str = ""  #: release version of LS-Dyna
-    version: float = 0.0  #: version of LS-Dyna
-    extra_long_header: bool = False  #: if header was longer than default
+    source_version: int = 0
+    release_version: str = ""
+    version: float = 0.0
+    extra_long_header: bool = False
 
     # general info
-    n_dimensions: int = 3  #: number of dimensions, usually three
-    n_global_vars: int = 0  #: how many global vars for each state
-    n_adapted_element_pairs: int = 0  #: how many adapted element pairs
-    has_node_deletion_data: bool = False  #: if node deletion data is present
-    has_element_deletion_data: bool = False  #: if element deletion data is present
-    has_numbering_section: bool = False  #: if a user numbering section is present
-    has_material_type_section: bool = False  #: if material type section was written
-    n_numbering_section_words: int = 0  #: amount of words for numbering section
-    has_invariant_numbering: bool = False  #: if invariant numbering is used whatever that means
-    quadratic_elems_has_full_connectivity: bool = False  #: if quadric elements have full connected
-    #: if quadric elements data is at integration points
+    n_dimensions: int = 3
+    n_global_vars: int = 0
+    n_adapted_element_pairs: int = 0
+    has_node_deletion_data: bool = False
+    has_element_deletion_data: bool = False
+    has_numbering_section: bool = False
+    has_material_type_section: bool = False
+    n_numbering_section_words: int = 0
+    has_invariant_numbering: bool = False
+    quadratic_elems_has_full_connectivity: bool = False
     quadratic_elems_has_data_at_integration_points: bool = False
-    n_post_branches: int = 0  #: unused and unknown
-    #: behind geometry these are integers indicating additional data such as part names
+    n_post_branches: int = 0
     n_types: Tuple[int, ...] = tuple()
 
     # parts
-    n_parts: int = 0  #: obviously number of parts
+    n_parts: int = 0
 
     # nodes
-    n_nodes: int = 0  #: number of nodes
-    has_node_temperatures: bool = False  #: if node temperature is present
-    has_node_temperature_layers: bool = False  #: if node temperatures are layered
-    has_node_heat_flux: bool = False  #: if node heat flux is present
-    has_node_mass_scaling: bool = False  #: mass scaling is written
-    has_node_displacement: bool = False  #: node displacement is written
-    has_node_velocity: bool = False  #: node velocity is written
-    has_node_acceleration: bool = False  #: node acceleration is written
-    has_node_temperature_gradient: bool = False  #: node temperature gradient is written
-    has_node_residual_forces: bool = False  #: node residual forces are written
-    has_node_residual_moments: bool = False  #: node residual moments are written
-    has_node_max_contact_penetration_absolute: bool = False  #: node contact penetration info exist
-    #: node relative contact penetration info was written
+    n_nodes: int = 0
+    has_node_temperatures: bool = False
+    has_node_temperature_layers: bool = False
+    has_node_heat_flux: bool = False
+    has_node_mass_scaling: bool = False
+    has_node_displacement: bool = False
+    has_node_velocity: bool = False
+    has_node_acceleration: bool = False
+    has_node_temperature_gradient: bool = False
+    has_node_residual_forces: bool = False
+    has_node_residual_moments: bool = False
+    has_node_max_contact_penetration_absolute: bool = False
     has_node_max_contact_penetration_relative: bool = False
-    has_node_contact_energy_density: int = False  #: node energy density was written
+    has_node_contact_energy_density: int = False
 
     # elements
-    n_shell_tshell_layers: int = 3  #: number of layers for shells and thick shells
-    n_shell_tshell_history_vars: int = 0  #: number of history vars for shells and thick shells
-    has_shell_tshell_stress: bool = False  #: if shells and thick shells have stresses
-    has_shell_tshell_pstrain: bool = False  #: if shells and thick shells have eff. plastic strain
-    has_element_strain: bool = False  #: if all elements have strain
-    has_solid_shell_plastic_strain_tensor: bool = False  #: if solids have plastic strain tensor
-    has_solid_shell_thermal_strain_tensor: bool = False  #: if solids have thermal strain tensor
+    n_shell_tshell_layers: int = 3
+    n_shell_tshell_history_vars: int = 0
+    has_shell_tshell_stress: bool = False
+    has_shell_tshell_pstrain: bool = False
+    has_element_strain: bool = False
+    has_solid_shell_plastic_strain_tensor: bool = False
+    has_solid_shell_thermal_strain_tensor: bool = False
 
     # solids
-    n_solids: int = 0  #: number of solids
-    n_solid_vars: int = 0  #: number of solid variables per element and state
-    n_solid_materials: int = 0  #: number of solid materials/parts
-    n_solid_history_vars: int = 0  #: number of solid history variables
-    n_solid_thermal_vars: int = 0  #: number of solid thermal variables
-    n_solids_20_node_hexas: int = 0  #: number of 20-node solid hexas
-    n_solids_27_node_hexas: int = 0  #: number of 27-node solid hexas
-    n_solids_21_node_pentas: int = 0  #: number of 21-node solid pentas
-    n_solids_15_node_tetras: int = 0  #: number of 15-node solid tetras
-    n_solids_20_node_tetras: int = 0  #: number of 20-node solid tetras
-    n_solids_40_node_pentas: int = 0  #: number of 40-node solid pentas
-    n_solids_64_node_hexas: int = 0  #: number of 64-node solid hexas
-    has_solid_2_extra_nodes: bool = False  #: if two extra nodes were written for solids
-    has_solid_stress: bool = False  #: if solid stress is present
-    has_solid_pstrain: bool = False  #: if solid eff. plastic strain is present
-    has_quadratic_solids: bool = False  #: if quadratic solids were used
-    has_cubic_solids: bool = False  #: if cubic solids were used
-    has_solid_internal_energy_density: bool = False  #: if solids have internal energy density
+    n_solids: int = 0
+    n_solid_vars: int = 0
+    n_solid_materials: int = 0
+    n_solid_history_vars: int = 0
+    n_solid_thermal_vars: int = 0
+    n_solids_20_node_hexas: int = 0
+    n_solids_27_node_hexas: int = 0
+    n_solids_21_node_pentas: int = 0
+    n_solids_15_node_tetras: int = 0
+    n_solids_20_node_tetras: int = 0
+    n_solids_40_node_pentas: int = 0
+    n_solids_64_node_hexas: int = 0
+    has_solid_2_extra_nodes: bool = False
+    has_solid_stress: bool = False
+    has_solid_pstrain: bool = False
+    has_quadratic_solids: bool = False
+    has_cubic_solids: bool = False
+    has_solid_internal_energy_density: bool = False
 
     # shells
-    n_shells: int = 0  #: number of shells
-    n_shell_vars: int = 0  #: number of shell vars per element and state
-    n_shell_materials: int = 0  #: number of shell materials/parts
-    n_shells_8_nodes: int = 0  #: number of 8-node shells
-    #: if shells have four inplace gaussian integration points
+    n_shells: int = 0
+    n_shell_vars: int = 0
+    n_shell_materials: int = 0
+    n_shells_8_nodes: int = 0
     has_shell_four_inplane_gauss_points: bool = False
-    has_shell_forces: bool = False  #: if shell forces are present
-    has_shell_extra_variables: bool = False  #: if extra shell variables such as forces are present
+    has_shell_forces: bool = False
+    has_shell_extra_variables: bool = False
+    has_shell_internal_energy_density: bool = False
     # has_shell_internal_energy: bool = False
-    has_shell_internal_energy_density: bool = False  #: if shell internal energy density is present
 
     # thick shells
-    n_thick_shells: int = 0  #: number of thick shell elements
-    n_thick_shell_vars: int = 0  #: number of thick shell element vars
-    n_thick_shell_materials: int = 0  #: number of thick shell materials/parts
-    has_thick_shell_energy_density: bool = False  #: if thick shells have energy density
-    thick_shell_energy_density_position: int = 0  #: unused
+    n_thick_shells: int = 0
+    n_thick_shell_vars: int = 0
+    n_thick_shell_materials: int = 0
+    has_thick_shell_energy_density: bool = False
+    thick_shell_energy_density_position: int = 0
 
     # beams
-    n_beams: int = 0  #: number of beam elements
-    n_beam_vars: int = 0  #: number of state variables per beam element
-    n_beam_materials: int = 0  #: number of beam materials
-    n_beam_history_vars: int = 0  #: number of beam history variables
+    n_beams: int = 0
+    n_beam_vars: int = 0
+    n_beam_materials: int = 0
+    n_beam_history_vars: int = 0
 
     # airbags
-    n_airbags: int = 0  #: number of airbags
-    has_airbag_n_chambers: bool = False  #: if airbags have number of chambers var
+    n_airbags: int = 0
+    has_airbag_n_chambers: bool = False
 
     # rigid roads
-    has_rigid_road_surface: bool = False  #: if rigid road surface was written
+    has_rigid_road_surface: bool = False
 
     # rigid bodies
-    has_rigid_body_data: bool = False  #: if rigid body section was written
-    has_reduced_rigid_body_data: bool = False  #: if the reduced set of rigid body data was written
+    has_rigid_body_data: bool = False
+    has_reduced_rigid_body_data: bool = False
 
     # sph
-    n_sph_nodes: int = 0  #: number of sph nodes
-    n_sph_materials: int = 0  #: number of sph materials
+    n_sph_nodes: int = 0
+    n_sph_materials: int = 0
 
     # ale
-    n_ale_materials: int = 0  #: number of ale materials
-    n_ale_fluid_groups: int = 0  #: number of ale fluid groups
+    n_ale_materials: int = 0
+    n_ale_fluid_groups: int = 0
 
     # cfd
-    has_cfd_data: bool = False  #: if CFD-Data was written
-    has_multi_solver_data: bool = False  #: if multi-solver data was written
+    has_cfd_data: bool = False
 
     # multi-solver
-    has_multi_solver_data: bool = False  #:
-    cfd_extra_data: int = 0  #: if cfd data contains extra section
+    has_multi_solver_data: bool = False
+    cfd_extra_data: int = 0
 
     # historical artifacts
-    legacy_code_type: int = 6  #: originally a code indicator but unused nowadays
-    unused_numst: int = 0  #: unused and not explained in docs
+    legacy_code_type: int = 6
+    unused_numst: int = 0
 
     def __init__(self, filepath: Union[str, BinaryBuffer, None] = None):
         """Create a D3plotHeader instance

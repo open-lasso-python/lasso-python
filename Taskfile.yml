@@ -38,3 +38,9 @@ tasks:
     desc: Runs tests on the code
     cmds:
       - poetry run pytest
+
+  docs-serve:
+    desc: Serve the documentation locally
+    dir: docs
+    cmds:
+      - poetry run mkdocs serve
