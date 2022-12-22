@@ -15,6 +15,15 @@ nav:
       - FilterType: dyna/FilterType.md
       - Binout: dyna/Binout.md
       - Performance Info: dyna/performance_info.md
+  - Femzip:
+      - Overview: femzip/index.md
+      - FemzipAPI: femzip/FemzipAPI.md
+      - FemzipAPIStatus: femzip/FemzipAPIStatus.md
+      - FemzipBufferInfo: femzip/FemzipBufferInfo.md
+      - FemzipError: femzip/FemzipError.md
+      - FemzipFileMetadata: femzip/FemzipFileMetadata.md
+      - VariableInfo: femzip/VariableInfo
+      - FemzipVariableCategory: femzip/FemzipVariableCategory.md
   - Diffcrash:
       - Overview: diffcrash/diffcrash.md
       - CLI: diffcrash/run.md

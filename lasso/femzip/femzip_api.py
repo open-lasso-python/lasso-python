@@ -36,7 +36,15 @@ class FemzipException(Exception):
 
 
 class FemzipError(Structure):
-    """Struct representing femzip errors in c-code"""
+    """Struct representing femzip errors in c-code
+
+    Attributes
+    ----------
+    ier: c_int32
+        Error code
+    msg: c_char_p
+        Error message
+    """
 
     _fields_ = [
         ("ier", c_int32),
@@ -45,7 +53,19 @@ class FemzipError(Structure):
 
 
 class VariableInfo(Structure):
-    """Struct for details about a single femzip variable"""
+    """Struct for details about a single femzip variable
+
+    Attributes
+    ----------
+    var_index: c_int32
+        Index of the variable
+    name: c_char_p
+        Name from femzip
+    var_type: c_int32
+        Variable type. See FemzipVariableCategory for translation.
+    var_size: c_int32
+        Array size of the field variable.
+    """
 
     _fields_ = [
         ("var_index", c_int32),
@@ -56,7 +76,37 @@ class VariableInfo(Structure):
 
 
 class FemzipFileMetadata(Structure):
-    """This struct contains metadata about femzip files."""
+    """This struct contains metadata about femzip files.
+
+    Attributes
+    ----------
+    version_zip: c_float
+    activity_flag: c_int32
+    number_of_variables: c_int32
+    number_of_nodes: c_int32
+    number_of_solid_elements: c_int32
+    number_of_thick_shell_elements: c_int32
+    number_of_1D_elements: c_int32
+    number_of_tool_elements: c_int32
+    number_of_shell_elements: c_int32
+    number_of_solid_element_neighbors: c_int32
+    number_of_rbe_element_neighbors: c_int32
+    number_of_bar_elements: c_int32
+    number_of_beam_elements: c_int32
+    number_of_plotel_elements: c_int32
+    number_of_spring_elements: c_int32
+    number_of_damper_elements: c_int32
+    number_of_joint_elements: c_int32
+    number_of_joint_element_neighbors: c_int32
+    number_of_bar_element_neighbors: c_int32
+    number_of_beamcross_elements: c_int32
+    number_of_spotweld_elements: c_int32
+    number_of_rbe_elements: c_int32
+    number_of_hexa20_elements: c_int32
+    number_of_rigid_shell_elements: c_int32
+    number_of_timesteps: c_int32
+    variable_infos: POINTER(VariableInfo)
+    """
 
     _fields_ = [
         ("version_zip", c_float),
@@ -89,7 +139,28 @@ class FemzipFileMetadata(Structure):
 
 
 class FemzipBufferInfo(Structure):
-    """This struct describes necessary buffer sizes for reading the file"""
+    """This struct describes necessary buffer sizes for reading the file
+
+    Attributes
+    ----------
+    n_timesteps: c_uint64
+        Number of timesteps
+    timesteps: POINTER(c_float)
+        Time for each timestep
+    size_geometry: c_uint64
+        Size of the geometry buffer
+    size_state: c_uint64
+        Size of the state buffer
+    size_displacement: c_uint64
+        Size for displacement array
+    size_activity: c_uint64
+        Size for activity array (deletion stuff)
+    size_post: c_uint64
+        Size of the post region of which I currently don't know anymore what it
+        was.
+    size_titles: c_uint64
+        Size of the titles region behind the geomtry.
+    """
 
     _fields_ = [
         ("n_timesteps", c_uint64),
@@ -106,7 +177,21 @@ class FemzipBufferInfo(Structure):
 class FemzipAPIStatus(Structure):
     """This struct summarizes the state of the femzip API library. The library
     has a shared, global state which is stored in static variables. The state
-    of the gloval vars is tracked by this struct."""
+    of the gloval vars is tracked by this struct.
+
+    Attributes
+    ----------
+    is_file_open: c_int32
+        Whether a femzip file is opened and being processed.
+    is_geometry_read: c_int32
+        Whether the geometry was already read.
+    is_states_open: c_int32
+        Whether processing of the states was started.
+    i_timestep_state: c_int32
+        Counter of timestep processing.
+    i_timestep_activity: c_int32
+        Counter of activity data for timesteps.
+    """
 
     _fields_ = [
         ("is_file_open", c_int32),

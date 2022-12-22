@@ -14,7 +14,18 @@ class Binout:
     Parameters
     ----------
     filepath: str
-        path to the binout
+        Path to the binout to read. May contain * (glob) for selecting multiple
+        files.
+
+    Attributes
+    ----------
+        filelist: List[str]
+            List of files which are opened.
+        lsda: Lsda
+            The underlying LS-Dyna binout reader instance from code from LSTC.
+        lsda_root: Symbol
+            Root lsda symbol which is like a root directory to traverse the
+            content of the binout file.
 
     Notes
     -----
