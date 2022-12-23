@@ -39,8 +39,12 @@ tasks:
     cmds:
       - poetry run pytest
 
-  docs-serve:
-    desc: Serve the documentation locally
-    dir: docs
+  docs:serve:
+    desc: Serve the documentation locally for development and testing
     cmds:
       - poetry run mkdocs serve
+
+  docs:build:
+    desc: Build the documentation
+    cmds:
+      - poetry run mkdocs build

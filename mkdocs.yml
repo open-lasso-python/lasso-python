@@ -52,6 +52,9 @@ plugins:
             show_source: false
   - coverage
 
+extra_css:
+  - css/video.css
+
 markdown_extensions:
   - admonition
   # Code highlighting

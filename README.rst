@@ -50,7 +50,7 @@ Join our open-source community on:
 .. _Docspage:  https://open-lasso-python.github.io/lasso-python/build/html/index.html
 .. _Discord:  https://discord.gg/jYUgTsEWtN
 
-.. |LASSO| image:: ./docs/images/lasso-logo.png
+.. |LASSO| image:: ./docs/lasso-logo.png
     :target: https://open-lasso-python.github.io/lasso-python/build/html/index.html
 .. |DOCS| image:: ./docs/images/icon-home.png 
     :target: https://open-lasso-python.github.io/lasso-python/build/html/index.html
