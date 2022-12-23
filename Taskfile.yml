@@ -37,4 +37,40 @@ tasks:
   test:
     desc: Runs tests on the code
     cmds:
-      - poetry run pytest
+      - >
+        poetry run pytest
+        --cov=lasso
+        --cov-report=html
+
+  docs:serve:
+    desc: Serve the documentation locally for development and testing
+    deps:
+      - test
+      - docs:changelog
+    cmds:
+      - poetry run mkdocs serve
+
+  docs:build:
+    desc: Build the documentation
+    deps:
+      - test
+      - docs:changelog
+    cmds:
+      - poetry run mkdocs build
+
+  docs:deploy:
+    desc: Deploys the docs to GitHub (be careful!)
+    deps:
+      - test
+      - docs:changelog
+    cmds:
+      - poetry run mkdocs gh-deploy
+
+  docs:changelog:
+    desc: Generates the changelog
+    cmds:
+      - >
+        poetry run git-changelog .
+        --output CHANGELOG.md
+        --style angular
+        --template angular

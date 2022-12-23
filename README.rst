@@ -19,6 +19,7 @@ The library is now maintained by an open-source community.
 Module Overview:
  - `lasso.dyna`_
  - `lasso.dimred`_
+ - `lasso.femzip`_
  - `lasso.diffcrash`_
 
 For further infos please read the Documentation:
@@ -26,10 +27,11 @@ For further infos please read the Documentation:
     |DOCS| `Documentation`_
 
 .. _LASSO GmbH: https://www.lasso.de/en
-.. _Documentation: https://open-lasso-python.github.io/lasso-python/build/html/index.html
-.. _lasso.dyna: https://open-lasso-python.github.io/lasso-python/build/html/dyna/dyna.html
-.. _lasso.diffcrash: https://open-lasso-python.github.io/lasso-python/build/html/diffcrash/diffcrash.html
-.. _lasso.dimred: https://lasso-gmbh.github.io/lasso-python/build/html/dimred/dimred.html
+.. _Documentation: https://open-lasso-python.github.io/lasso-python/
+.. _lasso.dyna: https://open-lasso-python.github.io/lasso-python/dyna/
+.. _lasso.dimred: https://open-lasso-python.github.io/lasso-python/diffcrash/diffcrash/
+.. _lasso.femzip: https://open-lasso-python.github.io/lasso-python/femzip/
+.. _lasso.diffcrash: https://open-lasso-python.github.io/lasso-python/diffcrash/diffcrash/
 
 
 Installation
@@ -47,14 +49,13 @@ Join our open-source community on:
 
     |DISCORD| `Discord`_
  
-.. _Docspage:  https://open-lasso-python.github.io/lasso-python/build/html/index.html
 .. _Discord:  https://discord.gg/jYUgTsEWtN
 
-.. |LASSO| image:: ./docs/images/lasso-logo.png
+.. |LASSO| image:: ./docs/lasso-logo.png
     :target: https://open-lasso-python.github.io/lasso-python/build/html/index.html
-.. |DOCS| image:: ./docs/images/icon-home.png 
+.. |DOCS| image:: ./docs/icon-home.png 
     :target: https://open-lasso-python.github.io/lasso-python/build/html/index.html
-.. |DISCORD| image:: ./docs/images/icon-discord.png
+.. |DISCORD| image:: ./docs/icon-discord.png
     :target: https://discord.gg/GeHu79b
 
 

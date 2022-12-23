@@ -41,6 +41,14 @@ pylint = "^2.15.3"
 flake9 = "^3.8.3"
 black = "^22.8.0"
 
+[tool.poetry.group.dev.dependencies]
+mkdocs = "^1.4.2"
+mkdocs-material = "^8.5.11"
+mkdocstrings = {extras = ["python"], version = "^0.19.1"}
+pytest-cov = "^4.0.0"
+mkdocs-coverage = "^0.2.6"
+git-changelog = "^0.6.0"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

@@ -71,3 +71,6 @@ venv.bak/
 #*.so
 *.dylib
 *.dll
+
+# Ignore generated changelog
+CHANGELOG.md

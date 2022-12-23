@@ -25,7 +25,45 @@ def get_last_int_of_line(line: str) -> Tuple[str, Union[None, int]]:
 
 
 class FemzipVariableCategory(enum.Enum):
-    """Enum for femzip variable categories"""
+    """Enum for femzip variable categories
+
+    Attributes
+    ----------
+    GEOMETRY: int
+        -5
+    PART: int
+        -2
+    GLOBAL: int
+        -1
+    NODE: int
+        0
+    SOLID: int
+        1
+    THICK_SHELL: int
+        2
+    BEAM: int
+        3
+    TOOLS: int
+        4
+    SHELL: int
+        5
+    SPH: int
+        6
+    FPM: int
+        7
+    CFD: int
+        8
+    CPM_FLOAT_VAR: int
+        9
+    CPM_AIRBAG: int
+        10
+    CPM_INT_VAR: int
+        11
+    RADIOSS_STATE_DATA: int
+        12
+    HEXA20: int
+        13
+    """
 
     GEOMETRY = -5
     # REST_OF_HEADER_AND_GEOMETRY_UNCOMPRESSED = -3

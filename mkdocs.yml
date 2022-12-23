@@ -1,0 +1,67 @@
+site_name: LASSO-Python
+site_url: https://open-lasso-python.github.io/lasso-python/
+repo_url: https://github.com/open-lasso-python/lasso-python
+
+theme:
+  name: material
+
+nav:
+  - Home: index.md
+  - Dyna:
+      - Overview: dyna/index.md
+      - D3plot:
+          - D3plot: dyna/D3plot.md
+          - ArrayType: dyna/ArrayType.md
+          - FilterType: dyna/FilterType.md
+          - D3plotHeader: dyna/D3plotHeader.md
+      - Binout: dyna/Binout.md
+      - Performance Info: dyna/performance_info.md
+  - Femzip:
+      - Overview: femzip/index.md
+      - FemzipAPI: femzip/FemzipAPI.md
+      - FemzipAPIStatus: femzip/FemzipAPIStatus.md
+      - FemzipBufferInfo: femzip/FemzipBufferInfo.md
+      - FemzipError: femzip/FemzipError.md
+      - FemzipFileMetadata: femzip/FemzipFileMetadata.md
+      - VariableInfo: femzip/VariableInfo.md
+      - FemzipVariableCategory: femzip/FemzipVariableCategory.md
+  - Dimensionality Reduction:
+      - Overview: dimred/index.md
+      - Command Line Tool: dimred/command_line_interface.md
+      - Code:
+          - DimredRun: dimred/DimredRun.md
+          - SVD:
+              - Description: dimred/svd.md
+              - subsampling_methods: dimred/subsampling_methods.md
+              - pod_functions: dimred/pod_functions.md
+              - clustering_betas: dimred/clustering_betas.md
+              - plot_beta_clusters: dimred/plot_beta_clusters.md
+              - KeywordTypes: dimred/KeywordTypes.md
+  - Diffcrash:
+      - Overview: diffcrash/diffcrash.md
+      - Command Line Tool: diffcrash/run.md
+      - Code: diffcrash/diffcrash_run.md
+  - Code Coverage Report: coverage.md
+  - Changelog: changelog.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            show_source: false
+  - coverage
+
+extra_css:
+  - css/video.css
+
+markdown_extensions:
+  - admonition
+  # Code highlighting
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.snippets
