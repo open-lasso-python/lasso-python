@@ -200,6 +200,18 @@ python-dateutil = ">=2.8.1"
 dev = ["flake8", "markdown", "twine", "wheel"]
 
 [[package]]
+name = "git-changelog"
+version = "0.6.0"
+description = "Automatic Changelog generator using Jinja2 templates."
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+Jinja2 = ">=2.10,<4"
+semver = ">=2.13,<3.0"
+
+[[package]]
 name = "griffe"
 version = "0.25.1"
 description = "Signatures for entire Python programs. Extract the structure, the frame, the skeleton of your project, to generate API documentation or find breaking changes in your API."
@@ -804,6 +816,14 @@ python-versions = ">=3.8,<3.12"
 numpy = ">=1.18.5,<1.25.0"
 
 [[package]]
+name = "semver"
+version = "2.13.0"
+description = "Python helper for Semantic Versioning (http://semver.org/)"
+category = "dev"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+
+[[package]]
 name = "setuptools"
 version = "65.6.3"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
@@ -943,7 +963,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8, <3.12"
-content-hash = "6758bdbeaaeb0a9b6f7b77c3b5ab0095ac5ce2f8383aa843c5fba2bc8bf97dae"
+content-hash = "0820b4859da66797a910b25b3a48a8e02255759c0479d4db518110b2fc2f8e63"
 
 [metadata.files]
 astroid = [
@@ -1142,6 +1162,10 @@ fonttools = [
 ghp-import = [
     {file = "ghp-import-2.1.0.tar.gz", hash = "sha256:9c535c4c61193c2df8871222567d7fd7e5014d835f97dc7b7439069e2413d343"},
     {file = "ghp_import-2.1.0-py3-none-any.whl", hash = "sha256:8337dd7b50877f163d4c0289bc1f1c7f127550241988d568c1db512c4324a619"},
+]
+git-changelog = [
+    {file = "git-changelog-0.6.0.tar.gz", hash = "sha256:9402fc26e9e4b0b191c73ff167a5ffdced6391609e4d4e3b02f0870954e345ea"},
+    {file = "git_changelog-0.6.0-py3-none-any.whl", hash = "sha256:20bc222844f3e4c3afcdcf52bb8dab2fcbd86c7d15ef52178abf5c6ec6667d2c"},
 ]
 griffe = [
     {file = "griffe-0.25.1-py3-none-any.whl", hash = "sha256:a2d6cef8129579438c3e71401a5fb035ffea5afa8f8e27d946dbb9e136b90b1a"},
@@ -1746,6 +1770,10 @@ scipy = [
     {file = "scipy-1.9.1-cp39-cp39-win32.whl", hash = "sha256:09412eb7fb60b8f00b328037fd814d25d261066ebc43a1e339cdce4f7502877e"},
     {file = "scipy-1.9.1-cp39-cp39-win_amd64.whl", hash = "sha256:90c805f30c46cf60f1e76e947574f02954d25e3bb1e97aa8a07bc53aa31cf7d1"},
     {file = "scipy-1.9.1.tar.gz", hash = "sha256:26d28c468900e6d5fdb37d2812ab46db0ccd22c63baa095057871faa3a498bc9"},
+]
+semver = [
+    {file = "semver-2.13.0-py2.py3-none-any.whl", hash = "sha256:ced8b23dceb22134307c1b8abfa523da14198793d9787ac838e70e29e77458d4"},
+    {file = "semver-2.13.0.tar.gz", hash = "sha256:fa0fe2722ee1c3f57eac478820c3a5ae2f624af8264cbdf9000c980ff7f75e3f"},
 ]
 setuptools = [
     {file = "setuptools-65.6.3-py3-none-any.whl", hash = "sha256:57f6f22bde4e042978bcd50176fdb381d7c21a9efa4041202288d3737a0c6a54"},
