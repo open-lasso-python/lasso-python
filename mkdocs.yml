@@ -41,6 +41,7 @@ nav:
       - Overview: diffcrash/diffcrash.md
       - Command Line Tool: diffcrash/run.md
       - Code: diffcrash/diffcrash_run.md
+  - Contribution Guide: contributing.md
   - Code Coverage Report: coverage.md
   - Changelog: changelog.md
 
