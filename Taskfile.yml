@@ -48,3 +48,8 @@ tasks:
     desc: Build the documentation
     cmds:
       - poetry run mkdocs build
+
+  docs:deploy:
+    desc: Deploys the docs to GitHub (be careful!)
+    cmds:
+      - poetry run mkdocs gh-deploy
