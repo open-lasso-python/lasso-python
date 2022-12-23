@@ -60,6 +60,9 @@ tasks:
 
   docs:deploy:
     desc: Deploys the docs to GitHub (be careful!)
+    deps:
+      - test
+      - docs:changelog
     cmds:
       - poetry run mkdocs gh-deploy
 
