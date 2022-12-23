@@ -11,6 +11,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://open-lasso-python.github.io/lasso-python/contributing/</loc>
+         <lastmod>2022-12-23</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://open-lasso-python.github.io/lasso-python/diffcrash/diffcrash/</loc>
          <lastmod>2022-12-23</lastmod>
          <changefreq>daily</changefreq>
