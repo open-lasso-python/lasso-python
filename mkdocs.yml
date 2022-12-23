@@ -23,7 +23,7 @@ nav:
       - FemzipBufferInfo: femzip/FemzipBufferInfo.md
       - FemzipError: femzip/FemzipError.md
       - FemzipFileMetadata: femzip/FemzipFileMetadata.md
-      - VariableInfo: femzip/VariableInfo
+      - VariableInfo: femzip/VariableInfo.md
       - FemzipVariableCategory: femzip/FemzipVariableCategory.md
   - Dimensionality Reduction:
       - Overview: dimred/index.md
