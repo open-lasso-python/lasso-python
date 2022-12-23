@@ -176,7 +176,7 @@ def plot_shell_mesh(
 
     # wrap it up with all needed js libraries
 
-    script_string_js = '<script type="text/javascript">{js_name}</script>'
+    script_string_js = '<script type="text/javascript">{0}</script>'
     jszip_js_format = _read_file(
         os.path.join(os.path.dirname(__file__), "resources", "jszip.min.js")
     )
