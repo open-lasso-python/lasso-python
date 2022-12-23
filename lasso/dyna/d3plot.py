@@ -1462,9 +1462,9 @@ class D3plot:
         filepath: str
             path to a d3plot file
         use_femzip: bool
-           Not used anymore.
+            Not used anymore.
         n_files_to_load_at_once: int
-           *DEPRECATED* not used anymore, use `buffered_reading`
+            *DEPRECATED* not used anymore, use `buffered_reading`
         state_array_filter: Union[List[str], None]
             names of arrays which will be the only ones loaded from state data
         state_filter: Union[None, Set[int]]
