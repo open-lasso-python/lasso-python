@@ -9,10 +9,11 @@ nav:
   - Home: index.md
   - Dyna:
       - Overview: dyna/index.md
-      - D3plot: dyna/D3plot.md
-      - D3plotHeader: dyna/D3plotHeader.md
-      - ArrayType: dyna/ArrayType.md
-      - FilterType: dyna/FilterType.md
+      - D3plot:
+          - D3plot: dyna/D3plot.md
+          - ArrayType: dyna/ArrayType.md
+          - FilterType: dyna/FilterType.md
+          - D3plotHeader: dyna/D3plotHeader.md
       - Binout: dyna/Binout.md
       - Performance Info: dyna/performance_info.md
   - Femzip:
@@ -24,9 +25,21 @@ nav:
       - FemzipFileMetadata: femzip/FemzipFileMetadata.md
       - VariableInfo: femzip/VariableInfo
       - FemzipVariableCategory: femzip/FemzipVariableCategory.md
+  - Dimensionality Reduction:
+      - Overview: dimred/index.md
+      - Command Line Tool: dimred/command_line_interface.md
+      - Code:
+          - DimredRun: dimred/DimredRun.md
+          - SVD:
+              - Description: dimred/svd.md
+              - subsampling_methods: dimred/subsampling_methods.md
+              - pod_functions: dimred/pod_functions.md
+              - clustering_betas: dimred/clustering_betas.md
+              - plot_beta_clusters: dimred/plot_beta_clusters.md
+              - KeywordTypes: dimred/KeywordTypes.md
   - Diffcrash:
       - Overview: diffcrash/diffcrash.md
-      - CLI: diffcrash/run.md
+      - Command Line Tool: diffcrash/run.md
       - Code: diffcrash/diffcrash_run.md
 
 plugins:

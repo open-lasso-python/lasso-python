@@ -19,34 +19,20 @@ This plot has many detail levels.
 
 Check out the following facts:
 
-> -   
->
->     There are two groups.
->
->     :   -   The small group stands for samples buckling bottom .
->         -   The big group represents buckling in the top area.
->
-> -   
->
->     There are two outliers
->
->     :   -   Sample 143 is folding in the top and bottom
->         -   Sample 99 is folding in the middle.
->
-> -   
->
->     Similarity Axis
->
->     :   -   The similarity axis X describes buckling top or bottom
->         -   The similarity axis Y describes how much a sample gets
->             compressed
->         -   The samples are basically in a plane. The out of plane
->             axis represents buckling not strictly top but also
->             slightly in the lower end (zoom in).
+- There are two groups.
+    - The small group stands for samples buckling bottom .
+    - The big group represents buckling in the top area.
+- There are two outliers
+    - Sample 143 is folding in the top and bottom.
+    - Sample 99 is folding in the middle.
+- Similarity Axis
+    - The similarity axis X describes buckling top or bottom
+    - The similarity axis Y describes how much a sample gets compressed
+    - The samples are basically in a plane.
+        The out of plane axis represents buckling not strictly top but also
+        slightly in the lower end (zoom in).
 
-```{=html}
 <style>
-
     .navClosed {
         background-color: white;
         transition: 0.5s;
@@ -71,9 +57,13 @@ Check out the following facts:
     img.hoverIMG {
         /* height: 550px; */
     }
-
-
 </style>
+
+<!-- Plotly CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.33.1/plotly.min.js"
+  integrity="sha512-V0j9LhrK9IMNdFYZqh+IqU4cjo7wdxyHNyH+L0td4HryBuZ7Oq6QxP2/CWr6TituX31+gv5PnolvERuTbz8UNA=="
+  crossorigin="anonymous"></script>
+
 <div style="position: relative;">
 <div id="content" class="navClosed">
     <div id="plotDiv"></div>
@@ -82,6 +72,7 @@ Check out the following facts:
     </div>
 </div>
 </div>
+
 <script>
 path = "https://www.lasso.de/fileadmin/ressources/ml-embedding-images/"
 imgType = "png"
@@ -162,79 +153,72 @@ document.getElementById("hoverIMG").src = path+`/${runID}.`+imgType
 window.onresize = () => {
 resizeContents()
 }
-
 </script>
-```
+
 ## Quick Start
 
-> You can call the command-line tool as follows:
->
-> ``` bash
-> python -m lasso.dimred.run --help
-> ```
->
-> ``` bash
-> usage: run.py [-h] --reference-run REFERENCE_RUN
->               [--exclude-runs [EXCLUDE_RUNS [EXCLUDE_RUNS ...]]]
->               [--start-stage [START_STAGE]] [--end-stage [END_STAGE]]
->               --project-dir PROJECT_DIR [--embedding-images EMBEDDING_IMAGES]
->               [--logfile-filepath [LOGFILE_FILEPATH]]
->               [--n-processes [N_PROCESSES]]
->               [--part-ids [PART_IDS [PART_IDS ...]]]
->               [--timestep TIMESTEP]
->               [--cluster-args [CLUSTER_ARGS [CLUSTER_ARGS ...]]]
->               [--outlier-args [OUTLIER_ARGS [OUTLIER_ARGS ...]]]
->               [simulation_runs [simulation_runs ...]]
->
-> Python utility script for dimensionality reduction.
->
-> positional arguments:
->   simulation_runs       Simulation runs or patterns used to search for
->                         simulation runs.
->
-> optional arguments:
->   -h, --help            show this help message and exit
->   --reference-run REFERENCE_RUN
->                         Set the reference run instead of using the first entry in simulation runs.
->   --exclude-runs [EXCLUDE_RUNS [EXCLUDE_RUNS ...]]
->                         Runs to exclude from the analysis.
->   --start-stage [START_STAGE]
->                         At which specific stage to start the analysis
->                         (REFERENCE_RUN, IMPORT_RUNS, REDUCTION, CLUSTERING,
->                         EXPORT_PLOT).
->   --end-stage [END_STAGE]
->                         At which specific stage to stop the analysis
->                         (REFERENCE_RUN, IMPORT_RUNS, REDUCTION, CLUSTERING,
->                         EXPORT_PLOT).
->   --project-dir PROJECT_DIR
->                         Project dir for temporary files. Must be specified to
->                         allow restart at specific steps
->   --embedding-images EMBEDDING_IMAGES
->                         Path to folder containing images of runs. Sample names
->                         must be numbers
->   --logfile-filepath [LOGFILE_FILEPATH]
->                         Path for the logfile. A file will be created
->                         automatically if a project dir is specified.
->   --n-processes [N_PROCESSES]
->                         Number of processes to use (default: n_cpu-1).
->   --part-ids [PART_IDS [PART_IDS ...]]
->                         Part ids to process. By default all are taken.
->   --timestep TIMESTEP Sets timestep to analyse. Uses last timestep if not set.
->   --cluster-args [CLUSTER_ARGS [CLUSTER_ARGS ...]]
->                         Arguments for clustering algorithms. If not set,
->                         clustering will be skipped.
->   --outlier-args [OUTLIER_ARGS [OUTLIER_ARGS ...]]
->                         Arguments for outlier detection befor clustering.
-> ```
->
-> Following arguments are required for the analysis:
->
-> -   [simulation-runs]{.title-ref}
-> -   [\--project-dir]{.title-ref}
->
-> [simulation-runs]{.title-ref} can be either tagged individually or by
-> using placeholders for entire directories (e.g. \'\*.fz\') and
-> subdirectories (e.g. \'/\*\*/\*.fz\').
+You can call the command-line tool as follows:
+
+```console
+$ python -m lasso.dimred.run --help
+
+usage: run.py [-h] --reference-run REFERENCE_RUN
+              [--exclude-runs [EXCLUDE_RUNS [EXCLUDE_RUNS ...]]]
+              [--start-stage [START_STAGE]] [--end-stage [END_STAGE]]
+              --project-dir PROJECT_DIR [--embedding-images EMBEDDING_IMAGES]
+              [--logfile-filepath [LOGFILE_FILEPATH]]
+              [--n-processes [N_PROCESSES]]
+              [--part-ids [PART_IDS [PART_IDS ...]]]
+              [--timestep TIMESTEP]
+              [--cluster-args [CLUSTER_ARGS [CLUSTER_ARGS ...]]]
+              [--outlier-args [OUTLIER_ARGS [OUTLIER_ARGS ...]]]
+              [simulation_runs [simulation_runs ...]]
+Python utility script for dimensionality reduction.
+positional arguments:
+  simulation_runs       Simulation runs or patterns used to search for
+                        simulation runs.
+optional arguments:
+  -h, --help            show this help message and exit
+  --reference-run REFERENCE_RUN
+                        Set the reference run instead of using the first entry in simulation runs.
+  --exclude-runs [EXCLUDE_RUNS [EXCLUDE_RUNS ...]]
+                        Runs to exclude from the analysis.
+  --start-stage [START_STAGE]
+                        At which specific stage to start the analysis
+                        (REFERENCE_RUN, IMPORT_RUNS, REDUCTION, CLUSTERING,
+                        EXPORT_PLOT).
+  --end-stage [END_STAGE]
+                        At which specific stage to stop the analysis
+                        (REFERENCE_RUN, IMPORT_RUNS, REDUCTION, CLUSTERING,
+                        EXPORT_PLOT).
+  --project-dir PROJECT_DIR
+                        Project dir for temporary files. Must be specified to
+                        allow restart at specific steps
+  --embedding-images EMBEDDING_IMAGES
+                        Path to folder containing images of runs. Sample names
+                        must be numbers
+  --logfile-filepath [LOGFILE_FILEPATH]
+                        Path for the logfile. A file will be created
+                        automatically if a project dir is specified.
+  --n-processes [N_PROCESSES]
+                        Number of processes to use (default: n_cpu-1).
+  --part-ids [PART_IDS [PART_IDS ...]]
+                        Part ids to process. By default all are taken.
+  --timestep TIMESTEP Sets timestep to analyse. Uses last timestep if not set.
+  --cluster-args [CLUSTER_ARGS [CLUSTER_ARGS ...]]
+                        Arguments for clustering algorithms. If not set,
+                        clustering will be skipped.
+  --outlier-args [OUTLIER_ARGS [OUTLIER_ARGS ...]]
+                        Arguments for outlier detection befor clustering.
+```
+
+Following arguments are required for the analysis:
+
+- `simulation-runs`
+- `--project-dir]`
+
+`simulation-runs` can be either tagged individually or by using placeholders
+for entire directories (e.g. '\*.fz') and subdirectories (e.g. './\*\*/\*.fz').
 
 !!! warning
     Every run clears respective steps of the generated .hdf5 file of previous
@@ -242,254 +226,240 @@ resizeContents()
 
 ## Tutorial
 
-> In this tutorial, we will introduce the application of the
-> command-line utility and explain some of the arguments. Make sure to
-> have some similar D3plots (20 should already be fine).
->
-> At first we will only apply the required arguments
->
-> ``` bash
-> python -m lasso/dimred/run \
->     user/tutorial/plots/plot*.fz \
->     --project-dir user/tutorial/projectfolder
-> ```
->
-> The first required argument is the filepath to the folder containing
-> the simulation runs. In our case, all plots are contained in the same
-> folder. If each plot is saved in its own folder, the command would
-> look like this:
->
-> ``` bash
-> python -m lasso/dimred/run \
->     user/tutorial/plots*/plot.fz \
->     --project-dir user/tutorial/projectfolder
-> ```
->
-> The `--project-dir` argument specifies the folder where the project
-> data is saved. This will be a `project_buffer.hdf5` file, a `logfile`,
-> and the `3d_beta_plot[hh:mm:ss].html` ouput. Note that for each run,
-> corresponding entries in the `project_buffer.hdf5` and the `logfile`
-> will be overwritten. How to access the results in the
-> `project_buffer.hdf5` file will be discussed later.
->
-> Your output should look similar to this:
->
-> :
->
->     ==== OPEN - LASSO ====
->
->     ┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
->     ┃ n-processes      ┃ 5                                                        ┃
->     │ reference-run    │ user/tuorial/plots/plot0.fz                              │
->     │ project-dir      │ user/tutorial/projectfolder                              │
->     │ # simul.-files   │ 35                                                       │
->     │ # excluded files │ 0                                                        │
->     └──────────────────┴──────────────────────────────────────────────────────────┘
->
->        ---- Running Routines ----   
->     [14:25:56] Reference Subsample
->      ...
->     [14:26:04] Loadtime Reference subample: 8.020
->     [14:26:04] Total time for Reference subample: 8.080
->     [14:26:04] Reference subsample completed
->     [14:26:04] Subsampling
->     Subsampling plots  ... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 35 of 35;
->     [14:29:03] Average Time per Subsampling Process: 24.76
->     [14:29:03] Average Loadtime per sample: 24.55
->     [14:29:03] Subsampling completed
->     [14:29:03] Dimension Reduction
->      ...
->     [14:29:04] Dimension Reduction completed
->     [14:29:04] No arguments provided for clustering, clustering aborted
->     [14:29:04] Creating .html viz
->     [14:29:05] Finished creating viz
->
-> The output provides information about the different stages of the
-> dimred tool, as well as some additional information. This allows you
-> to keep track of the tools progress. The following 5 stages are run
-> through:
->
-> -   
->
->     REFERENCE_RUN
->
->     :   The reference run is subsampled and saved. The reference run
->         is either the first entry of the simulation runs, or can be
->         manually set with `--reference-run`
->
-> -   
->
->     IMPORT_RUNS
->
->     :   The provided simulation runs are loaded, and subsampled using
->         the reference run This process applies a nearest neighbor
->         algorithm to provide that all samples are as similar as
->         possible
->
-> -   
->
->     REDUCTION
->
->     :   The dimensionality reduction is performed
->
-> -   
->
->     CLUSTERING
->
->     :   If clustering and outlier arguments are provided, the results
->         will be further categorized
->
-> -   
->
->     EXPORT_PLOT
->
->     :   The results are exported and saved as `.html` file
->
+In this tutorial, we will introduce the application of the command-line utility
+and explain some of the arguments.
+Make sure to have some similar D3plots (20 should already be fine).
+
+At first we will only apply the required arguments:
+
+```console
+$ python -m lasso/dimred/run \
+$     user/tutorial/plots/plot*.fz \
+$     --project-dir user/tutorial/projectfolder
+```
+
+The first required argument is the filepath to the folder containing
+the simulation runs. In our case, all plots are contained in the same
+folder. If each plot is saved in its own folder, the command would
+look like this:
+
+```console
+$ python -m lasso/dimred/run \
+$     user/tutorial/plots*/plot.fz \
+$     --project-dir user/tutorial/projectfolder
+```
+
+The `--project-dir` argument specifies the folder where the project
+data is saved.
+This will be a `project_buffer.hdf5` file, a `logfile`, and the
+`3d_beta_plot[hh:mm:ss].html` output.
+Note that for each run, corresponding entries in the `project_buffer.hdf5` and
+the `logfile` will be overwritten.
+How to access the results in the `project_buffer.hdf5` file will be discussed
+later.
+
+Your output should look similar to this:
+
+```console
+==== OPEN - LASSO ====
+
+┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ n-processes      ┃ 5                                                        ┃
+│ reference-run    │ user/tuorial/plots/plot0.fz                              │
+│ project-dir      │ user/tutorial/projectfolder                              │
+│ # simul.-files   │ 35                                                       │
+│ # excluded files │ 0                                                        │
+└──────────────────┴──────────────────────────────────────────────────────────┘
+
+   ---- Running Routines ----   
+[14:25:56] Reference Subsample
+ ...
+[14:26:04] Loadtime Reference subample: 8.020
+[14:26:04] Total time for Reference subample: 8.080
+[14:26:04] Reference subsample completed
+[14:26:04] Subsampling
+Subsampling plots  ... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 35 of 35;
+[14:29:03] Average Time per Subsampling Process: 24.76
+[14:29:03] Average Loadtime per sample: 24.55
+[14:29:03] Subsampling completed
+[14:29:03] Dimension Reduction
+ ...
+[14:29:04] Dimension Reduction completed
+[14:29:04] No arguments provided for clustering, clustering aborted
+[14:29:04] Creating .html viz
+[14:29:05] Finished creating viz
+```
+
+The output provides information about the different stages of the
+dimred tool, as well as some additional information. This allows you
+to keep track of the tools progress. The following 5 stages are run
+through:
+
+- REFERENCE_RUN:
+  The reference run is subsampled and saved.
+  The reference run is either the first entry of the simulation runs, or can be
+  manually set with `--reference-run`
+- IMPORT_RUNS:
+  The provided simulation runs are loaded, and subsampled using the reference
+  run.
+  This process applies a nearest neighbor algorithm to match nodes between
+  different meshes to compensate for different meshing.
+- REDUCTION:
+  The dimensionality reduction is performed.
+- CLUSTERING:
+  If clustering and outlier arguments are provided, the results will be further
+  categorized.
+- EXPORT_PLOT:
+  The results are exported and saved as `.html` file.
+
 !!! note
     Your computer may slow down while using the tool. If you want to use
     other programs while waiting on the tool to finish, reduce the amount
     of cores with `--n-processes`
 
-> **Start and End stage**
->
-> Next, we will take a look at the `--start-stage` and `--end-stage`
-> arguments. These allow to restart and end the command-line utility at
-> certain points in the process. This is usefull if you don\'t want to
-> repeat certain stages to save time, or want to end the process
-> prematurly, e.g. don\'t want to generate the `.html` output.
->
-> To set the desired start and end stage, use the the following keywords:
->
-> :   REFERENCE_RUN, IMPORT_RUNS, REDUCTION, CLUSTERING, EXPORT_PLOT
->
-> Example:
->
-> ``` bash
-> python -m lasso/dimred/run \
->     user/tutorial/plots \
->     --project-dir user/tutorial/projectfolder \
->     --start-stage REDUCTION \
->     --end-stage CLUSTERING
-> ```
->
-> Your output should look like this:
->
-> :
->
->     ==== OPEN - LASSO ====
->
->     ┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
->     ┃ n-processes      ┃ 5                                                        ┃
->     │ reference-run    │ user/tutorial/plots/plot0.fz                             │
->     │ project-dir      │ user/tutorial/projectfolder                              │
->     │ # simul.-files   │ 35                                                       │
->     │ # excluded files │ 0                                                        │
->     └──────────────────┴──────────────────────────────────────────────────────────┘
->
->        ---- Running Routines ----   
->     [14:45:28] Skipped import stage
->     [14:45:28] Dimension Reduction
->      ...
->     [14:45:29] Dimension Reduction completed
->     [14:45:29] No arguments provided for clustering, clustering aborted
->
-> This process is much quicker, as the samples have already been loaded
-> and subsampled. Note that this only works, if the stages before the
-> selected start stage (here: [REFERENCE_RUN]{.title-ref} and
-> [IMPORT_RUNS]{.title-ref} have already been processed before.
->
-> **Clustering and outlier detection**
->
-> The dimred tool has an integrated functionality to cluster your
-> results and detect outliers. Following cluster algorithms from the
-> scikit sklearn library have been implemented:
->
-> -   kmeans
-> -   SpectralClustering
-> -   DBScan
-> -   Optics
->
-> Additionally, you have access to the following outlier detection
-> algorithms from the same library:
->
-> -   IsolationForest
-> -   LocalOutlierFactor
-> -   OneClassSVM
->
-> These classes have additional optional arguments, specified in their
-> respective documentation. Here is an example on how to find two
-> clusters with kmeans and detect oultiers with LocalOutlierFactor:
->
-> ``` bash
-> python -m lasso/dimred/run \
->     user/tutorial/plots \
->     --project-dir user/tutorial/projectfolder \
->     --reference-run user/tuorial/referenceplot \
->     --start-stage REDUCTION \
->     --cluster-arg kmeans n_clusters int 2 \
->     --outlier-args LocalOutlierFactor
-> ```
->
+### Start and End stage
+
+Next, we will take a look at the `--start-stage` and `--end-stage` arguments.
+These allow to restart and end the command-line utility at certain points in the
+process.
+This is usefull if you don't want to repeat certain stages to save time, or want
+to end the process prematurly, e.g. don't want to generate the `.html` output.
+
+To set the desired start and end stage, use the the following keywords:
+
+- `REFERENCE_RUN`
+- `IMPORT_RUNS`
+- `REDUCTION`
+- `CLUSTERING`
+- `EXPORT_PLOT`
+
+Example:
+
+```console
+$ python -m lasso/dimred/run \
+$     user/tutorial/plots \
+$     --project-dir user/tutorial/projectfolder \
+$     --start-stage REDUCTION \
+$     --end-stage CLUSTERING
+
+==== OPEN - LASSO ====
+
+┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ n-processes      ┃ 5                                                        ┃
+│ reference-run    │ user/tutorial/plots/plot0.fz                             │
+│ project-dir      │ user/tutorial/projectfolder                              │
+│ # simul.-files   │ 35                                                       │
+│ # excluded files │ 0                                                        │
+└──────────────────┴──────────────────────────────────────────────────────────┘
+
+   ---- Running Routines ----   
+[14:45:28] Skipped import stage
+[14:45:28] Dimension Reduction
+ ...
+[14:45:29] Dimension Reduction completed
+[14:45:29] No arguments provided for clustering, clustering aborted
+```
+
+This process is much quicker, as the samples have already been loaded and
+subsampled.
+Note that this only works, if the stages before the selected start stage (here:
+`REFERENCE_RUN` and `IMPORT_RUNS` have already been processed before.
+
+### Clustering and outlier detection
+
+The dimred tool has an integrated functionality to cluster your results and
+detect outliers.
+Following cluster algorithms from the scikit sklearn library have been
+implemented:
+
+- kmeans
+- SpectralClustering
+- DBScan
+- Optics
+
+Additionally, you have access to the following outlier detection algorithms from
+the same library:
+
+- IsolationForest
+- LocalOutlierFactor
+- OneClassSVM
+
+These classes have additional optional arguments, specified in their respective
+documentation.
+Here is an example on how to find two clusters with kmeans and detect oultiers
+with LocalOutlierFactor:
+
+```console
+$ python -m lasso/dimred/run \
+$    user/tutorial/plots \
+$    --project-dir user/tutorial/projectfolder \
+$    --reference-run user/tuorial/referenceplot \
+$    --start-stage REDUCTION \
+$    --cluster-arg kmeans n_clusters int 2 \
+$    --outlier-args LocalOutlierFactor
+```
 
 !!! note>
-    The argument [n_clusters]{.title-ref} is followed by its
-    type and then its value! The type of a keyword can be referenced by
-    the appropriate sklearn documentation. Some types are not supported,
-    make sure that they are either *float*, *int* or *str*
+    The argument `n_clusters` is followed by its type and then its value!
+    The type of a keyword can be referenced by the appropriate sklearn
+    documentation.
+    Some types are not supported, make sure that they are either `float`, `int`
+    or `str`.
 
 We skip the import stage again and add the `--cluster-args` and `--outlier-args`
 arguments, followed by the desired algorithm and optional additional arguments
 and their values.
 
-> **Accessing the results**
->
-> All results, as well as the subsamples and reference subsample are
-> saved in the `project_buffer.hdf5` file. You can access these in your
-> own python scripts:
->
-> ``` python
-> import numpy as np
-> import h5py
->
-> h5py_path = "user/tutorial/project_buffer.hdf5"
-> h5file = h5py.File(h5py_path)
->
-> # access the reference subsamples:
-> ref_sample = h5file["subsample"][:]
->
-> # create a numpy array containing displacement of all subsamples
-> # this returns an array of shape (samples, timesteps, nodes, dims)
-> np.stack(h5file["subsampled_runs"][entry][:]
->           for entry in h5file["subsampled_runs"].keys()])
->
-> # create a numpy array containg the right reduced order basis for projection:
-> v_rob = h5file["v_rob"][:]
->
-> # the subsampled runs are projected into the right reduced order basis and called betas:
-> betas = np.stack([h5file["betas"][entry][:] for entry in h5file["betas"].keys()])
-> ```
->
-> These betas are used for the visulatization and if specified,
-> clustering / outlier detection. In the visulatization, only the first
-> 3 betas and only the last timestamp are accounted for.
->
-> If you have provided clustering and outlier detection arguments, you
-> can also access the different clusters:
->
-> ``` python
-> cluster_index = np.stack([
->     h5file["betas"][entry].attrs["cluster"] for entry in h5file["betas"].keys()
-> ])
->
-> beta_clusters = []
->
-> for cluster in range(h5file["betas"].attrs["nr_clusters"]):
->     beta_clusters.append(betas[np.where(cluster_index == cluster)[0]])
-> ```
->
-> The `beta_clusters` list contains lists of betas for each cluster. If
-> outlier arguments have been provided, the first list contains all
-> detected outliers.
+### Accessing the results
+
+All results, as well as the subsamples and reference subsample are
+saved in the `project_buffer.hdf5` file. You can access these in your
+own python scripts:
+
+```python
+import numpy as np
+import h5py
+
+h5py_path = "user/tutorial/project_buffer.hdf5"
+h5file = h5py.File(h5py_path)
+
+# access the reference subsamples:
+ref_sample = h5file["subsample"][:]
+
+# create a numpy array containing displacement of all subsamples
+# this returns an array of shape (samples, timesteps, nodes, dims)
+np.stack(h5file["subsampled_runs"][entry][:]
+         for entry in h5file["subsampled_runs"].keys()])
+
+# create a numpy array containg the right reduced order basis for projection:
+v_rob = h5file["v_rob"][:]
+
+# the subsampled runs are projected into the right reduced order basis and called betas:
+betas = np.stack([h5file["betas"][entry][:] for entry in h5file["betas"].keys()])
+```
+
+These betas are used for the visulatization and if specified, clustering or
+outlier detection.
+In the visulatization, only the first 3 coefficients (betas) and only the last
+timestamp are accounted for.
+
+If you have provided clustering and outlier detection arguments, you
+can also access the different clusters:
+
+``` python
+cluster_index = np.stack([
+    h5file["betas"][entry].attrs["cluster"] for entry in h5file["betas"].keys()
+])
+
+beta_clusters = []
+
+for cluster in range(h5file["betas"].attrs["nr_clusters"]):
+    beta_clusters.append(betas[np.where(cluster_index == cluster)[0]])
+```
+
+The `beta_clusters` list contains lists of betas for each cluster.
+If outlier arguments have been provided, the first list contains all detected
+outliers.
 
 ## FAQ
 

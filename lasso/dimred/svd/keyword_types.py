@@ -2,7 +2,19 @@ import typing
 
 
 class ClusterType:
-    """Specifies names of specific clustering algorithms"""
+    """Specifies names of specific clustering algorithms
+
+    Attributes
+    ----------
+    OPTICS: str
+        OPTICS
+    DBSCAN: str
+        DBSCAN
+    KMeans: str
+        KMeans
+    SpectralClustering: str
+        SpectralClustering
+    """
 
     OPTICS = "OPTICS"
     DBSCAN = "DBSCAN"
@@ -21,7 +33,17 @@ class ClusterType:
 
 
 class DetectorType:
-    """Specifies names of different outlier detector algorythms"""
+    """Specifies names of different outlier detector algorythms
+
+    Attributes
+    ----------
+    IsolationForest: str
+        IsolationForest
+    OneClassSVM: str
+        OneClassSVM
+    LocalOutlierFactor: str
+        LocalOutlierFactor
+    """
 
     IsolationForest = "IsolationForest"
     OneClassSVM = "OneClassSVM"

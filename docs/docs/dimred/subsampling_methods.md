@@ -1,7 +1,5 @@
 # Subsampling Methods
 
-Methods used to for subsampling process
+Methods used to perform subsampling of simulation runs.
 
-::: lasso.dimred.svd.subsampling_methods.create_reference_subsample
-
-::: lasso.dimred.svd.subsampling_methods.remap_random_subsample
+::: lasso.dimred.svd.subsampling_methods
