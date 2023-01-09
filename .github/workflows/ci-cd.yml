@@ -53,6 +53,12 @@ jobs:
       - name: Test code
         run: ./bin/task test
 
+      - name: Debug outputs
+        run: echo ${{ github.ref }}
+
+      - name: Debug outputs
+        run: echo ${{ startsWith(github.ref, 'refs/heads/release/') }}
+
   # JOB
   # This job publishes the package to test-pipy.
   test-publish:
