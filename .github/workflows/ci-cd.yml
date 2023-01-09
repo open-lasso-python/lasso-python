@@ -196,4 +196,8 @@ jobs:
         run: poetry run twine upload --skip-existing --verbose 'dist/*'
 
       - name: Upload new docs
-        run: ./bin/task docs:deploy
+        # We run a git pull first to ensure the runner has the latest pages
+        # branch. It did fail because of it in the past.
+        run: |
+          git pull origin gh-pages
+          ./bin/task docs:deploy
