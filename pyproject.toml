@@ -1,0 +1,88 @@
+[tool.poetry]
+name = "lasso-python"
+version = "2.0.0rc1"
+description = "An open-source CAE and Machine Learning library."
+authors = ["open-lasso-python <open.lasso.python@gmail.com>"]
+license = "BSD-3"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Topic :: Scientific/Engineering",
+    "Intended Audience :: Science/Research",
+    "Topic :: Utilities",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+packages = [
+    { include = "lasso" }
+]
+
+[tool.poetry.dependencies]
+# We need to support at least 3.8 because of pandas and limit to 3.11 because of
+# scipy.
+python = "^3.8, <3.12"
+h5py = "^3.7.0"
+scipy = "^1.9.1"
+sklearn = "^0.0"
+numpy = "^1.23.3"
+plotly = "^5.10.0"
+matplotlib = "^3.6.0"
+attrs = "^22.1.0"
+psutil = "^5.9.2"
+rich = "^12.5.1"
+pandas = "^1.5.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.3"
+pylint = "^2.15.3"
+flake9 = "^3.8.3"
+black = "^22.8.0"
+
+[tool.poetry.group.dev.dependencies]
+mkdocs = "^1.4.2"
+mkdocs-material = "^8.5.11"
+mkdocstrings = {extras = ["python"], version = "^0.19.1"}
+pytest-cov = "^4.0.0"
+mkdocs-coverage = "^0.2.6"
+git-changelog = "^0.6.0"
+twine = "^4.0.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = [
+    # Disable missing module docstring since we provide docs through the
+    # docstrings of classes and functions.
+    "missing-module-docstring",
+    # We have a lot of classes just holding information so we are not bothered
+    # by them having less than two public methods.
+    "too-few-public-methods",
+    # A lot can go wrong under the hood so we catch broadly in multiple places
+    # to report nice errors and skip failing parts if possible.
+    "broad-except",
+    # We have a lot of lines which are self-similar but which are okay that way.
+    "duplicate-code",
+]
+
+[tool.pylint.basic]
+# Test files and classes don't need linting
+ignore-pattern="^(_|test_|Test)"
+# Allow single or double char variable names
+good-names-rgxs="^[_a-z][_a-z0-9]?$"
+
+[tool.flake8]
+ignore = "E203"
+# Limits the allowed function complexity such as branching etc.
+# For more info see: https://en.wikipedia.org/wiki/Cyclomatic_complexity
+max-complexity = 10
+# We allow longer lines since 80 is quite short
+max-line-length = 100
+
+[tool.black]
+# We allow longer lines since 80 is quite short
+line-length=100

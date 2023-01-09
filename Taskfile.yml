@@ -1,0 +1,76 @@
+version: "3"
+
+tasks:
+  setup:
+    desc: Setup the development environment.
+    cmds:
+      - poetry install
+
+  lint:
+    desc: Lints the code and reports on issues.
+    cmds:
+      - poetry run black --check lasso
+      # E501:
+      #   We disable too long lines in ArrayType since the docstrings for arrays
+      #   must be behind the arrays for sphinx, thus lines cannot be shortened.
+      #   Anyhow if you find any way to change feel free to submit a PR.
+      # E203:
+      #   We ignore E203 since allowing whitespace around ':' makes slicing
+      #   more understandable when doing complex slicing.
+      # W503:
+      #   Allowing operators such as '+' after a new line instead of putting it
+      #   on the previous one, complex condition chains are more understandable.
+      - |
+        poetry run flake8 lasso \
+          --ignore="E203,W503" \
+          --per-file-ignores="lasso/dyna/ArrayType.py:E501" \
+          --show-source \
+          --statistics \
+          --count
+      - poetry run pylint lasso
+
+  build:
+    desc: Builds the python package
+    cmds:
+      - poetry build
+
+  test:
+    desc: Runs tests on the code
+    cmds:
+      - >
+        poetry run pytest
+        --cov=lasso
+        --cov-report=html
+
+  docs:serve:
+    desc: Serve the documentation locally for development and testing
+    deps:
+      - test
+      - docs:changelog
+    cmds:
+      - poetry run mkdocs serve
+
+  docs:build:
+    desc: Build the documentation
+    deps:
+      - test
+      - docs:changelog
+    cmds:
+      - poetry run mkdocs build
+
+  docs:deploy:
+    desc: Deploys the docs to GitHub (be careful!)
+    deps:
+      - test
+      - docs:changelog
+    cmds:
+      - poetry run mkdocs gh-deploy
+
+  docs:changelog:
+    desc: Generates the changelog
+    cmds:
+      - >
+        poetry run git-changelog .
+        --output CHANGELOG.md
+        --style angular
+        --template angular

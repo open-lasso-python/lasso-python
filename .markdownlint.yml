@@ -1,0 +1,5 @@
+# There are different style types for markdown code blocks and strangely
+# indentation is the default. We change it here to the more often used 'fenced'
+# style denoted by ```
+MD046:
+  style: fenced
