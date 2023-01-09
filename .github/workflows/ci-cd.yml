@@ -139,6 +139,12 @@ jobs:
             --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple \
             lasso-python=="${VERSION}"
+
+      # We run the D3plot import here as it is the most delicate piece of the
+      # package for importing C-libraries.
+      - name: Test if the installed package works
+        run: python -c 'from lasso.dyna import D3plot'
+
   # JOB
   # Finally publish the code to pypi
   publish:
