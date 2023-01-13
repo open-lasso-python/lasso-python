@@ -1179,13 +1179,7 @@ class FemzipAPI:
         -------
         arrays: dict
             dictionary with d3plot arrays
-
-        Notes
-        -----
-            Uses extended femzip library and requires a license
-            for 'FEMUNZIPLIB_DYNA'. Please contact sidact if
-            required.
-        """
+            
 
         # pylint: disable = too-many-arguments
         # pylint: disable = too-many-locals

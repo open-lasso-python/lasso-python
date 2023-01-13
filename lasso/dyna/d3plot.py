@@ -6201,11 +6201,7 @@ class D3plot:
             ...                                                         [0, 1, 0]]])
             >>> d3plot.write_d3plot("yay.d3plot")
 
-        Notes
-        -----
-            This function is not available in the public version please contact
-            LASSO directly in case of further interest.
-        """
+
 
         # if there is a single buffer, write all in
         if not isinstance(filepath, str):
