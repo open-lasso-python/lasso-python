@@ -1179,7 +1179,7 @@ class FemzipAPI:
         -------
         arrays: dict
             dictionary with d3plot arrays
-            
+        """
 
         # pylint: disable = too-many-arguments
         # pylint: disable = too-many-locals
