@@ -1,6 +1,6 @@
 h5py >= 2.8
 scipy
-sklearn
+scikit-learn
 numpy
 plotly
 matplotlib
