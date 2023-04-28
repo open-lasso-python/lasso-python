@@ -676,7 +676,7 @@ class D3plotWriterSettings:
         else:
             # See https://github.com/open-lasso-python/lasso-python/issues/39
             if (
-                ArrayType.element_shell_thickness in self.d3plot.arrays 
+                ArrayType.element_shell_thickness in self.d3plot.arrays
                 or ArrayType.element_shell_internal_energy in self.d3plot.arrays
             ):
                 new_header["ioshl3"] = 999
