@@ -32,7 +32,7 @@ def _create_sphere_mesh(diameter: np.ndarray) -> typing.Tuple[np.ndarray, np.nda
         beta bin boundaries
     """
 
-    assert diameter.dtype == np.float
+    assert diameter.dtype == float
 
     # partition latitude
     n_alpha = 145
@@ -142,8 +142,8 @@ def sphere_hashing(
     # same length as the number of points
     assert len(bin_numbers[0] == len(field))
     # check data types
-    assert bin_numbers.dtype == np.int
-    assert bin_counts.dtype == np.float
+    assert bin_numbers.dtype == int
+    assert bin_counts.dtype == float
 
     n_rows = bin_counts.shape[0]
     n_cols = bin_counts.shape[1]
