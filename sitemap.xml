@@ -2,157 +2,157 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/changelog/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/contributing/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/diffcrash/diffcrash/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/diffcrash/diffcrash_run/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/diffcrash/run/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dimred/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dimred/DimredRun/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dimred/KeywordTypes/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dimred/clustering_betas/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dimred/command_line_interface/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dimred/plot_beta_clusters/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dimred/pod_functions/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dimred/subsampling_methods/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dimred/svd/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dyna/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dyna/ArrayType/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dyna/Binout/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dyna/D3plot/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dyna/D3plotHeader/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dyna/FilterType/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/dyna/performance_info/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/femzip/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/femzip/FemzipAPI/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/femzip/FemzipAPIStatus/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/femzip/FemzipBufferInfo/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/femzip/FemzipError/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/femzip/FemzipFileMetadata/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/femzip/FemzipVariableCategory/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/femzip/VariableInfo/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://open-lasso-python.github.io/lasso-python/coverage/</loc>
-         <lastmod>2023-01-12</lastmod>
+         <lastmod>2023-04-28</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>

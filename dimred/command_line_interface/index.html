@@ -1268,7 +1268,7 @@ resizeContents()
 
 <h2 id="quick-start">Quick Start</h2>
 <p>You can call the command-line tool as follows:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">$ </span>python -m lasso.dimred.run --help
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>lasso.dimred.run<span class="w"> </span>--help
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="go">usage: run.py [-h] --reference-run REFERENCE_RUN</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="go">              [--exclude-runs [EXCLUDE_RUNS [EXCLUDE_RUNS ...]]]</span>
@@ -1336,17 +1336,17 @@ runs, as well as the logfile.</p>
 and explain some of the arguments.
 Make sure to have some similar D3plots (20 should already be fine).</p>
 <p>At first we will only apply the required arguments:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="gp">$ </span>python -m lasso/dimred/run <span class="se">\</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="gp">$     </span>user/tutorial/plots/plot*.fz <span class="se">\</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="gp">$     </span>--project-dir user/tutorial/projectfolder
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>lasso/dimred/run<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="gp">$     </span>user/tutorial/plots/plot*.fz<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="gp">$     </span>--project-dir<span class="w"> </span>user/tutorial/projectfolder
 </code></pre></div>
 <p>The first required argument is the filepath to the folder containing
 the simulation runs. In our case, all plots are contained in the same
 folder. If each plot is saved in its own folder, the command would
 look like this:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="gp">$ </span>python -m lasso/dimred/run <span class="se">\</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="gp">$     </span>user/tutorial/plots*/plot.fz <span class="se">\</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="gp">$     </span>--project-dir user/tutorial/projectfolder
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>lasso/dimred/run<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="gp">$     </span>user/tutorial/plots*/plot.fz<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="gp">$     </span>--project-dir<span class="w"> </span>user/tutorial/projectfolder
 </code></pre></div>
 <p>The <code>--project-dir</code> argument specifies the folder where the project
 data is saved.
@@ -1428,11 +1428,11 @@ to end the process prematurly, e.g. don't want to generate the <code>.html</code
 <li><code>EXPORT_PLOT</code></li>
 </ul>
 <p>Example:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="gp">$ </span>python -m lasso/dimred/run <span class="se">\</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="gp">$     </span>user/tutorial/plots <span class="se">\</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="gp">$     </span>--project-dir user/tutorial/projectfolder <span class="se">\</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="gp">$     </span>--start-stage REDUCTION <span class="se">\</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="gp">$     </span>--end-stage CLUSTERING
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>lasso/dimred/run<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="gp">$     </span>user/tutorial/plots<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="gp">$     </span>--project-dir<span class="w"> </span>user/tutorial/projectfolder<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="gp">$     </span>--start-stage<span class="w"> </span>REDUCTION<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="gp">$     </span>--end-stage<span class="w"> </span>CLUSTERING
 <a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
 <a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="go">==== OPEN - LASSO ====</span>
 <a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
@@ -1477,13 +1477,13 @@ the same library:</p>
 documentation.
 Here is an example on how to find two clusters with kmeans and detect oultiers
 with LocalOutlierFactor:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="gp">$ </span>python -m lasso/dimred/run <span class="se">\</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="gp">$    </span>user/tutorial/plots <span class="se">\</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="gp">$    </span>--project-dir user/tutorial/projectfolder <span class="se">\</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="gp">$    </span>--reference-run user/tuorial/referenceplot <span class="se">\</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="gp">$    </span>--start-stage REDUCTION <span class="se">\</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="gp">$    </span>--cluster-arg kmeans n_clusters int <span class="m">2</span> <span class="se">\</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="gp">$    </span>--outlier-args LocalOutlierFactor
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>lasso/dimred/run<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="gp">$    </span>user/tutorial/plots<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="gp">$    </span>--project-dir<span class="w"> </span>user/tutorial/projectfolder<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="gp">$    </span>--reference-run<span class="w"> </span>user/tuorial/referenceplot<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="gp">$    </span>--start-stage<span class="w"> </span>REDUCTION<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="gp">$    </span>--cluster-arg<span class="w"> </span>kmeans<span class="w"> </span>n_clusters<span class="w"> </span>int<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="gp">$    </span>--outlier-args<span class="w"> </span>LocalOutlierFactor
 </code></pre></div>
 <p>!!! note&gt;
     The argument <code>n_clusters</code> is followed by its type and then its value!
