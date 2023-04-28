@@ -82,7 +82,7 @@ def parse_diffcrash_args():
     print(get_application_header())
 
     parser = argparse.ArgumentParser(
-        description="Python utility script for Diffcrash written by LASSO GmbH."
+        description="Python utility script for Diffcrash written by OPEN-LASSO."
     )
 
     parser.add_argument(
@@ -1225,7 +1225,7 @@ class DiffcrashRun:
             From the official diffcrash docs ... seriously.
         """
 
-        # Just to make it clear, this is not code from LASSO
+        # Just to make it clear, this is not code from OPEN-LASSO
         # ...
 
         # pylint: disable = too-many-locals

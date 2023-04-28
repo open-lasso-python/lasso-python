@@ -674,8 +674,14 @@ class D3plotWriterSettings:
         ):
             new_header["ioshl3"] = 1000
         else:
-            # new_header["ioshl3"] = 999
-            new_header["ioshl3"] = 0
+            # See https://github.com/open-lasso-python/lasso-python/issues/39
+            if (
+                ArrayType.element_shell_thickness in self.d3plot.arrays
+                or ArrayType.element_shell_internal_energy in self.d3plot.arrays
+            ):
+                new_header["ioshl3"] = 999
+            else:
+                new_header["ioshl3"] = 0
 
         if n_shells == 0:
             new_header["ioshl3"] = (
@@ -6163,7 +6169,7 @@ class D3plot:
     def write_d3plot(
         self, filepath: Union[str, BinaryIO], block_size_bytes: int = 2048, single_file: bool = True
     ):
-        """Write a d3plot file again **(pro version only)**
+        """Write a d3plot file again
 
         Parameters
         ----------
@@ -6200,11 +6206,6 @@ class D3plot:
             ...                                                         [1, 0, 0],
             ...                                                         [0, 1, 0]]])
             >>> d3plot.write_d3plot("yay.d3plot")
-
-        Notes
-        -----
-            This function is not available in the public version please contact
-            LASSO directly in case of further interest.
         """
 
         # if there is a single buffer, write all in
