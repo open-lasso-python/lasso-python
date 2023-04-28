@@ -6163,7 +6163,7 @@ class D3plot:
     def write_d3plot(
         self, filepath: Union[str, BinaryIO], block_size_bytes: int = 2048, single_file: bool = True
     ):
-        """Write a d3plot file again **(pro version only)**
+        """Write a d3plot file again
 
         Parameters
         ----------
