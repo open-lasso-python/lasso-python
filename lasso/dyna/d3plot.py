@@ -7376,7 +7376,7 @@ class D3plot:
             max_len = 18 * title_wordsize
             fmt_name = "{0:" + str(max_len) + "}"
             for pid, title in zip(part_titles_ids, part_titles):
-                title = title.decode("UTF-8")
+                title = title.decode(self._str_codec)
                 n_bytes_written += fp.write(settings.pack(pid))
 
                 formatted_title = fmt_name.format(title[:max_len])
