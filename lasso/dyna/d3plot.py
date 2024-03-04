@@ -6839,11 +6839,11 @@ class D3plot:
             # some lsdyna material pointer - Used by LS-Prepost in labelling materials
 
             # Unsorted material ID pointer
-            nsrmu  = nsrt  + settings.header["nelth"]
+            nsrmu = nsrt + settings.header["nelth"]
             # Sorted material ID pointer
-            nsrma  = nsrmu + settings.header["nmmat"]
+            nsrma = nsrmu + settings.header["nmmat"]
             # Mapping array between sorted and unsorted
-            nsrmp  = nsrma + settings.header["nmmat"]
+            nsrmp = nsrma + settings.header["nmmat"]
 
             n_bytes_written += fp.write(settings.pack(nsrma))
             n_bytes_written += fp.write(settings.pack(nsrmu))
