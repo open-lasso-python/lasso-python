@@ -6620,7 +6620,7 @@ class D3plot:
         # only the first byte to the ascii char code
         fmt_string = "{0:" + str(settings.wordsize) + "}"
         for name, _ in nlist_names_typecodes:
-            name_formatted = fmt_string.format(name).encode("ascii")
+            name_formatted = fmt_string.format(name).encode("utf-8")
             for ch in name_formatted:
                 barray = bytearray(settings.wordsize)
                 barray[0] = ch
@@ -6836,16 +6836,17 @@ class D3plot:
         n_bytes_written += fp.write(settings.pack(nsrtd))
 
         if ArrayType.part_ids in self.arrays:
-            # some lsdyna material pointer
-            nsrma = info.ptr_material_ids
+            # some lsdyna material pointer - Used by LS-Prepost in labelling materials
+
+            # Unsorted material ID pointer
+            nsrmu = nsrt + settings.header["nelth"]
+            # Sorted material ID pointer
+            nsrma = nsrmu + settings.header["nmmat"]
+            # Mapping array between sorted and unsorted
+            nsrmp = nsrma + settings.header["nmmat"]
+
             n_bytes_written += fp.write(settings.pack(nsrma))
-
-            # some lsdyna material pointer
-            nsrmu = info.ptr_material_ids_defined_order
             n_bytes_written += fp.write(settings.pack(nsrmu))
-
-            # some lsdyna material pointer
-            nsrmp = info.ptr_material_ids_crossref
             n_bytes_written += fp.write(settings.pack(nsrmp))
 
             # "Total number of materials (parts)"
@@ -7376,7 +7377,7 @@ class D3plot:
             max_len = 18 * title_wordsize
             fmt_name = "{0:" + str(max_len) + "}"
             for pid, title in zip(part_titles_ids, part_titles):
-                title = title.decode("ascii")
+                title = title.decode("utf-8")
                 n_bytes_written += fp.write(settings.pack(pid))
 
                 formatted_title = fmt_name.format(title[:max_len])
