@@ -74,4 +74,6 @@ venv.bak/
 
 # Ignore generated changelog
 CHANGELOG.md
+
+# Custom test file
 test/read_write_test.py
