@@ -4,10 +4,10 @@
 
 |test-main| |test-dev|
 
-.. |test-main| image:: https://github.com/open-lasso-python/lasso-python/actions/workflows/test-runner.yml/badge.svg?branch=main
+.. |test-main| image:: https://github.com/open-lasso-python/lasso-python/actions/workflows/ci-cd.yml/badge.svg?branch=main
    :target: https://github.com/open-lasso-python/lasso-python/actions/workflows/test-runner.yml
 
-.. |test-dev| image:: https://github.com/open-lasso-python/lasso-python/actions/workflows/test-runner.yml/badge.svg?branch=dev
+.. |test-dev| image:: https://github.com/open-lasso-python/lasso-python/actions/workflows/ci-cd.yml/badge.svg?branch=dev
    :target: https://github.com/open-lasso-python/lasso-python/actions/workflows/test-runner.yml
 
 This python library is designed for general purpose usage in the field of
