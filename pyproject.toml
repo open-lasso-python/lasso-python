@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lasso-python"
-version = "2.0.1"
+version = "2.0.2"
 description = "An open-source CAE and Machine Learning library."
 authors = ["open-lasso-python <open.lasso.python@gmail.com>"]
 license = "BSD-3"
@@ -23,13 +23,12 @@ packages = [
 
 [tool.poetry.dependencies]
 # We need to support at least 3.8 because of pandas and limit to 3.11 because of
-# scipy.
+# numpy.
 python = "^3.8, <3.12"
 h5py = "^3.7.0"
 scipy = "^1.9.1"
 numpy = "^1.23.3"
 plotly = "^5.10.0"
-matplotlib = "^3.6.0"
 attrs = "^22.1.0"
 psutil = "^5.9.2"
 rich = "^12.5.1"

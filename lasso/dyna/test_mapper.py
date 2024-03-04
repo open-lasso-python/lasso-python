@@ -387,7 +387,7 @@ class MapperTest(TestCase):
         strain1 = np.random.randn(1, 2)
         strain2 = np.random.randn(1, 2)
 
-        history_vars = np.array([[1, 2], [0, 3], [12, 2]], dtype=float)
+        history_vars = np.array([[1, 2], [0, 3], [12, 2]], dtype=np.float32)
 
         history_vars1 = np.random.randn(3, 2)
         history_vars2 = np.random.randn(3, 2)
