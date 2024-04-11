@@ -25,7 +25,7 @@ def __apply_spectral_clustering(betas, runids, datasets, idsets, random_state=11
     idsets: list
         List where the grouped ids corresponding to the grouped Betas will be saved
     **kwargs: keyword arguments
-        Keyword arguments specific for the SpectralClustering algorythm
+        Keyword arguments specific for the SpectralClustering algorithm
 
     See Also
     --------
@@ -62,7 +62,7 @@ def __apply_k_means(betas, runids, datasets, idsets, random_state=11, **kwargs):
     idsets: list
         List where the grouped ids corresponding to the grouped Betas will be saved
     **kwargs: keyword arguments
-        Keyword arguments specific fot the KMeans algorythm
+        Keyword arguments specific for the KMeans algorithm
 
     See Also
     --------
@@ -85,7 +85,7 @@ def __apply_k_means(betas, runids, datasets, idsets, random_state=11, **kwargs):
 def __apply_dbscan(betas, runids, datasets, idsets, **kwargs):
     """
     Method to group the input Betas.
-    Defautl keyword arguments: eps=0.08
+    Default keyword arguments: eps=0.08
 
     Parameters
     ----------
@@ -98,7 +98,7 @@ def __apply_dbscan(betas, runids, datasets, idsets, **kwargs):
     idsets: list
         List where the grouped ids corresponding to the grouped Betas will be saved
     **kwags: keyword arguments
-        Keyword arguments for the DBSCAN algorythm
+        Keyword arguments for the DBSCAN algorithm
 
     See Also
     --------
@@ -158,7 +158,7 @@ def __detect_outliers_isolation_forest(
     betas, ids, beta_clusters, id_clusters, random_state=11, **kwargs
 ):
     """
-    Detects outliers based on the IsolationForest algorythm from sklearn.
+    Detects outliers based on the IsolationForest algorithm from sklearn.
     Detected outliers will be appended into the provided lists
     Default keyword parameters: random_state=12, behaviour="new", contamination=0.005
 
@@ -173,7 +173,7 @@ def __detect_outliers_isolation_forest(
     id_clusters: list
         List where each cluster of ids will be appended
     **kwargs: keyword argument
-        Keywords specific to the IsolationForest algorythm
+        Keywords specific to the IsolationForest algorithm
     Returns
     -------
     inlier_betas: np.array
@@ -198,7 +198,7 @@ def __detect_outliers_isolation_forest(
 
 def __detect_outliers_local_outlier_factor(betas, ids, beta_clusters, id_clusters, **kwargs):
     """
-    Detects outliers based on the LocalOutlierFactor algorythm from sklearn.
+    Detects outliers based on the LocalOutlierFactor algorithm from sklearn.
     Detected outliers will be appended into the provided lists
     Default keyword parameters: contamination=0.01
 
@@ -213,7 +213,7 @@ def __detect_outliers_local_outlier_factor(betas, ids, beta_clusters, id_cluster
     id_clusters: list
         List where each cluster of ids will be appended
     **kwargs: keyword argument
-        Keywords specific to the LocalOutlierFactor algorythm.
+        Keywords specific to the LocalOutlierFactor algorithm.
     Returns
     -------
     inlier_betas: np.ndarray
@@ -238,9 +238,9 @@ def __detect_outliers_local_outlier_factor(betas, ids, beta_clusters, id_cluster
 
 def __detect_outliers_one_class_svm(betas, ids, beta_clusters, id_clusters, **kwargs):
     """
-    Detects outliers based on the OneClassSVM algorythm from sklearn.
+    Detects outliers based on the OneClassSVM algorithm from sklearn.
     Detected outliers will be appended into the provided lists
-    Defautl keyword arguments: gamma=0.1, nu=0.01
+    Default keyword arguments: gamma=0.1, nu=0.01
 
     Parameters
     ----------
@@ -253,7 +253,7 @@ def __detect_outliers_one_class_svm(betas, ids, beta_clusters, id_clusters, **kw
     id_clusters: list
         List where each cluster of ids will be appended
     **kwargs: keyword argument
-        Keywords specific to the OneClassSVM algorythm.
+        Keywords specific to the OneClassSVM algorithm.
 
     Returns
     -------
@@ -280,7 +280,7 @@ def __detect_outliers_one_class_svm(betas, ids, beta_clusters, id_clusters, **kw
 
 def __experimental_outlier_detector(betas, ids, **kwargs):
     """
-    Detects outliers by applying LocalOutlierFactor algorythm from sklearn over multiple slices of betas .
+    Detects outliers by applying LocalOutlierFactor algorithm from sklearn over multiple slices of betas .
     Detected outliers will be appended into the provided lists
     Default keyword arguments:  contamination=0.01
     Parameters
@@ -290,7 +290,7 @@ def __experimental_outlier_detector(betas, ids, **kwargs):
     ids: np.ndarray
         Numpy array containing the ids of each beta
     **kwargs: keyword argument
-        Keywords specific to the LocalOutlierFactor algorythm
+        Keywords specific to the LocalOutlierFactor algorithm
     Returns
     -------
     outliers: np.array
@@ -583,9 +583,9 @@ def group_betas(
 ) -> Union[Tuple[list, list], str]:
     """
     Base function to to group betas into groups, detect outliers. Provides that all different
-    clustering and outlier detection algorythms are implemented in an easy to access environment.
+    clustering and outlier detection algorithms are implemented in an easy to access environment.
     To select different clustering and outlier detection algoyrthms, please use appropriate
-    KeywordTypes. A description of each function can be accessed with document_algorythm(keyword)
+    KeywordTypes. A description of each function can be accessed with document_algorithm(keyword)
     A list of all functions can be accessed with list_detectors_and_clusters()
 
     Parameters
@@ -595,25 +595,25 @@ def group_betas(
     betas: np.ndarray
         Numpy array containing the betas.
         Betas are expected to be of shape (samples, timestep, 3)
-        The three entries per beta can either be dimesnions (x,y,z) or any three betas/eigenvalues
+        The three entries per beta can either be dimensions (x,y,z) or any three betas/eigenvalues
     cluster: str, optional, default : "KMeans".
-        String specifying which clustering algorythm shall be applied.
+        String specifying which clustering algorithm shall be applied.
         Use ClusterTypefor easier access
     detector: str, optional, default: None.
-        String specifying which outlier detection algorythm shall be applied.
+        String specifying which outlier detection algorithm shall be applied.
         Use DetectorType for easier access
     cluster_params: dict, optional
-        Dictionary containing parameters for the clustering algorythms.
+        Dictionary containing parameters for the clustering algorithms.
         See the sklearn documentation for the function to learn more.
     detector_params: dict, optional
-        Dictionary containing parameters for the outlier detection algorythms.
+        Dictionary containing parameters for the outlier detection algorithms.
         See the sklearn documentation for the function to learn more
 
     Returns
     -------
     beta_clusters: list
         List containing Numpy Arrays of betas in one cluster.
-        If a detector was selected, or the clustering algorythm has its
+        If a detector was selected, or the clustering algorithm has its
         own outlier detection, the first entry in the list will be oultier betas
     id_clusters: list
         List containing lists of beta ids. Each id corresponds to the beta in
@@ -626,13 +626,13 @@ def group_betas(
     document_algorithm:
         Prints docstring of each function into console
     list_detectors_and_clusters:
-        Prints out all detection and clustering algorythms into console
+        Prints out all detection and clustering algorithms into console
     Sklearn Userguide chapter 2.3 Clustering:
         https://scikit-learn.org/stable/modules/clustering.html
-        Detailed overview of different clustering algorythms
+        Detailed overview of different clustering algorithms
     Sklearn Examples outlier detection:
         https://scikit-learn.org/stable/auto_examples/plot_anomaly_comparison.html
-        Example of different used outlier detection algorythms
+        Example of different used outlier detection algorithms
     """
 
     # pylint: disable = too-many-arguments, too-many-locals, too-many-branches
@@ -659,9 +659,9 @@ def group_betas(
             betas = betas[inlier_index]
             beta_index = beta_index[inlier_index]
         else:
-            empy_list = []
-            beta_clusters.append(empy_list)
-            id_clusters.append(empy_list)
+            empty_list = []
+            beta_clusters.append(empty_list)
+            id_clusters.append(empty_list)
 
         detector = None
 

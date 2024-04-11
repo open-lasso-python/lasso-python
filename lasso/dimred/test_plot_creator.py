@@ -72,7 +72,7 @@ def create_fake_d3plots(
     )
 
     # we could create an artificial array element_shell_is_alive to test the
-    # correct part extraction process not neccessary currently
+    # correct part extraction process not necessary currently
 
     os.makedirs(path, exist_ok=True)
     plot.write_d3plot(os.path.join(path, "plot"))

@@ -70,4 +70,4 @@ Since different results may be dumped at different frequencies some state
 folders might contain more information than others.
 This inherently prevents efficient memory reading.
 The python version used here is slower than the original C-based version but
-one therefore gains better portability accross operating systems.
+one therefore gains better portability across operating systems.

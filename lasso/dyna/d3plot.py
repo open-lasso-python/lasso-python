@@ -318,7 +318,7 @@ class D3plotWriterSettings:
         ):
             new_header["ndim"] = 9
         else:
-            raise RuntimeError("Cannot determine haeder variable ndim.")
+            raise RuntimeError("Cannot determine header variable ndim.")
 
         # NUMNP
         new_header["numnp"] = (
@@ -3632,7 +3632,7 @@ class D3plot:
                 n_states_buffer_array = buffer_array.shape[0]
                 array[i_state : i_state + n_states_buffer_array] = buffer_array
             else:
-                # remove unnecesary state arrays (not geometry arrays!)
+                # remove unnecessary state arrays (not geometry arrays!)
                 # we "could" deal with this in the allocate function
                 # by not allocating them but this would replicate code
                 # in the reading functions
@@ -4604,7 +4604,7 @@ class D3plot:
         # usual beam vars
         # pylint: disable = invalid-name
         N_BEAM_BASIC_VARS = 6
-        # beam intergration point vars
+        # beam integration point vars
         # pylint: disable = invalid-name
         N_BEAM_IP_VARS = 5
 
@@ -5697,7 +5697,7 @@ class D3plot:
             State data is expected directly behind geometry data
             Unfortunately data is spread across multiple files.
             One file could contain geometry and state data but states
-            may also be littered accross several files. This would
+            may also be littered across several files. This would
             not be an issue, if dyna would not always write in blocks
             of 512 words of memory, leaving zero byte padding blocks
             at the end of files. These need to be removed and/or taken
@@ -5948,7 +5948,7 @@ class D3plot:
             State data is expected directly behind geometry data
             Unfortunately data is spread across multiple files.
             One file could contain geometry and state data but states
-            may also be littered accross several files. This would
+            may also be littered across several files. This would
             not be an issue, if dyna would not always write in blocks
             of 512 words of memory, leaving zero byte padding blocks
             at the end of files. These need to be removed and/or taken

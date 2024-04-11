@@ -659,7 +659,7 @@ class DimredRun:
         if replace_count > 0:
             msg = (
                 f"Replaced {replace_count} invalid characters for the html file name. "
-                f"The new hmtl name is: {html_name}"
+                f"The new html name is: {html_name}"
             )
             self.log(msg)
 

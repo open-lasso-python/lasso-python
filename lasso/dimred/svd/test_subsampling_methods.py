@@ -38,7 +38,7 @@ class TestSubsampling(TestCase):
             self.assertEqual(ref_sample.shape, (n_nodes, 3))
 
             # should return string error message if desired samplesize is greater
-            # than avaiable nodes
+            # than available nodes
             n_nodes = 5500
             result = create_reference_subsample(load_path, parts=[], nr_samples=n_nodes)
 
@@ -90,7 +90,7 @@ class TestSubsampling(TestCase):
             # with real plots we check if the difference is 0
             self.assertTrue((ref_sample - subsample[0]).max() == 0)
 
-            # should return string error message for nonexistant parts:
+            # should return string error message for nonexistent parts:
             err_msg = remap_random_subsample(sample_path, parts=[1], reference_subsample=ref_sample)
 
             self.assertTrue(isinstance(err_msg, str))

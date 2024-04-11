@@ -16,7 +16,7 @@ def svd_step_and_dim(s_mat: np.ndarray, k=10) -> np.ndarray:
     ----------
     s_mat: ndarray
         2D array on which the svds operation shall be performed
-    k: int, 10, optinal.
+    k: int, 10, optional.
         The size of the POD
 
     Returns

@@ -88,7 +88,7 @@ class TestDimredRun(TestCase):
                 # shape of v_rob must be (eigen, timesteps, nodes)
                 self.assertEqual(test_v_rob.shape, (10, 5, 2000 * 3))
 
-                # verify that calculated betas are reproducable as expected
+                # verify that calculated betas are reproducible as expected
                 # first, create displ mat containing difference in displ over time
                 verify_displ_stacked = test_subs.reshape(49, 5, 2000 * 3)
                 verify_diff_mat = np.stack(
@@ -103,7 +103,7 @@ class TestDimredRun(TestCase):
                 # recalculate displ
                 recalc_displ_stacked = np.einsum("stk, ktn -> stn", test_betas, test_v_rob)
 
-                # Due to projection into eigenspace and back not using all avaiable eigenvectors,
+                # Due to projection into eigenspace and back not using all available eigenvectors,
                 # a small error margin is inevitable
                 self.assertTrue((verify_displ_stacked - recalc_displ_stacked).max() <= 1e-5)
 

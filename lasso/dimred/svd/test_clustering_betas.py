@@ -43,7 +43,7 @@ class TestClustering(TestCase):
                 index = np.where(fake_names == entry)[0]
                 self.assertTrue((fake_betas[index] - beta_clusters[c][e]).max() == 0)
 
-        # verify differen keyword kombinations
+        # verify different keyword combinations
 
         for cluster_type in ClusterType.get_cluster_type_name():
             for detector_type in DetectorType.get_detector_type_name():

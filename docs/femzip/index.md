@@ -19,7 +19,7 @@ functions such as a femzip file check if desired.
 ```
 
 Here we check if we can use the extended FEMZIP-API.
-The extended FEMZIP-API allows reading selected arrays, but reqires a license
+The extended FEMZIP-API allows reading selected arrays, but requires a license
 with the feature "FEMUNZIPLIB-DYNA", which can be attained from SIDACT or
 femzip distributors.
 
@@ -37,7 +37,7 @@ True
 ```
 
 Check the file and library version.
-This is usually not neccessary.
+This is usually not necessary.
 
 ``` python
 >>> api.is_femunzip_version_ok(filepath)

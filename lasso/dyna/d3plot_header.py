@@ -568,7 +568,7 @@ class D3plotHeader:
         Notes
         -----
             This routine only loads the minimal amount of data
-            that is neccessary. Thus it is safe to use on huge files.
+            that is necessary. Thus it is safe to use on huge files.
 
         Examples
         --------

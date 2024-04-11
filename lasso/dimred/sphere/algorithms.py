@@ -182,7 +182,7 @@ def compute_similarity(embeddings: np.ndarray) -> np.ndarray:
     return smatrix
 
 
-def create_historgram(
+def create_histogram(
     cloud: np.ndarray, sphere_axis: str = "Z", planar: bool = False
 ) -> BinnedStatistic2dResult:
     """Builds a histogram using the blocks of a sphered globe and returns a
