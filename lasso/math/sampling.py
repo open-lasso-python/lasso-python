@@ -25,9 +25,7 @@ def unique_subsamples(start: int, end: int, n_samples: int, seed=None) -> np.nda
     """
     assert start <= end
 
-    if end - start < n_samples:
-        n_samples = end - start
-
+    n_samples = min(n_samples, end - start)
     random.seed(seed)
     indexes = np.array(random.sample(range(start, end), n_samples), dtype=np.int64)
     random.seed()
