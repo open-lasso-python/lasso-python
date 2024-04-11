@@ -2412,12 +2412,10 @@ class D3plot:
         if self.header.has_solid_2_extra_nodes:
             section_word_length = 2 * n_solids
             try:
-                self.arrays[
-                    ArrayType.element_solid_extra_nodes
-                ] = elem_solid_data = self._buffer.read_ndarray(
-                    position, section_word_length * self.header.wordsize, 1, self._header.itype
-                ).reshape(
-                    (n_solids, 2)
+                self.arrays[ArrayType.element_solid_extra_nodes] = elem_solid_data = (
+                    self._buffer.read_ndarray(
+                        position, section_word_length * self.header.wordsize, 1, self._header.itype
+                    ).reshape((n_solids, 2))
                 )
             except Exception:
                 trb_msg = traceback.format_exc()
@@ -2773,9 +2771,9 @@ class D3plot:
             rigid_body_n_active_nodes, dtype=self._header.itype
         )
         self.arrays[ArrayType.rigid_body_node_indexes_list] = rigid_body_node_indexes_list
-        self.arrays[
-            ArrayType.rigid_body_active_node_indexes_list
-        ] = rigid_body_active_node_indexes_list
+        self.arrays[ArrayType.rigid_body_active_node_indexes_list] = (
+            rigid_body_active_node_indexes_list
+        )
 
         # update position
         self.geometry_section_size = position
@@ -3451,9 +3449,11 @@ class D3plot:
             ArrayType.rigid_wall_force: [n_states, n_rigid_walls],
             ArrayType.rigid_wall_position: [n_states, n_rigid_walls, 3],
             # nodes
-            ArrayType.node_temperature: [n_states, n_nodes, 3]
-            if header.has_node_temperature_layers
-            else [n_states, n_nodes],
+            ArrayType.node_temperature: (
+                [n_states, n_nodes, 3]
+                if header.has_node_temperature_layers
+                else [n_states, n_nodes]
+            ),
             ArrayType.node_heat_flux: [n_states, n_nodes, 3],
             ArrayType.node_mass_scaling: [n_states, n_nodes],
             ArrayType.node_displacement: [n_states, n_nodes, n_dim],
@@ -4532,10 +4532,10 @@ class D3plot:
             # PSTRAIN
             if has_pstrain:
                 try:
-                    array_dict[
-                        ArrayType.element_tshell_effective_plastic_strain
-                    ] = tshell_layer_data[:, :, :, i_tshell_layer_var].reshape(
-                        (n_states, n_tshells, n_layers)
+                    array_dict[ArrayType.element_tshell_effective_plastic_strain] = (
+                        tshell_layer_data[:, :, :, i_tshell_layer_var].reshape(
+                            (n_states, n_tshells, n_layers)
+                        )
                     )
                 except Exception:
                     trb_msg = traceback.format_exc()
@@ -4922,9 +4922,9 @@ class D3plot:
                     pstrain_tensor = shell_nonlayer_data[
                         :, :, nonlayer_var_index : nonlayer_var_index + n_plastic_strain_tensor
                     ]
-                    array_dict[
-                        ArrayType.element_shell_plastic_strain_tensor
-                    ] = pstrain_tensor.reshape((n_states, n_shells, n_layers, 6))
+                    array_dict[ArrayType.element_shell_plastic_strain_tensor] = (
+                        pstrain_tensor.reshape((n_states, n_shells, n_layers, 6))
+                    )
                 except Exception:
                     trb_msg = traceback.format_exc()
                     msg = "A failure in %s was caught:\n%s"
@@ -4940,9 +4940,9 @@ class D3plot:
                     thermal_tensor = shell_nonlayer_data[
                         :, :, nonlayer_var_index : nonlayer_var_index + n_thermal_strain_tensor
                     ]
-                    array_dict[
-                        ArrayType.element_shell_thermal_strain_tensor
-                    ] = thermal_tensor.reshape((n_states, n_shells, 6))
+                    array_dict[ArrayType.element_shell_thermal_strain_tensor] = (
+                        thermal_tensor.reshape((n_states, n_shells, 6))
+                    )
                 except Exception:
                     trb_msg = traceback.format_exc()
                     msg = "A failure in %s was caught:\n%s"
@@ -5432,9 +5432,9 @@ class D3plot:
                 # particle segment distance
                 elif var_name.startswith("NS dist"):
                     try:
-                        array_dict[
-                            ArrayType.airbag_particle_nearest_segment_distance
-                        ] = particle_data[:, :, i_particle_var].view(get_dtype(var_type))
+                        array_dict[ArrayType.airbag_particle_nearest_segment_distance] = (
+                            particle_data[:, :, i_particle_var].view(get_dtype(var_type))
+                        )
                     except Exception:
                         trb_msg = traceback.format_exc()
                         msg = "A failure in %s %s was caught:\n%s"

@@ -1068,16 +1068,16 @@ class FemzipAPI:
                         (n_timesteps_read, file_metadata.number_of_nodes, 3)
                     )
                     var_pos += array_size
-                    result_arrays[
-                        (variable_index, variable_name, FemzipVariableCategory.NODE)
-                    ] = var_array
+                    result_arrays[(variable_index, variable_name, FemzipVariableCategory.NODE)] = (
+                        var_array
+                    )
                 else:
                     array_size = file_metadata.number_of_nodes
                     var_array = all_vars_array[:, var_pos : var_pos + array_size]
                     var_pos += array_size
-                    result_arrays[
-                        (variable_index, variable_name, FemzipVariableCategory.NODE)
-                    ] = var_array
+                    result_arrays[(variable_index, variable_name, FemzipVariableCategory.NODE)] = (
+                        var_array
+                    )
 
             elif variable_category == FemzipVariableCategory.SHELL:
                 array_size = (
@@ -1086,44 +1086,44 @@ class FemzipAPI:
                 )
                 var_array = all_vars_array[:, var_pos : var_pos + array_size]
                 var_pos += array_size
-                result_arrays[
-                    (variable_index, variable_name, FemzipVariableCategory.SHELL)
-                ] = var_array
+                result_arrays[(variable_index, variable_name, FemzipVariableCategory.SHELL)] = (
+                    var_array
+                )
             elif variable_category == FemzipVariableCategory.SOLID:
                 array_size = file_metadata.number_of_solid_elements
                 var_array = all_vars_array[:, var_pos : var_pos + array_size]
                 var_pos += array_size
-                result_arrays[
-                    (variable_index, variable_name, FemzipVariableCategory.SOLID)
-                ] = var_array
+                result_arrays[(variable_index, variable_name, FemzipVariableCategory.SOLID)] = (
+                    var_array
+                )
             elif variable_category == FemzipVariableCategory.BEAM:
                 array_size = file_metadata.number_of_1D_elements
                 var_array = all_vars_array[:, var_pos : var_pos + array_size]
                 var_pos += array_size
-                result_arrays[
-                    variable_index, variable_name, FemzipVariableCategory.BEAM
-                ] = var_array
+                result_arrays[variable_index, variable_name, FemzipVariableCategory.BEAM] = (
+                    var_array
+                )
             elif variable_category == FemzipVariableCategory.THICK_SHELL:
                 array_size = file_metadata.number_of_thick_shell_elements
                 var_array = all_vars_array[:, var_pos : var_pos + array_size]
                 var_pos += array_size
-                result_arrays[
-                    variable_index, variable_name, FemzipVariableCategory.THICK_SHELL
-                ] = var_array
+                result_arrays[variable_index, variable_name, FemzipVariableCategory.THICK_SHELL] = (
+                    var_array
+                )
             elif variable_category == FemzipVariableCategory.GLOBAL:
                 array_size = 6
                 var_array = all_vars_array[:, var_pos : var_pos + array_size]
                 var_pos += array_size
-                result_arrays[
-                    variable_index, variable_name, FemzipVariableCategory.GLOBAL
-                ] = var_array
+                result_arrays[variable_index, variable_name, FemzipVariableCategory.GLOBAL] = (
+                    var_array
+                )
             elif variable_category == FemzipVariableCategory.PART:
                 array_size = n_parts * 7 + n_rigid_walls * n_rigid_wall_vars
                 var_array = all_vars_array[:, var_pos : var_pos + array_size]
                 var_pos += array_size
-                result_arrays[
-                    variable_index, variable_name, FemzipVariableCategory.PART
-                ] = var_array
+                result_arrays[variable_index, variable_name, FemzipVariableCategory.PART] = (
+                    var_array
+                )
             elif variable_category == FemzipVariableCategory.CPM_FLOAT_VAR:
                 array_size = n_airbag_particles
                 var_array = all_vars_array[:, var_pos : var_pos + array_size]

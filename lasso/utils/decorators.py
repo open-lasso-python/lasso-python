@@ -36,7 +36,6 @@ def custom_dir(custom_c, add):
 
 
 class GetAttr:
-
     """
     Base class for attr accesses in `self._xtra` passed down to `self.default
     """

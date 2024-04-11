@@ -328,9 +328,7 @@ class DimredRun:
         self.logfile_filepath = (
             logfile_filepath
             if logfile_filepath
-            else os.path.join(project_dir, "logfile")
-            if project_dir
-            else ""
+            else os.path.join(project_dir, "logfile") if project_dir else ""
         )
 
         self._msg_option = "{:16s}: {}"
@@ -864,9 +862,11 @@ class DimredRun:
             beta_group = self.h5file.create_group(HDF5FileNames.BETAS_GROUP_NAME.value)
 
             excluded_entries = [
-                os.path.basename(os.path.split(entry)[0])
-                if self.use_folder_name
-                else os.path.basename(entry)
+                (
+                    os.path.basename(os.path.split(entry)[0])
+                    if self.use_folder_name
+                    else os.path.basename(entry)
+                )
                 for entry in self.exclude_runs
             ]
 
@@ -953,9 +953,11 @@ class DimredRun:
             # performs clustering with provided arguments
 
             excluded_entries = [
-                os.path.basename(os.path.split(entry)[0])
-                if self.use_folder_name
-                else os.path.basename(entry)
+                (
+                    os.path.basename(os.path.split(entry)[0])
+                    if self.use_folder_name
+                    else os.path.basename(entry)
+                )
                 for entry in self.exclude_runs
             ]
 
@@ -1020,9 +1022,11 @@ class DimredRun:
         mark_outliers = False
 
         excluded_entries = [
-            os.path.basename(os.path.split(entry)[0])
-            if self.use_folder_name
-            else os.path.basename(entry)
+            (
+                os.path.basename(os.path.split(entry)[0])
+                if self.use_folder_name
+                else os.path.basename(entry)
+            )
             for entry in self.exclude_runs
         ]
 
