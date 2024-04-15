@@ -36,9 +36,8 @@ scikit-learn = "^1.2.1"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
 pytest-cov = "^5.0.0"
-pylint = "^3.1.0"
-flake9 = "^3.8.3"
 black = "^24.3.0"
+ruff = "^0.3.7"
 mkdocs = "^1.4.2"
 mkdocs-material = "^9.5.0"
 mkdocstrings = {extras = ["python"], version = "^0.24.3"}
@@ -49,35 +48,6 @@ twine = "^5.0.0"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.pylint."MESSAGES CONTROL"]
-disable = [
-    # Disable missing module docstring since we provide docs through the
-    # docstrings of classes and functions.
-    "missing-module-docstring",
-    # We have a lot of classes just holding information so we are not bothered
-    # by them having less than two public methods.
-    "too-few-public-methods",
-    # A lot can go wrong under the hood so we catch broadly in multiple places
-    # to report nice errors and skip failing parts if possible.
-    "broad-except",
-    # We have a lot of lines which are self-similar but which are okay that way.
-    "duplicate-code",
-]
-
-[tool.pylint.basic]
-# Test files and classes don't need linting
-ignore-pattern="^(_|test_|Test)"
-# Allow single or double char variable names
-good-names-rgxs="^[_a-z][_a-z0-9]?$"
-
-[tool.flake8]
-ignore = "E203"
-# Limits the allowed function complexity such as branching etc.
-# For more info see: https://en.wikipedia.org/wiki/Cyclomatic_complexity
-max-complexity = 10
-# We allow longer lines since 80 is quite short
-max-line-length = 100
 
 [tool.black]
 # We allow longer lines since 80 is quite short

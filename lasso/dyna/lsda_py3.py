@@ -105,7 +105,7 @@ class _Diskfile:
         length = self.lengthsize + self.commandsize + len(dir)
         s = struct.pack(self.lcunpack, length, Lsda.CD)
         self.fp.write(s)
-        if type(dir) is str:
+        if isinstance(dir, str):
             self.fp.write(bytes(dir, "utf-8"))
         else:
             self.fp.write(dir)
@@ -118,7 +118,7 @@ class _Diskfile:
         )
         s = struct.pack(self.lcunpack, length, Lsda.VARIABLE)
         self.fp.write(s)
-        if type(r.name) is str:
+        if isinstance(r.name, str):
             self.fp.write(bytes(r.name, "utf-8"))
         else:
             self.fp.write(r.name)
@@ -525,7 +525,7 @@ class Lsda:
             self.cwd = self.root
         # path = string.split(path,"/")
         # print(type(path))
-        if type(path) is bytes:
+        if isinstance(path, bytes):
             path = str(path, "utf-8").split("/")
         else:
             path = path.split("/")
