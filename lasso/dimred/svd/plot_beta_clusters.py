@@ -68,7 +68,7 @@ def plot_clusters_js(
         Set to True if name of visualization shall contain time of creation.
         If set to False, visualization will override previous file
     filename: str, default "3d_beta_plot"
-        Name of .hmtl file
+        Name of .html file
     write: bool, default: True
         Set to False to not write .html file and return as string instead
     show_res: bool, default: True
@@ -77,7 +77,7 @@ def plot_clusters_js(
     Returns
     -------
     html_str_formatted: str
-        If **write=False** returns .hmtl file as string, else None
+        If **write=False** returns .html file as string, else None
     """
 
     # pylint: disable = too-many-arguments, too-many-locals
@@ -138,7 +138,7 @@ def plot_clusters_js(
         else:
             name = "cluster {i}".format(i=index)
             color = colorlist[(index - 1) % 10]
-        formated_trace = TRACE_STRING.format(
+        formatted_trace = TRACE_STRING.format(
             _traceNr_="trace{i}".format(i=index),
             _name_=name,
             _color_=color,
@@ -148,7 +148,7 @@ def plot_clusters_js(
             _z_=np.around(cluster[:, 2], decimals=5).tolist(),
         )
         tracelist.append(f"trace{index}")
-        html_str_formatted += formated_trace
+        html_str_formatted += formatted_trace
     trace_list_string = "    traceList = ["
     for trace in tracelist:
         trace_list_string += trace + ", "

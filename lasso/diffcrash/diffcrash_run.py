@@ -1141,7 +1141,7 @@ class DiffcrashRun:
             merge_input_file.write("eigen_all        ! Name of eigen input file\n")
             merge_input_file.write(
                 "mode_            ! Name of Output file "
-                + "(string will be apended with mode information)\n"
+                + "(string will be appended with mode information)\n"
             )
             merge_input_file.write("1 1              ! Mode number to be generated\n")
             merge_input_file.write("'d+ d-'          ! Mode type to be generated\n")

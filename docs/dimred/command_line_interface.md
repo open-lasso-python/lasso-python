@@ -209,7 +209,7 @@ optional arguments:
                         Arguments for clustering algorithms. If not set,
                         clustering will be skipped.
   --outlier-args [OUTLIER_ARGS [OUTLIER_ARGS ...]]
-                        Arguments for outlier detection befor clustering.
+                        Arguments for outlier detection before clustering.
 ```
 
 Following arguments are required for the analysis:
@@ -322,8 +322,8 @@ through:
 Next, we will take a look at the `--start-stage` and `--end-stage` arguments.
 These allow to restart and end the command-line utility at certain points in the
 process.
-This is usefull if you don't want to repeat certain stages to save time, or want
-to end the process prematurly, e.g. don't want to generate the `.html` output.
+This is useful if you don't want to repeat certain stages to save time, or want
+to end the process prematurely, e.g. don't want to generate the `.html` output.
 
 To set the desired start and end stage, use the the following keywords:
 
@@ -431,7 +431,7 @@ ref_sample = h5file["subsample"][:]
 np.stack(h5file["subsampled_runs"][entry][:]
          for entry in h5file["subsampled_runs"].keys()])
 
-# create a numpy array containg the right reduced order basis for projection:
+# create a numpy array containing the right reduced order basis for projection:
 v_rob = h5file["v_rob"][:]
 
 # the subsampled runs are projected into the right reduced order basis and called betas:

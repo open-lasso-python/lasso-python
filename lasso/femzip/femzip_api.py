@@ -159,7 +159,7 @@ class FemzipBufferInfo(Structure):
         Size of the post region of which I currently don't know anymore what it
         was.
     size_titles: c_uint64
-        Size of the titles region behind the geomtry.
+        Size of the titles region behind the geometry.
     """
 
     _fields_ = [

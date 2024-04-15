@@ -33,7 +33,7 @@ class ClusterType:
 
 
 class DetectorType:
-    """Specifies names of different outlier detector algorythms
+    """Specifies names of different outlier detector algorithms
 
     Attributes
     ----------

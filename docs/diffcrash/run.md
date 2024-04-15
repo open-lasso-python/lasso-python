@@ -7,7 +7,7 @@ analysis of simulation runs.
 It can be used as a set of independent executables or as a postprocessor plugin.
 [Diffcrash] itself must be licensed.
 Please therefore contact [Sidact] directly.
-This commmand line utility makes running a Diffcrash analysis much
+This command line utility makes running a Diffcrash analysis much
 easier.
 
 [diffcrash]: https://www.sidact.de/diffcrash

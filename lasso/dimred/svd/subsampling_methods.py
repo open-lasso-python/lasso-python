@@ -261,7 +261,7 @@ def remap_random_subsample(
     t_load: float
         Time required to load D3plot
     err_msg: str
-        If an error occured, a string is returned instead containing the error
+        If an error occurred, a string is returned instead containing the error
     """
     t_null = time.time()
     try:

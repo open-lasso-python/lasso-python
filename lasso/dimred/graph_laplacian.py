@@ -126,7 +126,7 @@ def _laplacian(lapl: csgraph, n_eigenmodes: int = 5):
     n_eigenmodes : int
         number of eigenmodes to compute
     points : np.ndarray
-        coordintes of graph nodes (only for plotting)
+        coordinates of graph nodes (only for plotting)
 
     Returns
     -------

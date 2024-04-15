@@ -65,7 +65,7 @@ class Binout:
 
         self.filelist = glob.glob(filepath)
 
-        # check file existance
+        # check file existence
         if not self.filelist:
             raise IOError("No file was found.")
 

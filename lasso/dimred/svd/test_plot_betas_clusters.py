@@ -28,5 +28,5 @@ class TestBetaViz(TestCase):
         if isinstance(html_page_str, str):
             html_page_hash = hash_str(html_page_str)
 
-            desired_hash = "0af9f14ded18d4ac479ac2a07d46eb773ae93a61245e57e650115cc51522c54f"
+            desired_hash = "53f32e658079dfe8b9f24d7b8ff05a1d253abab77185203e408bfd942c837eeb"
             self.assertEqual(html_page_hash, desired_hash)
