@@ -105,7 +105,7 @@ class _Diskfile:
         length = self.lengthsize + self.commandsize + len(dir)
         s = struct.pack(self.lcunpack, length, Lsda.CD)
         self.fp.write(s)
-        if type(dir) is str:
+        if isinstance(dir, str):
             self.fp.write(bytes(dir, "utf-8"))
         else:
             self.fp.write(dir)
@@ -118,7 +118,7 @@ class _Diskfile:
         )
         s = struct.pack(self.lcunpack, length, Lsda.VARIABLE)
         self.fp.write(s)
-        if type(r.name) is str:
+        if isinstance(r.name, str):
             self.fp.write(bytes(r.name, "utf-8"))
         else:
             self.fp.write(r.name)
@@ -353,7 +353,7 @@ def _writesymboltable(lsda, f):
     cwd = None
 
     # Write all records
-    for (s, path) in slist:
+    for s, path in slist:
         if path != cwd:
             cdcmd = _get_min_cd(cwd, path)
             f.writecd(cdcmd)
@@ -525,7 +525,7 @@ class Lsda:
             self.cwd = self.root
         # path = string.split(path,"/")
         # print(type(path))
-        if type(path) is bytes:
+        if isinstance(path, bytes):
             path = str(path, "utf-8").split("/")
         else:
             path = path.split("/")
@@ -635,7 +635,7 @@ class Lsda:
 types = [("b", 1), ("h", 2), ("i", 4), ("q", 8), ("f", 4), ("d", 8)]
 x = 17
 types_ok = 1
-for (a, b) in types:
+for a, b in types:
     s = struct.pack(a, x)
     if len(s) != b:
         print("LSDA: initialization error")

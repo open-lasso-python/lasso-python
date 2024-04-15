@@ -234,12 +234,6 @@ TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE: Dict[
     (FemzipArrayType.STRAIN_XY, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
     (FemzipArrayType.STRAIN_YZ, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
     (FemzipArrayType.STRAIN_XZ, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.STRAIN_X, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.STRAIN_Y, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.STRAIN_Z, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.STRAIN_XY, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.STRAIN_YZ, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
-    (FemzipArrayType.STRAIN_XZ, FemzipVariableCategory.SOLID): {ArrayType.element_solid_strain},
     # AIRBAG
     (FemzipArrayType.AIRBAG_STATE_GEOM, FemzipVariableCategory.CPM_AIRBAG): {
         ArrayType.airbag_n_active_particles,
