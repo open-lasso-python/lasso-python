@@ -328,7 +328,9 @@ class DimredRun:
         self.logfile_filepath = (
             logfile_filepath
             if logfile_filepath
-            else os.path.join(project_dir, "logfile") if project_dir else ""
+            else os.path.join(project_dir, "logfile")
+            if project_dir
+            else ""
         )
 
         self._msg_option = "{:16s}: {}"
