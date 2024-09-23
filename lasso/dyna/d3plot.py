@@ -4397,7 +4397,7 @@ class D3plot:
                     i_solid_var += n_history_vars
 
             # strain
-            # they are the last 6 entries of the history vars
+            # they are the last 6 entries of the history vars (if ISTRN = 1)
             if n_strain_vars:
                 try:
                     array_dict[ArrayType.element_solid_strain] = array_dict[
@@ -4416,34 +4416,46 @@ class D3plot:
                     LOGGER.warning(msg, "_read_states_solids, strain", trb_msg)
 
             # plastic strain tensor
+            # if present, beginning of element_solid_history_variables (if ISTRN = 11)
             if self.header.has_solid_shell_plastic_strain_tensor:
                 try:
-                    array_dict[ArrayType.element_solid_plastic_strain_tensor] = solid_state_data[
-                        :, :, :, i_solid_var : i_solid_var + 6
-                    ]
+                    array_dict[ArrayType.element_solid_plastic_strain_tensor] = array_dict[
+                        ArrayType.element_solid_history_variables
+                    ][:, :, :, :n_strain_vars]
+
+                    array_dict[ArrayType.element_solid_history_variables] = array_dict[
+                        ArrayType.element_solid_history_variables
+                    ][:, :, :, n_strain_vars:]
+
+                    if not all(array_dict[ArrayType.element_solid_history_variables].shape):
+                        del array_dict[ArrayType.element_solid_history_variables]
                 except Exception:
                     trb_msg = traceback.format_exc()
                     msg = "A failure in %s was caught:\n%s"
                     LOGGER.warning(
                         msg, "_read_states_solids, element_solid_plastic_strain_tensor", trb_msg
                     )
-                finally:
-                    i_solid_var += 6
 
             # thermal strain tensor
+            # if present, beginning of element_solid_history_variables
             if self.header.has_solid_shell_thermal_strain_tensor:
                 try:
-                    array_dict[ArrayType.element_solid_thermal_strain_tensor] = solid_state_data[
-                        :, :, i_solid_var : i_solid_var + 6
-                    ]
+                    array_dict[ArrayType.element_solid_thermal_strain_tensor] = array_dict[
+                        ArrayType.element_solid_history_variables
+                    ][:, :, :, :n_strain_vars]
+
+                    array_dict[ArrayType.element_solid_history_variables] = array_dict[
+                        ArrayType.element_solid_history_variables
+                    ][:, :, :, n_strain_vars:]
+
+                    if not all(array_dict[ArrayType.element_solid_history_variables].shape):
+                        del array_dict[ArrayType.element_solid_history_variables]
                 except Exception:
                     trb_msg = traceback.format_exc()
                     msg = "A failure in %s was caught:\n%s"
                     LOGGER.warning(
                         msg, "_read_states_solids, element_solid_thermal_strain_tensor", trb_msg
                     )
-                finally:
-                    i_solid_var += 6
 
         # catch formatting in solid_state_datra
         except Exception:
