@@ -7,7 +7,7 @@
 .. |test-main| image:: https://github.com/open-lasso-python/lasso-python/actions/workflows/ci-cd.yml/badge.svg?branch=main
    :target: https://github.com/open-lasso-python/lasso-python/actions/workflows/test-runner.yml
 
-.. |test-dev| image:: https://github.com/open-lasso-python/lasso-python/actions/workflows/ci-cd.yml/badge.svg?branch=dev
+.. |test-dev| image:: https://github.com/open-lasso-python/lasso-python/actions/workflows/ci-cd.yml/badge.svg?branch=develop
    :target: https://github.com/open-lasso-python/lasso-python/actions/workflows/test-runner.yml
 
 This python library is designed for general purpose usage in the field of
@@ -29,9 +29,9 @@ For further infos please read the Documentation:
 .. _LASSO GmbH: https://www.lasso.de/en
 .. _Documentation: https://open-lasso-python.github.io/lasso-python/
 .. _lasso.dyna: https://open-lasso-python.github.io/lasso-python/dyna/
-.. _lasso.dimred: https://open-lasso-python.github.io/lasso-python/diffcrash/diffcrash/
+.. _lasso.dimred: https://open-lasso-python.github.io/lasso-python/dimred/
 .. _lasso.femzip: https://open-lasso-python.github.io/lasso-python/femzip/
-.. _lasso.diffcrash: https://open-lasso-python.github.io/lasso-python/diffcrash/diffcrash/
+.. _lasso.diffcrash: https://open-lasso-python.github.io/lasso-python/diffcrash/
 
 
 Installation
