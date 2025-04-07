@@ -12,7 +12,7 @@ from lasso.dimred.test_plot_creator import create_50_fake_plots
 class TestDimredRun(TestCase):
     def test_run(self):
         """Verifies correct function of DimredRun.py"""
-        verification_hdf5_file = h5py.File("test/DimredRunTest/verificationFile.hdf5", "r")
+        verification_hdf5_file = h5py.File("test/test_data/DimredRunTest/verificationFile.hdf5", "r")
 
         with tempfile.TemporaryDirectory() as tmpdir:
 
@@ -33,7 +33,7 @@ class TestDimredRun(TestCase):
                 start_stage=DIMRED_STAGES[0],
                 end_stage="CLUSTERING",
                 console=None,
-                project_dir="test/DimredRunTest",
+                project_dir="test/test_data/DimredRunTest",
                 n_processes=5,
                 cluster_args=["kmeans"],
             )
@@ -138,7 +138,7 @@ class TestDimredRun(TestCase):
                 simulation_runs=os.path.join(tmpdir, "SVDTestPlot*/plot"),
                 start_stage=DIMRED_STAGES[0],
                 end_stage=DIMRED_STAGES[0],
-                project_dir="test/DimredRunTest",
+                project_dir="test/test_data/DimredRunTest",
                 console=None,
             )
 
@@ -161,7 +161,7 @@ class TestDimredRun(TestCase):
                 start_stage="INVALID_START",
                 end_stage=DIMRED_STAGES[-1],
                 console=None,
-                project_dir="test/DimredRunTest",
+                project_dir="test/test_data/DimredRunTest",
                 n_processes=5,
             )
 
@@ -174,7 +174,7 @@ class TestDimredRun(TestCase):
                 start_stage=DIMRED_STAGES[0],
                 end_stage="INVALID_END",
                 console=None,
-                project_dir="test/DimredRunTest",
+                project_dir="test/test_data/DimredRunTest",
                 n_processes=5,
             )
 
@@ -187,7 +187,7 @@ class TestDimredRun(TestCase):
                 start_stage=DIMRED_STAGES[-1],
                 end_stage=DIMRED_STAGES[0],
                 console=None,
-                project_dir="test/DimredRunTest",
+                project_dir="test/test_data/DimredRunTest",
                 n_processes=5,
             )
 
@@ -199,7 +199,7 @@ class TestDimredRun(TestCase):
                 start_stage=DIMRED_STAGES[0],
                 end_stage=DIMRED_STAGES[-1],
                 console=None,
-                project_dir="test/DimredRunTest",
+                project_dir="test/test_data/DimredRunTest",
                 n_processes=5,
             )
 
@@ -211,7 +211,7 @@ class TestDimredRun(TestCase):
                 start_stage=DIMRED_STAGES[0],
                 end_stage=DIMRED_STAGES[-1],
                 console=None,
-                project_dir="test/DimredRunTest",
+                project_dir="test/test_data/DimredRunTest",
                 n_processes=5,
                 cluster_args=["noMeans"],
             )
@@ -224,7 +224,7 @@ class TestDimredRun(TestCase):
                 start_stage=DIMRED_STAGES[0],
                 end_stage=DIMRED_STAGES[-1],
                 console=None,
-                project_dir="test/DimredRunTest",
+                project_dir="test/test_data/DimredRunTest",
                 n_processes=5,
                 cluster_args=["kmeans"],
                 outlier_args=["DoesNotExist"],
@@ -239,7 +239,7 @@ class TestDimredRun(TestCase):
                 start_stage=DIMRED_STAGES[0],
                 end_stage=DIMRED_STAGES[-1],
                 console=None,
-                project_dir="test/DimredRunTest",
+                project_dir="test/test_data/DimredRunTest",
                 n_processes=5,
             )
             # check for empty simulation runs
@@ -250,13 +250,13 @@ class TestDimredRun(TestCase):
                 start_stage=DIMRED_STAGES[0],
                 end_stage=DIMRED_STAGES[-1],
                 console=None,
-                project_dir="test/DimredRunTest",
+                project_dir="test/test_data/DimredRunTest",
                 n_processes=5,
             )
 
     def tearDown(self):
         # cleanup of created files
-        test_files = os.listdir("test/DimredRunTest")
+        test_files = os.listdir("test/test_data/DimredRunTest")
         test_files.pop(test_files.index("verificationFile.hdf5"))
         for entry in test_files:
-            os.remove(os.path.join("test/DimredRunTest", entry))
+            os.remove(os.path.join("test/test_data/DimredRunTest", entry))

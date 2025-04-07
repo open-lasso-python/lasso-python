@@ -14,10 +14,10 @@ class D3plotHeaderTest(TestCase):
     def test_loading(self):
 
         filepaths = [
-            "test/simple_d3plot/d3plot",
-            "test/d3plot_node_temperature/d3plot",
-            "test/d3plot_beamip/d3plot",
-            "test/d3plot_solid_int/d3plot",
+            "test/test_data/simple_d3plot/d3plot",
+            "test/test_data/d3plot_node_temperature/d3plot",
+            "test/test_data/d3plot_beamip/d3plot",
+            "test/test_data/d3plot_solid_int/d3plot",
         ]
 
         for filepath in filepaths:
