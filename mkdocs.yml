@@ -38,7 +38,7 @@ nav:
               - plot_beta_clusters: dimred/plot_beta_clusters.md
               - KeywordTypes: dimred/KeywordTypes.md
   - Diffcrash:
-      - Overview: diffcrash/diffcrash.md
+      - Overview: diffcrash/index.md
       - Command Line Tool: diffcrash/run.md
       - Code: diffcrash/diffcrash_run.md
   - Contribution Guide: contributing.md
