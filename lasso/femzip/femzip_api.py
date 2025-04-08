@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 import re
 import stat
 import sys
@@ -245,49 +246,45 @@ class FemzipAPI:
 
         if self._api is None:
 
-            bin_dirpath = (
-                os.path.abspath(os.path.dirname(sys.executable))
-                if hasattr(sys, "frozen")
-                else os.path.dirname(os.path.abspath(__file__))
-            )
+            # Set the base path once
+            base_path = Path(__file__).parent
 
-            # Flexlm Settings
-            # prevent flexlm gui to pop up
+            # Set environment variables for FlexLM
             os.environ["FLEXLM_BATCH"] = "1"
-            # set a low timeout from originally 10 seconds
             if "FLEXLM_TIMEOUT" not in os.environ:
                 os.environ["FLEXLM_TIMEOUT"] = "200000"
 
-            # windows
-            if "win32" in sys.platform:
-
+            # Platform-specific configurations
+            if sys.platform == "win32":
+                bin_dirpath = base_path / "lib" / "windows"
                 shared_lib_name = "api_extended.dll"
-                self.load_dynamic_library(os.path.join(bin_dirpath, "libmmd.dll"))
-                self.load_dynamic_library(os.path.join(bin_dirpath, "libifcoremd.dll"))
-                self.load_dynamic_library(os.path.join(bin_dirpath, "libifportmd.dll"))
-                self.load_dynamic_library(os.path.join(bin_dirpath, "libiomp5md.dll"))
-                self.load_dynamic_library(
-                    os.path.join(bin_dirpath, "femzip_a_dyna_sidact_generic.dll")
-                )
-                self.load_dynamic_library(
-                    os.path.join(bin_dirpath, "libfemzip_post_licgenerator_ext_flexlm.dll")
-                )
-            # linux hopefully
+                libs = [
+                    "libmmd.dll",
+                    "libifcoremd.dll",
+                    "libifportmd.dll",
+                    "libiomp5md.dll",
+                    "femzip_a_dyna_sidact_generic.dll",
+                    "libfemzip_post_licgenerator_ext_flexlm.dll",
+                ]
             else:
+                bin_dirpath = base_path / "lib" / "linux"
                 shared_lib_name = "api_extended.so"
-                self.load_dynamic_library(os.path.join(bin_dirpath, "libiomp5.so"))
-                self.load_dynamic_library(os.path.join(bin_dirpath, "libintlc.so.5"))
-                self.load_dynamic_library(os.path.join(bin_dirpath, "libirng.so"))
-                self.load_dynamic_library(os.path.join(bin_dirpath, "libimf.so"))
-                self.load_dynamic_library(os.path.join(bin_dirpath, "libsvml.so"))
-                self.load_dynamic_library(
-                    os.path.join(bin_dirpath, "libfemzip_a_dyna_sidact_generic.so")
-                )
-                self.load_dynamic_library(
-                    os.path.join(bin_dirpath, "libfemzip_post_licgenerator_ext_flexlm.so")
-                )
+                libs = [
+                    "libiomp5.so",
+                    "libintlc.so.5",
+                    "libirng.so",
+                    "libimf.so",
+                    "libsvml.so",
+                    "libfemzip_a_dyna_sidact_generic.so",
+                    "libfemzip_post_licgenerator_ext_flexlm.so",
+                ]
 
-            filepath = os.path.join(bin_dirpath, shared_lib_name)
+            # Load all the dynamic libraries
+            for lib in libs:
+                self.load_dynamic_library(bin_dirpath / lib)
+
+            # Load the main shared library
+            filepath = bin_dirpath / shared_lib_name
             self._api = self.load_dynamic_library(filepath)
 
             # license check
