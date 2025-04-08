@@ -6,18 +6,20 @@ import h5py
 import numpy as np
 
 from lasso.dimred.dimred_run import DIMRED_STAGES, DimredRun, DimredRunError, HDF5FileNames
-from lasso.dimred.test_plot_creator import create_50_fake_plots
+from test.plot_creator_helper import create_n_fake_plots
 
 
 class TestDimredRun(TestCase):
     def test_run(self):
         """Verifies correct function of DimredRun.py"""
-        verification_hdf5_file = h5py.File("test/test_data/DimredRunTest/verificationFile.hdf5", "r")
+        verification_hdf5_file = h5py.File(
+            "test/test_data/DimredRunTest/verificationFile.hdf5", "r"
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
 
             # create simulation runs
-            create_50_fake_plots(folder=tmpdir, n_nodes_x=500, n_nodes_y=10)
+            create_n_fake_plots(folder=tmpdir, n_nodes_x=500, n_nodes_y=10)
 
             # collect all simulation runs
             # sim_dir = "test/dimredTestPlots"

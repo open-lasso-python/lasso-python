@@ -8,6 +8,7 @@ import plotly.graph_objects as go
 from lasso.dyna.d3plot import ArrayType, D3plot
 
 
+# FIXME: there are no tests in this file. probably dead code.
 def create_fake_d3plots(
     path: str,
     element_shell_node_indexes: np.ndarray,
@@ -108,9 +109,9 @@ def create_element_shell_node_indexes(n_nodes_x: int = 500, n_nodes_y: int = 10)
     return new_shell_node_indexes
 
 
-def create_2_fake_plots(folder: str, n_nodes_x: int, n_nodes_y: int, n_timesteps=5):
+def create_n_fake_plots(folder: str, n_nodes_x: int, n_nodes_y: int, n_timesteps=5, n=50):
     """
-    creates 2 faked plots
+    creates `n` fake plots, `n/2` bending up, `n/2` bending down
 
     Parameters
     ----------
@@ -122,48 +123,8 @@ def create_2_fake_plots(folder: str, n_nodes_x: int, n_nodes_y: int, n_timesteps
         how many nodes in y
     n_timesteps: int, default: 5
         how many timesteps
-    """
-
-    randy_random = random.Random("The_Seed")
-    plot_name = "SVDTestPlot{i}"
-
-    element_shell_node_indexes = create_element_shell_node_indexes(
-        n_nodes_x=n_nodes_x, n_nodes_y=n_nodes_y
-    )
-
-    create_fake_d3plots(
-        path=os.path.join(folder, plot_name.format(i="00")),
-        element_shell_node_indexes=element_shell_node_indexes,
-        bend_multiplicator=5 * (1 + randy_random.random()),
-        n_nodes_x=n_nodes_x,
-        n_nodes_y=n_nodes_y,
-        n_timesteps=n_timesteps,
-    )
-
-    create_fake_d3plots(
-        path=os.path.join(folder, plot_name.format(i="01")),
-        element_shell_node_indexes=element_shell_node_indexes,
-        bend_multiplicator=5 * (1 + randy_random.random()),
-        n_nodes_x=n_nodes_x,
-        n_nodes_y=n_nodes_y,
-        n_timesteps=n_timesteps,
-    )
-
-
-def create_50_fake_plots(folder: str, n_nodes_x: int, n_nodes_y: int, n_timesteps=5):
-    """
-    creates 50 faked plots, 25 bending up, 25 bending down
-
-    Parameters
-    ----------
-    folder: str
-        folder path
-    n_nodes_x: int
-        how many nodes in x
-    n_nodes_y: int
-        how many nodes in y
-    n_timesteps: int, default: 5
-        how many timesteps
+    n: int, default: 50
+        how many plots
     """
 
     # init random
@@ -176,13 +137,10 @@ def create_50_fake_plots(folder: str, n_nodes_x: int, n_nodes_y: int, n_timestep
         n_nodes_x=n_nodes_x, n_nodes_y=n_nodes_y
     )
 
-    # 25 plots bending up
-    for i in range(25):
-        nr = str(i)
-        if i < 10:
-            nr = "0" + str(i)
+    # n plots bending up
+    for i in range(int(n / 2)):
         create_fake_d3plots(
-            path=os.path.join(folder, plot_name.format(i=nr)),
+            path=os.path.join(folder, plot_name.format(i=f"{i:02d}")),
             element_shell_node_indexes=element_shell_node_indexes,
             bend_multiplicator=5 * (1 + randy_random.random()),
             n_nodes_x=n_nodes_x,
@@ -190,10 +148,10 @@ def create_50_fake_plots(folder: str, n_nodes_x: int, n_nodes_y: int, n_timestep
             n_timesteps=n_timesteps,
         )
 
-    # 25 plots bending down
-    for i in range(25):
+    # n plots bending down
+    for i in range(int(n / 2)):
         create_fake_d3plots(
-            path=os.path.join(folder, plot_name.format(i=i + 25)),
+            path=os.path.join(folder, plot_name.format(i=f"{i+int(n/2):02d}")),
             element_shell_node_indexes=element_shell_node_indexes,
             bend_multiplicator=-5 * (1 + randy_random.random()),
             n_nodes_x=n_nodes_x,

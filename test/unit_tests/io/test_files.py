@@ -10,7 +10,9 @@ class Test(unittest.TestCase):
         files = collect_files("test/test_data/io_test/", "*.txt", recursive=True)
         self.assertEqual(len(files), 2)
 
-        files1, files2 = collect_files("test/test_data/io_test/", ["*.txt", "*.yay"], recursive=True)
+        files1, files2 = collect_files(
+            "test/test_data/io_test/", ["*.txt", "*.yay"], recursive=True
+        )
         self.assertEqual(len(files1), 2)
         self.assertEqual(len(files2), 1)
 

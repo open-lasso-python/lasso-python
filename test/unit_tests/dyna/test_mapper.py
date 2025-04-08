@@ -3,9 +3,9 @@ from unittest import TestCase
 
 import numpy as np
 
-from ..femzip.fz_config import FemzipArrayType, FemzipVariableCategory
-from .array_type import ArrayType
-from .femzip_mapper import FemzipMapper
+from lasso.femzip.fz_config import FemzipArrayType, FemzipVariableCategory
+from lasso.dyna.array_type import ArrayType
+from lasso.dyna.femzip_mapper import FemzipMapper
 
 part_global_femzip_translations: Dict[Tuple[FemzipArrayType, FemzipVariableCategory], Set[str]] = {
     # GLOBAL

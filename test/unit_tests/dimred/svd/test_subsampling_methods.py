@@ -6,7 +6,7 @@ from unittest import TestCase
 import numpy as np
 
 from lasso.dimred.svd.subsampling_methods import create_reference_subsample, remap_random_subsample
-from lasso.dimred.test_plot_creator import create_2_fake_plots
+from test.plot_creator_helper import create_n_fake_plots
 
 
 class TestSubsampling(TestCase):
@@ -15,7 +15,7 @@ class TestSubsampling(TestCase):
 
         with tempfile.TemporaryDirectory() as tmp_dir:
 
-            create_2_fake_plots(tmp_dir, 500, 10)
+            create_n_fake_plots(tmp_dir, 500, 10, n=2)
             load_path = os.path.join(tmp_dir, "SVDTestPlot00/plot")
             n_nodes = 200
 
@@ -55,7 +55,7 @@ class TestSubsampling(TestCase):
 
         with tempfile.TemporaryDirectory() as tmp_dir:
 
-            create_2_fake_plots(tmp_dir, 500, 10)
+            create_n_fake_plots(tmp_dir, 500, 10, n=2)
             ref_path = os.path.join(tmp_dir, "SVDTestPlot00/plot")
             sample_path = os.path.join(tmp_dir, "SVDTestPlot01/plot")
             n_nodes = 200

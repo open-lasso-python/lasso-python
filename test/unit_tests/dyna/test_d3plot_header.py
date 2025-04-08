@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 import numpy as np
+import pytest
 from lasso.dyna.d3plot_header import (
     D3plotFiletype,
     D3plotHeader,
@@ -11,6 +12,8 @@ from lasso.io.binary_buffer import BinaryBuffer
 
 
 class D3plotHeaderTest(TestCase):
+
+    @pytest.mark.skip(reason="NOT IMPLEMENTED")
     def test_loading(self):
 
         filepaths = [

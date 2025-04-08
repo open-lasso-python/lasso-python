@@ -9,8 +9,8 @@ tasks:
   lint:
     desc: Lints the code and reports on issues.
     cmds:
-      - poetry run black --check lasso
-      - poetry run ruff check
+      - poetry run black --check .
+      - poetry run ruff check .
 
   build:
     desc: Builds the python package
@@ -21,7 +21,7 @@ tasks:
     desc: Runs tests on the code
     cmds:
       - >
-        poetry run pytest
+        poetry run pytest test
         --cov=lasso
         --cov-report=html
 
