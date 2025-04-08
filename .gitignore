@@ -3,26 +3,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Mac specific files
-.DS_Store
-
-# Notepad++ backup file
-.bak
-
-# C extensions
-*.so
-
 # Distribution / packaging
 .Python
 ./build/
-.vscode
 build/
 develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -32,6 +21,21 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Exclude femzip shared libraries
+!**/lib/**/*.dll
+!**/lib/**/*.so
 
 # Unit test / coverage reports
 htmlcov/
@@ -61,16 +65,14 @@ venv.bak/
 # mkdocs documentation
 /site
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# Mac specific files
+.DS_Store
 
-# Compiled Dynamic libraries
-#*.so
-*.dylib
-*.dll
+# Notepad++ backup file
+.bak
+
+# Vscode configurations
+.vscode
 
 # Ignore generated changelog
 CHANGELOG.md
