@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 import numpy as np
+import warnings
 from lasso.dyna.d3plot_header import (
     D3plotFiletype,
     D3plotHeader,
@@ -11,19 +12,21 @@ from lasso.io.binary_buffer import BinaryBuffer
 
 
 class D3plotHeaderTest(TestCase):
+
     def test_loading(self):
 
         filepaths = [
-            "test/simple_d3plot/d3plot",
-            "test/d3plot_node_temperature/d3plot",
-            "test/d3plot_beamip/d3plot",
-            "test/d3plot_solid_int/d3plot",
+            "test/test_data/simple_d3plot/d3plot",
+            "test/test_data/d3plot_node_temperature/d3plot",
+            "test/test_data/d3plot_beamip/d3plot",
+            "test/test_data/d3plot_solid_int/d3plot",
         ]
 
         for filepath in filepaths:
             D3plotHeader().load_file(filepath)
 
         # TODO more
+        warnings.warn("No assertions of behavior, test is incomplete")
 
     def test_get_digit(self) -> None:
 

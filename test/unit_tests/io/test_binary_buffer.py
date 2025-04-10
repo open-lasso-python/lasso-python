@@ -10,7 +10,7 @@ class BinaryBufferTest(TestCase):
     def setUp(self):
 
         # read file
-        self.bb = BinaryBuffer("test/simple_d3plot/d3plot")
+        self.bb = BinaryBuffer("test/test_data/simple_d3plot/d3plot")
 
     def test_init(self):
 
@@ -39,14 +39,14 @@ class BinaryBufferTest(TestCase):
 
     def test_save(self):
 
-        self.bb.save("test/tmp")
-        eq = filecmp.cmp("test/simple_d3plot/d3plot", "test/tmp")
-        os.remove("test/tmp")
+        self.bb.save("test/test_data/tmp")
+        eq = filecmp.cmp("test/test_data/simple_d3plot/d3plot", "test/test_data/tmp")
+        os.remove("test/test_data/tmp")
         self.assertEqual(eq, True)
 
     def test_writing(self):
 
-        bb = BinaryBuffer("test/simple_d3plot/d3plot")
+        bb = BinaryBuffer("test/test_data/simple_d3plot/d3plot")
         bb.write_number(44, 13, np.int32)
         self.assertEqual(bb.read_number(44, np.int32), 13)
 
@@ -56,7 +56,7 @@ class BinaryBufferTest(TestCase):
 
     def test_size(self):
 
-        bb = BinaryBuffer("test/simple_d3plot/d3plot")
+        bb = BinaryBuffer("test/test_data/simple_d3plot/d3plot")
         self.assertEqual(bb.size, 192512)
         self.assertEqual(bb.size, len(bb))
 

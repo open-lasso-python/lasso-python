@@ -17,7 +17,7 @@ class D3plotTest(TestCase):
         # settings
         self.maxDiff = None
 
-        filepath = "test/simple_d3plot/d3plot"
+        filepath = "test/test_data/simple_d3plot/d3plot"
 
         geometry_array_shapes = {
             "node_coordinates": (4915, 3),
@@ -152,7 +152,7 @@ class D3plotTest(TestCase):
             "neipb": 0,
         }
 
-        d3plot = D3plot("test/simple_d3plot/d3plot")
+        d3plot = D3plot("test/test_data/simple_d3plot/d3plot")
         header = d3plot.header
 
         for name, value in test_header_data.items():
@@ -162,7 +162,7 @@ class D3plotTest(TestCase):
 
         self.maxDiff = None
 
-        filepath = "test/d3plot_beamip/d3plot"
+        filepath = "test/test_data/d3plot_beamip/d3plot"
         maxmin_test_values = {
             # "element_beam_shear_stress": (-0.007316963, 0.),
             "element_beam_shear_stress": (0.0, 0.0056635854),
@@ -188,7 +188,7 @@ class D3plotTest(TestCase):
 
     def test_correct_sort_of_more_than_100_state_files(self):
 
-        filepath = "test/order_d3plot/d3plot"
+        filepath = "test/test_data/order_d3plot/d3plot"
 
         d3plot = D3plot(filepath)
 
@@ -199,8 +199,8 @@ class D3plotTest(TestCase):
 
         self.maxDiff = None
 
-        filepath1 = "test/femzip/d3plot.fz"
-        filepath2 = "test/femzip/d3plot"
+        filepath1 = "test/test_data/femzip/d3plot.fz"
+        filepath2 = "test/test_data/femzip/d3plot"
 
         d3plot_kwargs_list = [{}, {"buffered_reading": True}, {"state_filter": [0]}]
 
@@ -220,8 +220,8 @@ class D3plotTest(TestCase):
 
         self.maxDiff = None
 
-        filepath1 = "test/femzip/d3plot.fz"
-        filepath2 = "test/femzip/d3plot"
+        filepath1 = "test/test_data/femzip/d3plot.fz"
+        filepath2 = "test/test_data/femzip/d3plot"
 
         d3plot_kwargs_list = [{}, {"buffered_reading": True}, {"state_filter": [0]}]
 
@@ -245,7 +245,7 @@ class D3plotTest(TestCase):
 
         self.maxDiff = None
 
-        filepath = "test/simple_d3plot/d3plot"
+        filepath = "test/test_data/simple_d3plot/d3plot"
         part_ids = [1]
 
         d3plot = D3plot(filepath)
@@ -260,7 +260,7 @@ class D3plotTest(TestCase):
 
     def test_read_solid_integration_points(self):
 
-        filepath = "test/d3plot_solid_int/d3plot"
+        filepath = "test/test_data/d3plot_solid_int/d3plot"
 
         # data from META
         stress_valid = np.array(
@@ -345,10 +345,10 @@ class D3plotTest(TestCase):
         self.maxDiff = None
 
         filepaths = [
-            "test/simple_d3plot/d3plot",
-            "test/d3plot_beamip/d3plot",
-            "test/d3plot_node_temperature/d3plot",
-            "test/d3plot_solid_int/d3plot",
+            "test/test_data/simple_d3plot/d3plot",
+            "test/test_data/d3plot_beamip/d3plot",
+            "test/test_data/d3plot_node_temperature/d3plot",
+            "test/test_data/d3plot_solid_int/d3plot",
         ]
 
         d3plot_kwargs_list = [
@@ -457,7 +457,7 @@ class D3plotTest(TestCase):
     def test_reading_selected_states(self):
 
         # read all states
-        filepath = "test/d3plot_solid_int/d3plot"
+        filepath = "test/test_data/d3plot_solid_int/d3plot"
 
         d3plot = D3plot(filepath)
         d3plot2 = D3plot(filepath, state_filter=np.arange(0, 22))
