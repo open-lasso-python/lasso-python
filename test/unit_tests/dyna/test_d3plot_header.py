@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 import numpy as np
+import warnings
 import pytest
 from lasso.dyna.d3plot_header import (
     D3plotFiletype,
@@ -13,7 +14,6 @@ from lasso.io.binary_buffer import BinaryBuffer
 
 class D3plotHeaderTest(TestCase):
 
-    @pytest.mark.skip(reason="NOT IMPLEMENTED")
     def test_loading(self):
 
         filepaths = [
@@ -27,6 +27,7 @@ class D3plotHeaderTest(TestCase):
             D3plotHeader().load_file(filepath)
 
         # TODO more
+        warnings.warn("No assertions of behavior, test is incomplete")
 
     def test_get_digit(self) -> None:
 
