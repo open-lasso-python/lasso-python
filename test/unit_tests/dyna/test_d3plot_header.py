@@ -2,7 +2,6 @@ from unittest import TestCase
 
 import numpy as np
 import warnings
-import pytest
 from lasso.dyna.d3plot_header import (
     D3plotFiletype,
     D3plotHeader,
