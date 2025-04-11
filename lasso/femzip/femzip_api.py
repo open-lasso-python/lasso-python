@@ -209,7 +209,7 @@ class FemzipAPI:
     _api: Union[None, CDLL] = None
 
     @staticmethod
-    def load_dynamic_library(path: str) -> CDLL:
+    def load_dynamic_library(path: Path) -> CDLL:
         """Load a library and check for correct execution
 
         Parameters
