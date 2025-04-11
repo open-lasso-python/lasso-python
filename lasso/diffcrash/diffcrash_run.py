@@ -11,7 +11,7 @@ import time
 import typing
 from concurrent import futures
 from typing import List, Union
-
+from pathlib import Path
 import psutil
 
 from ..logging import str_error, str_info, str_running, str_success, str_warn
@@ -236,10 +236,10 @@ class DiffcrashRun:
 
         # logdir
         if logfile_dir is not None:
-            self.logfile_dir = logfile_dir
+            self.logfile_dir = Path(logfile_dir)
         else:
-            self.logfile_dir = os.path.join(project_dir, "Log")
-        self.logfile_filepath = os.path.join(self.logfile_dir, "DiffcrashRun.log")
+            self.logfile_dir = Path(project_dir) / "Log"
+        self.logfile_filepath = self.logfile_dir / "DiffcrashRun.log"
 
         # logger
         self.logger = self._setup_logger()
@@ -248,18 +248,14 @@ class DiffcrashRun:
         self.logger.info(get_application_header())
 
         # diffcrash home
-        self.diffcrash_home = self._parse_diffcrash_home(diffcrash_home)
-        self.diffcrash_home = os.path.join(self.diffcrash_home, "bin")
-        self.diffcrash_lib = os.path.join(os.path.dirname(self.diffcrash_home), "lib")
+        self.diffcrash_home = Path(self._parse_diffcrash_home(diffcrash_home))
+        self.diffcrash_home = self.diffcrash_home / "bin"
+        self.diffcrash_lib = self.diffcrash_home.parent / "lib"
 
         if platform.system() == "Linux":
-            os.environ["PATH"] = (
-                os.environ["PATH"] + ":" + self.diffcrash_home + ":" + self.diffcrash_lib
-            )
+            os.environ["PATH"] += f":{self.diffcrash_home}:{self.diffcrash_lib}"
         if platform.system() == "Windows":
-            os.environ["PATH"] = (
-                os.environ["PATH"] + ";" + self.diffcrash_home + ";" + self.diffcrash_lib
-            )
+            os.environ["PATH"] += f";{self.diffcrash_home};{self.diffcrash_lib}"
 
         # project dir
         self.project_dir = self._parse_project_dir(project_dir)
@@ -354,7 +350,7 @@ class DiffcrashRun:
 
     def _parse_reference_run(self, reference_run) -> str:
 
-        reference_run_ok = os.path.isfile(reference_run)
+        reference_run_ok = Path(reference_run).is_file()
 
         msg = self._msg_option.format("reference-run", reference_run)
         print(str_info(msg))
@@ -376,7 +372,7 @@ class DiffcrashRun:
         return use_id_mapping
 
     def _parse_project_dir(self, project_dir):
-        project_dir = os.path.abspath(project_dir)
+        project_dir = Path(project_dir).resolve()
 
         msg = self._msg_option.format("project-dir", project_dir)
         print(str_info(msg))
@@ -395,13 +391,13 @@ class DiffcrashRun:
         simulation_runs = []
         for pattern in simulation_run_patterns:
             simulation_runs += glob.glob(pattern)
-        simulation_runs = [filepath for filepath in simulation_runs if os.path.isfile(filepath)]
+        simulation_runs = [filepath for filepath in simulation_runs if Path(filepath).is_file()]
 
         # search all excluded runs
         runs_to_exclude = []
         for pattern in exclude_runs:
             runs_to_exclude += glob.glob(pattern)
-        runs_to_exclude = [filepath for filepath in runs_to_exclude if os.path.isfile(filepath)]
+        runs_to_exclude = [filepath for filepath in runs_to_exclude if Path(filepath).is_file()]
 
         n_runs_before_filtering = len(simulation_runs)
         simulation_runs = [
@@ -448,7 +444,7 @@ class DiffcrashRun:
     def _parse_config_file(self, config_file) -> Union[str, None]:
 
         _msg_config_file = ""
-        if len(config_file) > 0 and not os.path.isfile(config_file):
+        if len(config_file) > 0 and not Path(config_file).is_file():
             config_file = None
             _msg_config_file = f"Can not find config file '{config_file}'"
 
@@ -474,7 +470,7 @@ class DiffcrashRun:
     def _parse_parameter_file(self, parameter_file) -> Union[None, str]:
 
         _msg_parameter_file = ""
-        if len(parameter_file) > 0 and not os.path.isfile(parameter_file):
+        if len(parameter_file) > 0 and not Path(parameter_file).is_file():
             parameter_file = None
             _msg_parameter_file = f"Can not find parameter file '{parameter_file}'"
         # missing parameter file
@@ -535,13 +531,13 @@ class DiffcrashRun:
         args = []
         if self.config_file is None and self.parameter_file is None:
             args = [
-                os.path.join(self.diffcrash_home, "DFC_Setup_" + self.crash_code + "_fem"),
+                self.diffcrash_home / f"DFC_Setup_{self.crash_code}_fem",
                 self.reference_run,
                 self.project_dir,
             ]
         elif self.config_file is not None and self.parameter_file is None:
             args = [
-                os.path.join(self.diffcrash_home, "DFC_Setup_" + self.crash_code + "_fem"),
+                self.diffcrash_home / f"DFC_Setup_{self.crash_code}_fem",
                 self.reference_run,
                 self.project_dir,
                 "-C",
@@ -550,7 +546,7 @@ class DiffcrashRun:
         elif self.config_file is None and self.parameter_file is not None:
             if ".fz" in self.reference_run:
                 args = [
-                    os.path.join(self.diffcrash_home, "DFC_Setup_" + self.crash_code + "_fem"),
+                    self.diffcrash_home / f"DFC_Setup_{self.crash_code}_fem",
                     self.reference_run,
                     self.project_dir,
                     "-P",
@@ -558,7 +554,7 @@ class DiffcrashRun:
                 ]
             else:
                 args = [
-                    os.path.join(self.diffcrash_home, "DFC_Setup_" + self.crash_code),
+                    self.diffcrash_home / f"DFC_Setup_{self.crash_code}",
                     self.reference_run,
                     self.project_dir,
                     "-P",
@@ -567,7 +563,7 @@ class DiffcrashRun:
         elif self.config_file is not None and self.parameter_file is not None:
             if ".fz" in self.reference_run:
                 args = [
-                    os.path.join(self.diffcrash_home, "DFC_Setup_" + self.crash_code + "_fem"),
+                    self.diffcrash_home / f"DFC_Setup_{self.crash_code}_fem",
                     self.reference_run,
                     self.project_dir,
                     "-C",
@@ -577,7 +573,7 @@ class DiffcrashRun:
                 ]
             else:
                 args = [
-                    os.path.join(self.diffcrash_home, "DFC_Setup_" + self.crash_code),
+                    self.diffcrash_home / f"DFC_Setup_{self.crash_code}",
                     self.reference_run,
                     self.project_dir,
                     "-C",
@@ -649,7 +645,7 @@ class DiffcrashRun:
             if self.parameter_file is None:
                 if self.use_id_mapping:
                     args = [
-                        os.path.join(self.diffcrash_home, "DFC_Import_" + self.crash_code + "_fem"),
+                        self.diffcrash_home / f"DFC_Import_{self.crash_code}_fem",
                         "-id",
                         self.simulation_runs[i_filepath],
                         self.project_dir,
@@ -657,7 +653,7 @@ class DiffcrashRun:
                     ]
                 else:
                     args = [
-                        os.path.join(self.diffcrash_home, "DFC_Import_" + self.crash_code + "_fem"),
+                        self.diffcrash_home / f"DFC_Import_{self.crash_code}_fem",
                         self.simulation_runs[i_filepath],
                         self.project_dir,
                         str(i_filepath + counter_offset),
@@ -666,7 +662,7 @@ class DiffcrashRun:
             else:
                 if self.use_id_mapping:
                     args = [
-                        os.path.join(self.diffcrash_home, "DFC_Import_" + self.crash_code),
+                        self.diffcrash_home / f"DFC_Import_{self.crash_code}",
                         "-ID",
                         self.simulation_runs[i_filepath],
                         self.project_dir,
@@ -674,7 +670,7 @@ class DiffcrashRun:
                     ]
                 else:
                     args = [
-                        os.path.join(self.diffcrash_home, "DFC_Import_" + self.crash_code),
+                        self.diffcrash_home / f"DFC_Import_{self.crash_code}",
                         self.simulation_runs[i_filepath],
                         self.project_dir,
                         str(i_filepath + counter_offset),
@@ -779,7 +775,7 @@ class DiffcrashRun:
         start_time = time.time()
         return_code_future = pool.submit(
             run_subprocess,
-            [os.path.join(self.diffcrash_home, "DFC_Math_" + self.crash_code), self.project_dir],
+            [self.diffcrash_home / f"DFC_Math_{self.crash_code}", self.project_dir],
         )
         return_code = return_code_future.result()
 
@@ -837,23 +833,23 @@ class DiffcrashRun:
             export_item_list = []
 
             # check for pdmx
-            pdmx_filepath_list = glob.glob(os.path.join(self.project_dir, "*_pdmx"))
+            pdmx_filepath_list = list(self.project_dir.glob("*_pdmx"))
             if pdmx_filepath_list:
-                export_item_list.append(os.path.basename(pdmx_filepath_list[0]))
+                export_item_list.append(pdmx_filepath_list[0].name)
 
             # check for pdij
-            pdij_filepath_list = glob.glob(os.path.join(self.project_dir, "*_pdij"))
+            pdij_filepath_list = list(self.project_dir.glob("*_pdij"))
             if pdij_filepath_list:
-                export_item_list.append(os.path.basename(pdij_filepath_list[0]))
+                export_item_list.append(pdij_filepath_list[0].name)
 
         else:
             export_item_list = self.read_config_file(self.config_file)
 
         # remove previous existing exports
         for export_item in export_item_list:
-            export_item_filepath = os.path.join(self.project_dir, export_item + ".d3plot.fz")
-            if os.path.isfile(export_item_filepath):
-                os.remove(export_item_filepath)
+            export_item_filepath = self.project_dir / f"{export_item}.d3plot.fz"
+            if export_item_filepath.is_file():
+                export_item_filepath.unlink()
 
         # do the thing
         start_time = time.time()
@@ -861,7 +857,7 @@ class DiffcrashRun:
             pool.submit(
                 run_subprocess,
                 [
-                    os.path.join(self.diffcrash_home, "DFC_Export_" + self.crash_code),
+                    self.diffcrash_home / f"DFC_Export_{self.crash_code}",
                     self.project_dir,
                     export_item,
                 ],
@@ -938,7 +934,7 @@ class DiffcrashRun:
         return_code_future = pool.submit(
             run_subprocess,
             [
-                os.path.join(self.diffcrash_home, "DFC_Matrix_" + self.crash_code),
+                self.diffcrash_home / f"DFC_Matrix_{self.crash_code}",
                 self.project_dir,
                 matrix_inputfile,
             ],
@@ -1003,7 +999,7 @@ class DiffcrashRun:
         return_code_future = pool.submit(
             run_subprocess,
             [
-                os.path.join(self.diffcrash_home, "DFC_Eigen_" + self.crash_code),
+                self.diffcrash_home / f"DFC_Eigen_{self.crash_code}",
                 self.project_dir,
                 eigen_inputfile,
             ],
@@ -1062,16 +1058,16 @@ class DiffcrashRun:
         merge_inputfile = self._create_merge_input_file(self.project_dir)
 
         # clear previous merges
-        for filepath in glob.glob(os.path.join(self.project_dir, "mode_*")):
-            if os.path.isfile(filepath):
-                os.remove(filepath)
+        for filepath in self.project_dir.glob("mode_*"):
+            if filepath.is_file():
+                filepath.unlink()
 
         # run the thing
         start_time = time.time()
         return_code_future = pool.submit(
             run_subprocess,
             [
-                os.path.join(self.diffcrash_home, "DFC_Merge_All_" + self.crash_code),
+                self.diffcrash_home / f"DFC_Merge_All_{self.crash_code}",
                 self.project_dir,
                 merge_inputfile,
             ],
@@ -1108,7 +1104,7 @@ class DiffcrashRun:
         print(str_success(msg))
         self.logger.info(msg)
 
-    def is_logfile_successful(self, logfile: str) -> bool:
+    def is_logfile_successful(self, logfile: Path) -> bool:
         """Checks if a logfile indicates a success
 
         Parameters
@@ -1127,7 +1123,7 @@ class DiffcrashRun:
                     return True
         return False
 
-    def _create_merge_input_file(self, directory: str) -> str:
+    def _create_merge_input_file(self, directory: Path) -> Path:
         """Create an input file for the merge executable
 
         Notes
@@ -1136,7 +1132,7 @@ class DiffcrashRun:
         """
 
         # creates default inputfile for DFC_Merge
-        filepath = os.path.join(directory, "merge_all.txt")
+        filepath = directory / "merge_all.txt"
         with open(filepath, "w", encoding="utf-8") as merge_input_file:
             merge_input_file.write("eigen_all        ! Name of eigen input file\n")
             merge_input_file.write(
@@ -1156,7 +1152,7 @@ class DiffcrashRun:
 
         return filepath
 
-    def _create_eigen_input_file(self, directory: str) -> str:
+    def _create_eigen_input_file(self, directory: Path) -> Path:
         """Create an input file for the eigen executable
 
         Notes
@@ -1165,7 +1161,7 @@ class DiffcrashRun:
         """
 
         # creates default inputfile for DFC_Eigen
-        filepath = os.path.join(directory, "eigen_all.txt")
+        filepath = directory / "eigen_all.txt"
         with open(filepath, "w", encoding="utf-8") as eigen_input_file:
             eigen_input_file.write("matrix_all\n")
             eigen_input_file.write('""\n')
@@ -1179,16 +1175,15 @@ class DiffcrashRun:
 
         return filepath
 
-    def _create_matrix_input_file(self, directory: str) -> str:
+    def _create_matrix_input_file(self, directory: Path) -> Path:
         """Create an input file for the matrix executable
 
         Notes
         -----
             From the official diffcrash docs.
         """
-
+        filepath = directory / "matrix.txt"
         # creates default inputfile for DFC_Matrix
-        filepath = os.path.join(directory, "matrix.txt")
         with open(filepath, "w", encoding="utf-8") as matrix_input_file:
             matrix_input_file.write("0 1000        !    Initial and final time stept to consider\n")
             matrix_input_file.write('""          !    not used\n')
@@ -1206,7 +1201,7 @@ class DiffcrashRun:
             self.logger.removeHandler(handler)
 
         # delete folder
-        if os.path.exists(self.project_dir):
+        if self.project_dir.is_dir():
             shutil.rmtree(self.project_dir)
 
         # reinit logger
@@ -1351,8 +1346,7 @@ class DiffcrashRun:
         _msg_logfile_nok = str_error("Logfile '{0}' reports no success.")
         messages = []
 
-        logfiles = glob.glob(os.path.join(self.logfile_dir, pattern))
-        for filepath in logfiles:
+        for filepath in self.logfile_dir.glob(pattern):
             if not self.is_logfile_successful(filepath):
                 messages.append(_msg_logfile_nok.format(filepath))
 
