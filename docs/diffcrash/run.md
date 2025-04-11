@@ -18,7 +18,7 @@ easier.
 You can get the run info by performing:
 
 ```console
-$ python -m lasso.diffcrash.run --help
+$ diffcrash --help
 
 ==== D I F F C R A S H ====
 

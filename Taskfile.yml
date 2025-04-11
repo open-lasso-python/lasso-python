@@ -4,24 +4,24 @@ tasks:
   setup:
     desc: Setup the development environment.
     cmds:
-      - poetry install
+      - uv sync
 
   lint:
     desc: Lints the code and reports on issues.
     cmds:
-      - poetry run black --check .
-      - poetry run ruff check .
+      - uv run black --check .
+      - uv run ruff check .
 
   build:
     desc: Builds the python package
     cmds:
-      - poetry build
+      - uv build
 
   test:
     desc: Runs tests on the code
     cmds:
       - >
-        poetry run pytest test
+        uv run pytest test
         --cov=lasso
         --cov-report=html
 
@@ -31,7 +31,7 @@ tasks:
       - test
       - docs:changelog
     cmds:
-      - poetry run mkdocs serve
+      - uv run mkdocs serve
 
   docs:build:
     desc: Build the documentation
@@ -39,7 +39,7 @@ tasks:
       - test
       - docs:changelog
     cmds:
-      - poetry run mkdocs build
+      - uv run mkdocs build
 
   docs:deploy:
     desc: Deploys the docs to GitHub (be careful!)
@@ -47,13 +47,13 @@ tasks:
       - test
       - docs:changelog
     cmds:
-      - poetry run mkdocs gh-deploy
+      - uv run mkdocs gh-deploy
 
   docs:changelog:
     desc: Generates the changelog
     cmds:
       - >
-        poetry run git-changelog .
+        uv run git-changelog .
         --output CHANGELOG.md
         --style angular
         --template angular
