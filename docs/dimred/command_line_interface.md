@@ -160,7 +160,7 @@ resizeContents()
 You can call the command-line tool as follows:
 
 ```console
-$ python -m lasso.dimred.run --help
+$ dimred --help
 
 usage: run.py [-h] --reference-run REFERENCE_RUN
               [--exclude-runs [EXCLUDE_RUNS [EXCLUDE_RUNS ...]]]

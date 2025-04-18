@@ -33,15 +33,15 @@ jobs:
           sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
 
       # Cache dependencies from poetry to speed things up
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v3
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      # - name: Load cached venv
+      #   id: cached-poetry-dependencies
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: .venv
+      #     key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
 
-      - name: Install and upgrade pip and poetry
-        run: python -m pip install --upgrade pip poetry
+      - name: Install and upgrade pip and uv
+        run: python -m pip install --upgrade pip uv
 
       - name: Install Dependencies
         run: ./bin/task setup

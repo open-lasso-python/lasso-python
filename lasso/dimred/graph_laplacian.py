@@ -96,7 +96,7 @@ def _laplacian_gauss_idw(
     for i, (j, d, e, k) in enumerate(
         zip(
             *tree.query_radius(points, return_distance=True, r=search_radius),
-            *tree.query(points, return_distance=True, k=1 + min_neighbors)
+            *tree.query(points, return_distance=True, k=1 + min_neighbors),
         )
     ):
         # Always search for k neighbors, this prevents strongly connected local areas
