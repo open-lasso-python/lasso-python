@@ -32,6 +32,9 @@ dependencies = [
     "scikit_learn==1.*"
 ]
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
 [project.scripts]
 diffcrash = "lasso.diffcrash.run:main"
 dimred = "lasso.dimred.run:main"
