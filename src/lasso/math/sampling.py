@@ -66,11 +66,9 @@ def homogenize_density(
     d_average = np.average(d[:, 1:], axis=1)
     if target_distance is None:
         target_distance = np.median(d_average)
-    is_selected = np.array(
-        [
-            dist >= target_distance or random.random() < (dist / target_distance) ** dim
-            for i, dist in enumerate(d_average)
-        ]
-    )
+    is_selected = np.array([
+        dist >= target_distance or random.random() < (dist / target_distance) ** dim
+        for i, dist in enumerate(d_average)
+    ])
     random.seed()
     return is_selected

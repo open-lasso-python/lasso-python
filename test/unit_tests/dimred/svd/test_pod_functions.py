@@ -44,9 +44,9 @@ class PodFunctionsTest(TestCase):
         # v_rob and betas should result in difference in displacements of original result
         reshaped_samples = rand_samples.reshape(samples, timesteps, nodes * dimensions)
 
-        delta_displ = reshaped_samples[:, :] - np.stack(
-            [reshaped_samples[0, :] for _ in range(timesteps)]
-        )
+        delta_displ = reshaped_samples[:, :] - np.stack([
+            reshaped_samples[0, :] for _ in range(timesteps)
+        ])
 
         recacl_displ = np.einsum("ktn, stk -> stn", v_rob, betas)
 

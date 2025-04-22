@@ -47,10 +47,7 @@ class FemzipError(Structure):
         Error message
     """
 
-    _fields_ = [
-        ("ier", c_int32),
-        ("msg", c_char_p),
-    ]
+    _fields_ = [("ier", c_int32), ("msg", c_char_p)]
 
 
 class VariableInfo(Structure):
@@ -245,7 +242,6 @@ class FemzipAPI:
         # pylint: disable = too-many-statements
 
         if self._api is None:
-
             # Set the base path once
             base_path = Path(__file__).parent
 
@@ -329,7 +325,7 @@ class FemzipAPI:
             self._api.is_femunzip_version_ok.restype = FemzipError
 
             # femzip status
-            self._api.get_femzip_status.argtypes = tuple()
+            self._api.get_femzip_status.argtypes = ()
             self._api.get_femzip_status.restype = FemzipAPIStatus
 
             # get part titles
@@ -341,7 +337,7 @@ class FemzipAPI:
             self._api.finish_reading_states.restype = FemzipError
 
             # close file
-            self._api.close_current_file.argtypes = tuple()
+            self._api.close_current_file.argtypes = ()
             self._api.close_current_file.restype = FemzipError
 
             # read single state
@@ -360,7 +356,6 @@ class FemzipAPI:
 
     @staticmethod
     def _parse_state_filter(state_filter: Union[Set[int], None], n_timesteps: int) -> Set[int]:
-
         # convert negative indexes
         state_filter_parsed = (
             {entry if entry >= 0 else entry + n_timesteps for entry in state_filter}
@@ -479,9 +474,7 @@ class FemzipAPI:
 
         # do the thing
         err = self.api.get_part_titles(
-            filepath.encode("utf-8"),
-            buffer,
-            buffer_info_parsed.size_titles,
+            filepath.encode("utf-8"), buffer, buffer_info_parsed.size_titles
         )
         self._check_femzip_error(err)
 
@@ -556,9 +549,10 @@ class FemzipAPI:
                 break
 
         # convert buffer into array
-        array = np.frombuffer(buffer_c, dtype=np.float32).reshape(
-            (n_timesteps_read, buffer_info.size_activity)
-        )
+        array = np.frombuffer(buffer_c, dtype=np.float32).reshape((
+            n_timesteps_read,
+            buffer_info.size_activity,
+        ))
 
         logging.debug("FemzipAPI.read_state_deletion_info end")
 
@@ -755,10 +749,7 @@ class FemzipAPI:
         """
         buffer_info = FemzipBufferInfo()
 
-        err = self.api.get_buffer_info(
-            filepath.encode("ascii"),
-            byref(buffer_info),
-        )
+        err = self.api.get_buffer_info(filepath.encode("ascii"), byref(buffer_info))
         self._check_femzip_error(err)
 
         # we need to copy the timesteps from C to Python
@@ -822,10 +813,7 @@ class FemzipAPI:
 
         # read geometry
         err = self.api.read_geometry(
-            filepath.encode("ascii"),
-            byref(buffer_info),
-            buffer,
-            c_int32(close_file),
+            filepath.encode("ascii"), byref(buffer_info), buffer, c_int32(close_file)
         )
 
         self._check_femzip_error(err)
@@ -876,7 +864,6 @@ class FemzipAPI:
 
         n_timesteps_read = 0
         for i_timestep in range(buffer_info_parsed.n_timesteps):
-
             # forward pointer in buffer
             buffer_state = buffer[buffer_info.size_state * n_timesteps_read]
 
@@ -890,9 +877,10 @@ class FemzipAPI:
             if not state_filter_valid:
                 break
 
-        array = np.from_buffer(buffer, dtype=np.float32).reshape(
-            (n_timesteps_read, buffer_info_parsed.size_state)
-        )
+        array = np.from_buffer(buffer, dtype=np.float32).reshape((
+            n_timesteps_read,
+            buffer_info_parsed.size_state,
+        ))
 
         return array
 
@@ -963,7 +951,6 @@ class FemzipAPI:
             variable_name = var_info.name.decode("utf-8")
             variable_category = FemzipVariableCategory.from_int(var_info.var_type)
             if variable_category == FemzipVariableCategory.NODE:
-
                 variable_multiplier = 1
                 if (
                     FemzipArrayType.NODE_DISPLACEMENT.value in variable_name
@@ -1037,7 +1024,6 @@ class FemzipAPI:
         n_timesteps_read: int,
         file_metadata: FemzipFileMetadata,
     ) -> Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray]:
-
         # pylint: disable=too-many-arguments
         # pylint: disable=too-many-locals
         # pylint: disable=too-many-branches
@@ -1047,7 +1033,6 @@ class FemzipAPI:
         result_arrays: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray] = {}
         var_pos = 0
         for i_var in range(file_metadata.number_of_variables):
-
             var_info: VariableInfo = file_metadata.variable_infos[i_var]
             variable_name: str = var_info.name.decode("utf-8")
             variable_index: int = var_info.var_index
@@ -1061,9 +1046,11 @@ class FemzipAPI:
                     FemzipArrayType.NODE_ACCELERATIONS.value,
                 ):
                     array_size = file_metadata.number_of_nodes * 3
-                    var_array = all_vars_array[:, var_pos : var_pos + array_size].reshape(
-                        (n_timesteps_read, file_metadata.number_of_nodes, 3)
-                    )
+                    var_array = all_vars_array[:, var_pos : var_pos + array_size].reshape((
+                        n_timesteps_read,
+                        file_metadata.number_of_nodes,
+                        3,
+                    ))
                     var_pos += array_size
                     result_arrays[(variable_index, variable_name, FemzipVariableCategory.NODE)] = (
                         var_array

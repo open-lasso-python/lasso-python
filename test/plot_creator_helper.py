@@ -38,12 +38,10 @@ def create_fake_d3plots(
     # )
     # for _ in range(n_nodes_y)]).reshape(((bend_end - bend_start)*n_nodes_y))
 
-    z_bend_mat = np.stack(
-        [
-            np.array([1 + math.sin(x * math.pi / n_nodes_x) for x in range(n_nodes_x)])
-            for _ in range(n_nodes_y)
-        ]
-    ).reshape((n_nodes_x * n_nodes_y,))
+    z_bend_mat = np.stack([
+        np.array([1 + math.sin(x * math.pi / n_nodes_x) for x in range(n_nodes_x)])
+        for _ in range(n_nodes_y)
+    ]).reshape((n_nodes_x * n_nodes_y,))
     node_coordinates = np.zeros((n_nodes_x * n_nodes_y, 3))
 
     # fill in y coords
@@ -151,7 +149,7 @@ def create_n_fake_plots(folder: str, n_nodes_x: int, n_nodes_y: int, n_timesteps
     # n plots bending down
     for i in range(int(n / 2)):
         create_fake_d3plots(
-            path=os.path.join(folder, plot_name.format(i=f"{i+int(n/2):02d}")),
+            path=os.path.join(folder, plot_name.format(i=f"{i + int(n / 2):02d}")),
             element_shell_node_indexes=element_shell_node_indexes,
             bend_multiplicator=-5 * (1 + randy_random.random()),
             n_nodes_x=n_nodes_x,

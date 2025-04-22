@@ -22,9 +22,7 @@ class TestClustering(TestCase):
             fake_betas,
             cluster=ClusterType.KMeans,
             detector=DetectorType.LocalOutlierFactor,
-            cluster_params=dict(
-                n_clusters=expected_clusters,
-            ),
+            cluster_params={"n_clusters": expected_clusters},
         )
 
         # verify correct type of output

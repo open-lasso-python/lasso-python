@@ -287,7 +287,6 @@ class DiffcrashRun:
         self.n_processes = self._parse_n_processes(n_processes)
 
     def _setup_logger(self) -> logging.Logger:
-
         # better safe than sorry
         os.makedirs(self.logfile_dir, exist_ok=True)
 
@@ -310,7 +309,6 @@ class DiffcrashRun:
         return logger
 
     def _parse_diffcrash_home(self, diffcrash_home) -> str:
-
         diffcrash_home_ok = len(diffcrash_home) != 0
 
         msg = self._msg_option.format("diffcrash-home", diffcrash_home)
@@ -328,7 +326,6 @@ class DiffcrashRun:
         return diffcrash_home
 
     def _parse_crash_code(self, crash_code) -> str:
-
         # these guys are allowed
         valid_crash_codes = ["dyna", "radioss", "pam"]
 
@@ -340,8 +337,7 @@ class DiffcrashRun:
 
         if not crash_code_ok:
             err_msg = (
-                f"Invalid crash code '{crash_code}'. "
-                f"Please use one of: {str(valid_crash_codes)}"
+                f"Invalid crash code '{crash_code}'. Please use one of: {str(valid_crash_codes)}"
             )
             self.logger.error(err_msg)
             raise RuntimeError(str_error(err_msg))
@@ -349,7 +345,6 @@ class DiffcrashRun:
         return crash_code
 
     def _parse_reference_run(self, reference_run) -> str:
-
         reference_run_ok = Path(reference_run).is_file()
 
         msg = self._msg_option.format("reference-run", reference_run)
@@ -364,7 +359,6 @@ class DiffcrashRun:
         return reference_run
 
     def _parse_use_id_mapping(self, use_id_mapping) -> bool:
-
         msg = self._msg_option.format("use-id-mapping", use_id_mapping)
         print(str_info(msg))
         self.logger.info(msg)
@@ -386,7 +380,6 @@ class DiffcrashRun:
         reference_run: str,
         exclude_runs: typing.Sequence[str],
     ):
-
         # search all denoted runs
         simulation_runs = []
         for pattern in simulation_run_patterns:
@@ -442,7 +435,6 @@ class DiffcrashRun:
         return simulation_runs
 
     def _parse_config_file(self, config_file) -> Union[str, None]:
-
         _msg_config_file = ""
         if len(config_file) > 0 and not Path(config_file).is_file():
             config_file = None
@@ -450,11 +442,9 @@ class DiffcrashRun:
 
         # missing config file
         else:
-
             config_file = None
             _msg_config_file = (
-                "Config file missing. "
-                "Consider specifying the path with the option '--config-file'."
+                "Config file missing. Consider specifying the path with the option '--config-file'."
             )
 
         msg = self._msg_option.format("config-file", config_file)
@@ -468,7 +458,6 @@ class DiffcrashRun:
         return config_file
 
     def _parse_parameter_file(self, parameter_file) -> Union[None, str]:
-
         _msg_parameter_file = ""
         if len(parameter_file) > 0 and not Path(parameter_file).is_file():
             parameter_file = None
@@ -492,7 +481,6 @@ class DiffcrashRun:
         return parameter_file
 
     def _parse_n_processes(self, n_processes) -> int:
-
         print(str_info(self._msg_option.format("n-processes", n_processes)))
 
         if n_processes <= 0:
@@ -640,7 +628,6 @@ class DiffcrashRun:
         # entry 0 is the reference run, thus we start at 1
         # pylint: disable = consider-using-enumerate
         for i_filepath in range(len(self.simulation_runs)):
-
             # parameter file missing
             if self.parameter_file is None:
                 if self.use_id_mapping:
@@ -691,7 +678,6 @@ class DiffcrashRun:
             return_code_future.done() for return_code_future in return_code_futures
         )
         while n_imports_finished != len(return_code_futures):
-
             # check again
             n_new_imports_finished = sum(
                 return_code_future.done() for return_code_future in return_code_futures
@@ -717,7 +703,6 @@ class DiffcrashRun:
 
         # print failure
         if any(return_code != 0 for return_code in return_codes):
-
             n_failed_runs = 0
             for i_run, return_code in enumerate(return_codes):
                 if return_code != 0:
@@ -739,7 +724,6 @@ class DiffcrashRun:
         # check log files
         messages = self.check_if_logfiles_show_success("DFC_Import_*.log")
         if messages:
-
             # print failure
             msg = f"Running Imports ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
@@ -774,14 +758,12 @@ class DiffcrashRun:
 
         start_time = time.time()
         return_code_future = pool.submit(
-            run_subprocess,
-            [self.diffcrash_home / f"DFC_Math_{self.crash_code}", self.project_dir],
+            run_subprocess, [self.diffcrash_home / f"DFC_Math_{self.crash_code}", self.project_dir]
         )
         return_code = return_code_future.result()
 
         # check return code
         if return_code != 0:
-
             msg = f"Running Math ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
             self.logger.error(msg)
@@ -793,7 +775,6 @@ class DiffcrashRun:
         # check logs
         messages = self.check_if_logfiles_show_success("DFC_MATH*.log")
         if messages:
-
             # print failure
             msg = f"Running Math ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
@@ -889,7 +870,6 @@ class DiffcrashRun:
         # check logs
         messages = self.check_if_logfiles_show_success("DFC_Export_*")
         if messages:
-
             # print failure
             msg = f"Running Export ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
@@ -900,10 +880,7 @@ class DiffcrashRun:
                 print(str_error(msg))
                 self.logger.error(msg)
 
-            msg = (
-                "At least one export failed. "
-                f"Please check the log files in '{self.logfile_dir}'."
-            )
+            msg = f"At least one export failed. Please check the log files in '{self.logfile_dir}'."
             self.logger.error(msg)
             raise RuntimeError(str_error(msg))
 
@@ -945,7 +922,6 @@ class DiffcrashRun:
 
         # check return code
         if return_code != 0:
-
             # print failure
             msg = f"Running Matrix ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
@@ -958,7 +934,6 @@ class DiffcrashRun:
         # check log file
         messages = self.check_if_logfiles_show_success("DFC_Matrix_*")
         if messages:
-
             # print failure
             msg = f"Running Matrix ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))
@@ -1021,7 +996,6 @@ class DiffcrashRun:
         # check log file
         messages = self.check_if_logfiles_show_success("DFC_Matrix_*")
         if messages:
-
             # print failure
             msg = f"Running Eigen ... done in {time.time() - start_time:.2f}s   "
             print(str_error(msg))

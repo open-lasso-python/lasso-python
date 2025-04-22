@@ -328,7 +328,9 @@ class DimredRun:
         self.logfile_filepath = (
             logfile_filepath
             if logfile_filepath
-            else os.path.join(project_dir, "logfile") if project_dir else ""
+            else os.path.join(project_dir, "logfile")
+            if project_dir
+            else ""
         )
 
         self._msg_option = "{:16s}: {}"
@@ -346,12 +348,10 @@ class DimredRun:
 
         # parse simulation and reference run
         # if no reference run was set use first simulation run
-        (
-            self.simulation_runs,
-            self.reference_run,
-            self.exclude_runs,
-        ) = self._parse_simulation_and_reference_runs(
-            simulation_runs, reference_run, tuple() if not exclude_runs else exclude_runs, table
+        (self.simulation_runs, self.reference_run, self.exclude_runs) = (
+            self._parse_simulation_and_reference_runs(
+                simulation_runs, reference_run, () if not exclude_runs else exclude_runs, table
+            )
         )
 
         # check if basename or foldername serves as unique identifier
@@ -361,7 +361,7 @@ class DimredRun:
 
         # set project dir and simulation runs
         self.project_dir = self._parse_project_dir(project_dir, table)
-        self.part_ids = part_id_filter if part_id_filter is not None else tuple()
+        self.part_ids = part_id_filter if part_id_filter is not None else ()
         if self.part_ids is not None and len(self.part_ids) != 0:
             table.add_row("selected parts", ",".join(str(entry) for entry in self.part_ids))
         self.timestep = timestep
@@ -449,7 +449,6 @@ class DimredRun:
         self.raise_error(err_msg)
 
     def _parse_stages(self, start_stage: str, end_stage: str):
-
         # check validity
         if start_stage not in DIMRED_STAGES:
             err_msg = f"{start_stage} is not a valid stage. Try: {', '.join(DIMRED_STAGES)}."
@@ -498,16 +497,14 @@ class DimredRun:
             self.log("Skipped clustering stage", style="warning")
 
     def _parse_part_ids(self, part_ids: Union[Sequence[int], None]) -> Sequence[int]:
-
         if not part_ids:
-            return tuple()
+            return ()
 
         assert all(isinstance(pid, int) for pid in part_ids), "All part ids must be of type 'int'"
 
         return part_ids
 
     def _parse_project_dir(self, project_dir: Union[str, None], table: Table):
-
         if not project_dir:
             return ""
 
@@ -533,7 +530,6 @@ class DimredRun:
         exclude_runs: Sequence[str],
         table: Table,
     ) -> Tuple[Sequence[str], str, Sequence[str]]:
-
         # pylint: disable = too-many-locals
 
         # search all denoted runs
@@ -576,7 +572,6 @@ class DimredRun:
         # check for valid reference run
         reference_run = ""
         if reference_run_pattern:
-
             reference_run_ok = os.path.isfile(reference_run_pattern)
             if not reference_run_ok:
                 err_msg = f"Filepath '{reference_run_pattern}' is not a file."
@@ -641,7 +636,6 @@ class DimredRun:
             self.detector_args = result[1]
 
     def _parse_n_processes(self, n_processes: int, table: Table) -> int:
-
         if n_processes <= 0:
             err_msg = f"n-processes is '{n_processes}' but must be at least 1."
             self.raise_error(err_msg)
@@ -650,7 +644,6 @@ class DimredRun:
         return n_processes
 
     def _parse_html_name(self, html_name_string: str) -> str:
-
         html_name, replace_count = re.subn(r"[!§$%&/()=?\"\[\]{}\\.,;:<>|]", "", html_name_string)
         html_name = html_name.replace(" ", "-")
 
@@ -750,7 +743,6 @@ class DimredRun:
             prog = PlaceHolderBar()
 
         with prog:
-
             # define progressbar task
             task1 = prog.add_task(
                 "[cyan]Subsampling plots [/cyan]", total=len(self.simulation_runs)
@@ -876,12 +868,10 @@ class DimredRun:
                 if entry not in excluded_entries
             ]
 
-            run_timesteps = np.array(
-                [
-                    self.h5file[HDF5FileNames.SUBSAMPLED_GROUP_NAME.value][entry].shape[0]
-                    for entry in valid_entries
-                ]
-            )
+            run_timesteps = np.array([
+                self.h5file[HDF5FileNames.SUBSAMPLED_GROUP_NAME.value][entry].shape[0]
+                for entry in valid_entries
+            ])
 
             min_step = np.min(run_timesteps)
             max_step = np.max(run_timesteps)
@@ -897,16 +887,12 @@ class DimredRun:
             # add task after checking condition, else output looks wonky
             beta_task = prog.add_task("[cyan]Reducing Plots [/cyan]", total=int(min_step))
 
-            sub_displ = np.stack(
-                [
-                    self.h5file[HDF5FileNames.SUBSAMPLED_GROUP_NAME.value][entry][:min_step, :]
-                    for entry in valid_entries
-                ]
-            )
+            sub_displ = np.stack([
+                self.h5file[HDF5FileNames.SUBSAMPLED_GROUP_NAME.value][entry][:min_step, :]
+                for entry in valid_entries
+            ])
 
-            result = calculate_v_and_betas(
-                sub_displ, progress_bar=prog, task_id=beta_task
-            )  # type: ignore
+            result = calculate_v_and_betas(sub_displ, progress_bar=prog, task_id=beta_task)  # type: ignore
             # returns string if samplesize to small
             if isinstance(result, str):
                 self.raise_error(result)
@@ -961,13 +947,13 @@ class DimredRun:
                 for entry in self.exclude_runs
             ]
 
-            beta_index = np.stack(
-                [key for key in betas_group.keys() if key not in excluded_entries]
-            )
+            beta_index = np.stack([
+                key for key in betas_group.keys() if key not in excluded_entries
+            ])
             try:
-                betas = np.stack(
-                    [betas_group[entry][self.timestep, :3] for entry in beta_index]
-                )  # betas_group.keys()])
+                betas = np.stack([
+                    betas_group[entry][self.timestep, :3] for entry in beta_index
+                ])  # betas_group.keys()])
             except ValueError:
                 log_msg = (
                     "Invalid parameter for timestep. Set a valid timestep with --timestep.\n"
@@ -1032,7 +1018,6 @@ class DimredRun:
 
         # check if clustering was performed, else load all betas into one pseudo-cluster
         if HDF5FileNames.NR_CLUSTER.value not in betas_group.attrs:
-
             # plotfunction expects list of cluster
             # we have no clusters -> we claim all is in one cluster
 
@@ -1053,9 +1038,9 @@ class DimredRun:
             id_data = np.stack([key for key in betas_group.keys() if key not in excluded_entries])
 
             # create an index referencing each run to a cluster
-            cluster_index = np.stack(
-                [betas_group[entry].attrs[HDF5FileNames.CLUSTER.value] for entry in id_data]
-            )
+            cluster_index = np.stack([
+                betas_group[entry].attrs[HDF5FileNames.CLUSTER.value] for entry in id_data
+            ])
 
             # load betas & ids
             beta_data = np.stack([betas_group[entry][-1] for entry in id_data])

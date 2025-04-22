@@ -345,7 +345,7 @@ class D3plotHeader:
     quadratic_elems_has_full_connectivity: bool = False
     quadratic_elems_has_data_at_integration_points: bool = False
     n_post_branches: int = 0
-    n_types: Tuple[int, ...] = tuple()
+    n_types: Tuple[int, ...] = ()
 
     # parts
     n_parts: int = 0
@@ -1076,7 +1076,6 @@ class D3plotHeader:
             storage_dict = {}
 
         for name, data in words_to_read.items():
-
             # check buffer length
             if data[0] >= len(bb):
                 continue
@@ -1099,7 +1098,7 @@ class D3plotHeader:
 
     @staticmethod
     def _determine_file_settings(
-        bb: Union[BinaryBuffer, None] = None
+        bb: Union[BinaryBuffer, None] = None,
     ) -> Tuple[int, Union[np.int32, np.int64], Union[np.float32, np.float64]]:
         """Determine the precision of the file
 
@@ -1127,7 +1126,6 @@ class D3plotHeader:
         # test file type flag (1=d3plot, 5=d3part, 11=d3eigv)
 
         if isinstance(bb, BinaryBuffer):
-
             # single precision
             value = bb.read_number(44, np.int32)
             if value > 1000:

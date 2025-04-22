@@ -109,14 +109,14 @@ class Binout:
             ['swforc']
             >>> binout.read("swforc")
             ['title', 'failure', 'ids', 'failure_time', ...]
-            >>> binout.read("swforc","shear").shape
+            >>> binout.read("swforc", "shear").shape
             (321L, 26L)
-            >>> binout.read("swforc","ids").shape
+            >>> binout.read("swforc", "ids").shape
             (26L,)
-            >>> binout.read("swforc","ids")
+            >>> binout.read("swforc", "ids")
             array([52890, 52891, 52892, ...])
             >>> # read a string value
-            >>> binout.read("swforc","date")
+            >>> binout.read("swforc", "date")
             '11/05/2013'
         """
 
@@ -143,11 +143,11 @@ class Binout:
         Examples
         --------
             >>> from lasso.dyna import Binout
-            >>> binout = Binout('path/to/binout')
+            >>> binout = Binout("path/to/binout")
 
             Read a time-dependent array.
 
-            >>> binout.as_df('glstat', 'eroded_kinetic_energy')
+            >>> binout.as_df("glstat", "eroded_kinetic_energy")
             time
             0.00000        0.000000
             0.19971        0.000000
@@ -164,7 +164,7 @@ class Binout:
 
             Read a time and id-dependent array.
 
-            >>> binout.as_df('secforc', 'x_force')
+            >>> binout.as_df("secforc", "x_force")
                                   1             2             3  ...            33            34
             time                                                 .
             0.00063    2.168547e-16  2.275245e-15 -3.118639e-14  ... -5.126108e-13  4.592941e-16
@@ -320,7 +320,6 @@ class Binout:
         time = []
         data = []
         for subdir_name, subdir_symbol in dir_symbol.children.items():
-
             # skip metadata
             if subdir_name == "metadata":
                 continue
@@ -465,7 +464,6 @@ class Binout:
 
         # iterate through subdirs
         if isinstance(ret, list):
-
             if path_str:
                 hdf5_grp = hdf5_grp.create_group(path_str)
 

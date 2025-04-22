@@ -57,17 +57,17 @@ def calculate_v_and_betas(
         Error message if not enough samples where provided
     """
 
-    big_mat = stacked_sub_displ.reshape(
-        (
-            stacked_sub_displ.shape[0],
-            stacked_sub_displ.shape[1],
-            stacked_sub_displ.shape[2] * stacked_sub_displ.shape[3],
-        )
-    )
+    big_mat = stacked_sub_displ.reshape((
+        stacked_sub_displ.shape[0],
+        stacked_sub_displ.shape[1],
+        stacked_sub_displ.shape[2] * stacked_sub_displ.shape[3],
+    ))
 
-    diff_mat = np.stack([big_mat[:, 0, :] for _ in range(big_mat.shape[1])]).reshape(
-        (big_mat.shape[0], big_mat.shape[1], big_mat.shape[2])
-    )
+    diff_mat = np.stack([big_mat[:, 0, :] for _ in range(big_mat.shape[1])]).reshape((
+        big_mat.shape[0],
+        big_mat.shape[1],
+        big_mat.shape[2],
+    ))
 
     # We only want the difference in displacement
     big_mat = big_mat - diff_mat

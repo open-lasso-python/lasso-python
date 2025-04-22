@@ -43,7 +43,6 @@ def set_var(name, value, context):
 
     current_context = context
     for i_name, current_name in enumerate(name):
-
         # at last level set var
         if i_name == len(name) - 1:
             current_context[current_name] = value

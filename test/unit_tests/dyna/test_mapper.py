@@ -322,9 +322,7 @@ class MapperTest(TestCase):
     def test_internal_shell_energy(self):
         interal_energy = np.array([[1, 1, 0.12, 2.121202, 2.1123, 7.213]]).reshape(2, 3)
 
-        fz = {
-            (1, "internal_energy", FemzipVariableCategory.SHELL): interal_energy,
-        }
+        fz = {(1, "internal_energy", FemzipVariableCategory.SHELL): interal_energy}
         m = FemzipMapper()
 
         m.map(fz)

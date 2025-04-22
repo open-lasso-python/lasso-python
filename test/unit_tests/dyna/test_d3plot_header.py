@@ -12,9 +12,7 @@ from lasso.io.binary_buffer import BinaryBuffer
 
 
 class D3plotHeaderTest(TestCase):
-
     def test_loading(self):
-
         filepaths = [
             "test/test_data/simple_d3plot/d3plot",
             "test/test_data/d3plot_node_temperature/d3plot",
@@ -29,7 +27,6 @@ class D3plotHeaderTest(TestCase):
         warnings.warn("No assertions of behavior, test is incomplete")
 
     def test_get_digit(self) -> None:
-
         number = 1234567890
 
         # the numbers are sorted from the lowest importance
@@ -50,19 +47,9 @@ class D3plotHeaderTest(TestCase):
         self.assertEqual(get_digit(number, 10), 0)
 
     def test_d3plot_filetype_from_integer(self) -> None:
-
-        self.assertEqual(
-            d3plot_filetype_from_integer(1),
-            D3plotFiletype.D3PLOT,
-        )
-        self.assertEqual(
-            d3plot_filetype_from_integer(5),
-            D3plotFiletype.D3PART,
-        )
-        self.assertEqual(
-            d3plot_filetype_from_integer(11),
-            D3plotFiletype.D3EIGV,
-        )
+        self.assertEqual(d3plot_filetype_from_integer(1), D3plotFiletype.D3PLOT)
+        self.assertEqual(d3plot_filetype_from_integer(5), D3plotFiletype.D3PART)
+        self.assertEqual(d3plot_filetype_from_integer(11), D3plotFiletype.D3EIGV)
 
         # INFOR is forbidden
         with self.assertRaises(ValueError):
@@ -72,7 +59,6 @@ class D3plotHeaderTest(TestCase):
             d3plot_filetype_from_integer(0)
 
     def test_determine_file_settings(self) -> None:
-
         # the routine checks the "filetype" flag
         # if it makes any sense under any circumstances
         # we assume the corresponding file settings
@@ -81,7 +67,6 @@ class D3plotHeaderTest(TestCase):
         # 88 -> int64
         for position in (44, 88):
             for filetype in (D3plotFiletype.D3PLOT, D3plotFiletype.D3PART, D3plotFiletype.D3EIGV):
-
                 bb = BinaryBuffer()
                 bb.memoryview = memoryview(bytearray(256))
                 bb.write_number(position, filetype.value, np.int32)

@@ -336,7 +336,7 @@ stress_index = {
 
 
 def femzip_to_d3plot(
-    result_arrays: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray]
+    result_arrays: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray],
 ) -> Dict[str, np.ndarray]:
     """Map femzip arrays to d3plot arrays
 
