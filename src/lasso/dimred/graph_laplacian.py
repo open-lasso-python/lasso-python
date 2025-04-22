@@ -143,7 +143,6 @@ def _laplacian(lapl: csgraph, n_eigenmodes: int = 5):
     eigen_vecs = np.empty((0, 0))
 
     while n_nonzero_eigenvalues < n_eigenmodes:
-
         eigen_vals, eigen_vecs = map(np.real, eigsh(lapl, n_eigenvalues, which="SA"))
 
         i_start = np.argmax(eigen_vals > 1e-7)

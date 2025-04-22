@@ -125,7 +125,6 @@ def _extract_shell_parts(
         def mask_parts(
             part_list2: List[int], element_part_index: np.ndarray, element_node_index: np.ndarray
         ) -> np.ndarray:
-
             element_part_filter = np.full(element_part_index.shape, False)
             proc_parts = []
 

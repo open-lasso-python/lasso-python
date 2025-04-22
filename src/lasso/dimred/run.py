@@ -15,9 +15,12 @@ def main():
 
     # parse command line stuff
     parser = parse_dimred_args()
-    log_theme = Theme(
-        {"info": "royal_blue1", "success": "green", "warning": "dark_orange3", "error": "bold red"}
-    )
+    log_theme = Theme({
+        "info": "royal_blue1",
+        "success": "green",
+        "warning": "dark_orange3",
+        "error": "bold red",
+    })
     console = Console(theme=log_theme, record=True, highlight=False)
 
     try:
@@ -48,7 +51,6 @@ def main():
 
         # initiate threading pool for handling jobs
         with dimred_run:
-
             # setup
             if (
                 dimred_run.start_stage_index

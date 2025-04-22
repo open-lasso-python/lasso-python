@@ -17,7 +17,6 @@ class TestDimredRun(TestCase):
         )
 
         with tempfile.TemporaryDirectory() as tmpdir:
-
             # create simulation runs
             create_n_fake_plots(folder=tmpdir, n_nodes_x=500, n_nodes_y=10)
 
@@ -93,9 +92,9 @@ class TestDimredRun(TestCase):
                 # verify that calculated betas are reproducible as expected
                 # first, create displ mat containing difference in displ over time
                 verify_displ_stacked = test_subs.reshape(49, 5, 2000 * 3)
-                verify_diff_mat = np.stack(
-                    [verify_displ_stacked[:, 0, :] for _ in range(5)]
-                ).reshape(49, 5, 2000 * 3)
+                verify_diff_mat = np.stack([
+                    verify_displ_stacked[:, 0, :] for _ in range(5)
+                ]).reshape(49, 5, 2000 * 3)
                 verify_displ_stacked = verify_displ_stacked - verify_diff_mat
 
                 # calculate betas and check if they are similar

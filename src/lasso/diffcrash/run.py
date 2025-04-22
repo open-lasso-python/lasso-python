@@ -17,7 +17,6 @@ from ..logging import str_error
 
 
 def _parse_stages(start_stage: str, end_stage: str):
-
     # check validity
     if start_stage not in DC_STAGES or end_stage not in DC_STAGES:
         raise ValueError(
@@ -76,7 +75,6 @@ def main():
 
     # initiate threading pool for handling jobs
     with futures.ThreadPoolExecutor(max_workers=diffcrash_run.n_processes) as pool:
-
         # setup
         if start_stage_index <= DC_STAGES.index(DC_STAGE_SETUP) <= end_stage_index:
             diffcrash_run.run_setup(pool)

@@ -14,7 +14,6 @@ class TestSubsampling(TestCase):
         """Tests the creation of reference sample"""
 
         with tempfile.TemporaryDirectory() as tmp_dir:
-
             create_n_fake_plots(tmp_dir, 500, 10, n=2)
             load_path = os.path.join(tmp_dir, "SVDTestPlot00/plot")
             n_nodes = 200
@@ -54,7 +53,6 @@ class TestSubsampling(TestCase):
         """Verifies correct subsampling"""
 
         with tempfile.TemporaryDirectory() as tmp_dir:
-
             create_n_fake_plots(tmp_dir, 500, 10, n=2)
             ref_path = os.path.join(tmp_dir, "SVDTestPlot00/plot")
             sample_path = os.path.join(tmp_dir, "SVDTestPlot01/plot")

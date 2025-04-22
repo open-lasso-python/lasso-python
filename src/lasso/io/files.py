@@ -57,7 +57,7 @@ def collect_files(
 
     Examples
     --------
-        >>> png_images, jpeg_images = collect_files('./folder', ['*.png', '*.jpeg'])
+        >>> png_images, jpeg_images = collect_files("./folder", ["*.png", "*.jpeg"])
     """
 
     if not isinstance(dirpath, (list, tuple)):
@@ -67,7 +67,6 @@ def collect_files(
 
     found_files = []
     for pattern in patterns:
-
         files_with_pattern = []
         for current_dir in dirpath:
             # files in root dir

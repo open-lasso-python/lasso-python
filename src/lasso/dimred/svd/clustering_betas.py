@@ -485,8 +485,7 @@ def create_cluster_arg_dict(args: Sequence[str]) -> Union[Tuple[str, dict], str]
             val = v_type(values[ind])
         except ValueError:
             err_msg = (
-                f"Clustering: Invalid value {values[ind]} "
-                f"for parameter {param} of type {v_type}"
+                f"Clustering: Invalid value {values[ind]} for parameter {param} of type {v_type}"
             )
             return err_msg
         cluster_arg_dict[param] = val
@@ -650,7 +649,6 @@ def group_betas(
         betas, _ = __rescale_betas(betas)
 
     if detector == "Experimental":
-
         experimental_results = __detector_dict[detector](betas, beta_index, **detector_params)
         if not isinstance(experimental_results, bool):
             outlier_betas, outlier_index, inlier_index = experimental_results

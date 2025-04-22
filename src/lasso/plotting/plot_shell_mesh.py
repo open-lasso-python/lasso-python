@@ -92,17 +92,14 @@ def plot_shell_mesh(
     # the element values at the 3 corner nodes. Since elements share nodes
     # we can not use the same nodes, thus we need to create multiple nodes
     # at the same position but with different fringe.
-    nodes_xyz = np.concatenate(
-        [
-            node_coordinates[tria_node_indexes].reshape((-1, 3)),
-            node_coordinates[quad_node_indexes_tria1].reshape((-1, 3)),
-            node_coordinates[quad_node_indexes_tria2].reshape((-1, 3)),
-        ]
-    )
+    nodes_xyz = np.concatenate([
+        node_coordinates[tria_node_indexes].reshape((-1, 3)),
+        node_coordinates[quad_node_indexes_tria1].reshape((-1, 3)),
+        node_coordinates[quad_node_indexes_tria2].reshape((-1, 3)),
+    ])
 
     # fringe value and hover title
     if isinstance(field, np.ndarray):
-
         if is_element_field:
             n_shells = len(shell_node_indexes)
             n_tria = np.sum(is_tria)
@@ -132,13 +129,11 @@ def plot_shell_mesh(
             node_fringe = node_fringe.flatten()
         else:
             # copy & paste ftw
-            node_fringe = np.concatenate(
-                [
-                    field[tria_node_indexes].reshape((-1, 3)),
-                    field[quad_node_indexes_tria1].reshape((-1, 3)),
-                    field[quad_node_indexes_tria2].reshape((-1, 3)),
-                ]
-            )
+            node_fringe = np.concatenate([
+                field[tria_node_indexes].reshape((-1, 3)),
+                field[quad_node_indexes_tria1].reshape((-1, 3)),
+                field[quad_node_indexes_tria2].reshape((-1, 3)),
+            ])
             node_fringe = node_fringe.flatten()
 
         # element text

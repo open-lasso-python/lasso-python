@@ -42,12 +42,10 @@ def _match_modes(
     mode2_hash_indexes = list(range(len(hashes2)))
 
     for i_hash in mode1_hash_indexes:
-
         field1 = eigenvectors_sub1[:, i_hash]
 
         found_match = False
         for j_entry, j_hash in enumerate(mode2_hash_indexes):
-
             field2 = eigenvectors_sub2[:, j_hash]
 
             if is_mode_match(field1, field2):
@@ -135,7 +133,6 @@ def _compute_mode_similarities(
 
     mode_similarities = []
     for i_hash, j_hash in matches:
-
         assert hashes1.shape[2] == hashes2.shape[2]
 
         field1 = eigenvectors_sub1[:, i_hash]
@@ -199,10 +196,8 @@ def _join_hash_comparison_thread_files(
         )
 
         for thread_filepath in thread_filepaths:
-
             # open thread file
             with h5py.File(thread_filepath, "r") as thread_file:
-
                 # insert matrix entries
                 matrix_indexes = thread_file["matrix_indexes"]
                 matrix_similarities = thread_file["matrix_similarities"]
@@ -309,10 +304,8 @@ def run_hash_comparison(
         )
 
         def _save_data(computed_results, counter):
-
             start = counter + 1 - len(computed_results)
             for i_result, result in enumerate(computed_results):
-
                 i_run, j_run = result["matrix_index"]
                 similarities = result["similarities"]
                 matches_tmp = result["matches"]
@@ -336,7 +329,6 @@ def run_hash_comparison(
         counter = None  # bugfix
         computed_results = []
         for counter, (i_run, j_run) in enumerate(run_indices):
-
             start = time.time()
 
             # get data (io)
@@ -456,7 +448,6 @@ def run_hash_comparison(
             ]
 
             while any(thread.is_alive() for thread in threads):
-
                 # fetch data from channel
                 for i_thread, comm_q in enumerate(queues):
                     if not comm_q.empty():
@@ -605,10 +596,7 @@ def curve_normalizer(x: np.ndarray, y: np.ndarray):
 
 
 def compute_hashes(
-    eig_vecs: np.ndarray,
-    result_field: np.ndarray,
-    n_points: int = 100,
-    bandwidth: float = 0.05,
+    eig_vecs: np.ndarray, result_field: np.ndarray, n_points: int = 100, bandwidth: float = 0.05
 ) -> List[Tuple[np.ndarray, np.ndarray]]:
     """Compute hashes for a result field
 
@@ -639,7 +627,6 @@ def compute_hashes(
 
     hash_functions = []
     for i_eigen in range(eig_vecs.shape[1]):
-
         xmin = eig_vecs[:, i_eigen].min()
         xmax = eig_vecs[:, i_eigen].max()
 
