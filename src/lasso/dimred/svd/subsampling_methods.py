@@ -1,7 +1,8 @@
 import os
 import random
 import time
-from typing import List, Sequence, Tuple, Union
+from typing import Union
+from collections.abc import Sequence
 
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
@@ -45,7 +46,7 @@ def _mark_dead_eles(node_indexes: np.ndarray, alive_shells: np.ndarray) -> np.nd
 
 def _extract_shell_parts(
     part_list: Sequence[int], d3plot: D3plot
-) -> Union[Tuple[np.ndarray, np.ndarray], str]:
+) -> Union[tuple[np.ndarray, np.ndarray], str]:
     """
     Extracts a shell part defined by its part ID out of the given d3plot.
     Returns a new node index, relevant coordinates and displacement
@@ -123,7 +124,7 @@ def _extract_shell_parts(
                 return err_msg.format(part)
 
         def mask_parts(
-            part_list2: List[int], element_part_index: np.ndarray, element_node_index: np.ndarray
+            part_list2: list[int], element_part_index: np.ndarray, element_node_index: np.ndarray
         ) -> np.ndarray:
             element_part_filter = np.full(element_part_index.shape, False)
             proc_parts = []
@@ -180,7 +181,7 @@ def _extract_shell_parts(
 
 def create_reference_subsample(
     load_path: str, parts: Sequence[int], nr_samples=2000
-) -> Union[Tuple[np.ndarray, float, float], str]:
+) -> Union[tuple[np.ndarray, float, float], str]:
     """
     Loads the D3plot at load_path, extracts the node coordinates of part 13, returns
     a random subsample of these nodes
@@ -238,7 +239,7 @@ def create_reference_subsample(
 
 def remap_random_subsample(
     load_path: str, parts: list, reference_subsample: np.ndarray
-) -> Union[Tuple[np.ndarray, float, float], str]:
+) -> Union[tuple[np.ndarray, float, float], str]:
     """
     Remaps the specified sample onto a new mesh provided by reference subsampl, using knn matching
 

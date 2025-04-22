@@ -7,7 +7,8 @@ import shutil
 import sys
 import time
 from concurrent.futures.process import ProcessPoolExecutor
-from typing import Sequence, Tuple, Union
+from typing import Union
+from collections.abc import Sequence
 
 import h5py
 import numpy as np
@@ -529,7 +530,7 @@ class DimredRun:
         reference_run_pattern: Union[None, str],
         exclude_runs: Sequence[str],
         table: Table,
-    ) -> Tuple[Sequence[str], str, Sequence[str]]:
+    ) -> tuple[Sequence[str], str, Sequence[str]]:
         # pylint: disable = too-many-locals
 
         # search all denoted runs

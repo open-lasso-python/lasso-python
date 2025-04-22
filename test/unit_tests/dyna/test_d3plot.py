@@ -154,7 +154,7 @@ class D3plotTest(TestCase):
         header = d3plot.header
 
         for name, value in test_header_data.items():
-            self.assertEqual(header.raw_header[name], value, "Invalid var %s" % name)
+            self.assertEqual(header.raw_header[name], value, f"Invalid var {name}")
 
     def test_beam_integration_points(self):
         self.maxDiff = None
@@ -173,14 +173,10 @@ class D3plotTest(TestCase):
         for array_name, minmax in maxmin_test_values.items():
             array = d3plot.arrays[array_name]
             self.assertAlmostEqual(
-                array.min(),
-                minmax[0],
-                msg="{0}: {1} != {2}".format(array_name, array.min(), minmax[0]),
+                array.min(), minmax[0], msg=f"{array_name}: {array.min()} != {minmax[0]}"
             )
             self.assertAlmostEqual(
-                array.max(),
-                minmax[1],
-                msg="{0}: {1} != {2}".format(array_name, array.max(), minmax[1]),
+                array.max(), minmax[1], msg=f"{array_name}: {array.max()} != {minmax[1]}"
             )
 
     def test_correct_sort_of_more_than_100_state_files(self):

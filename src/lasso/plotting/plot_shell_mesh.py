@@ -4,7 +4,7 @@ import uuid
 import json
 from base64 import b64encode
 from zipfile import ZipFile, ZIP_DEFLATED
-from typing import Union, Tuple
+from typing import Union
 import numpy as np
 
 
@@ -21,7 +21,7 @@ def _read_file(filepath: str):
     file_content : str
     """
 
-    with open(filepath, "r", encoding="utf-8") as fp_filepath:
+    with open(filepath, encoding="utf-8") as fp_filepath:
         return fp_filepath.read()
 
 
@@ -30,7 +30,7 @@ def plot_shell_mesh(
     shell_node_indexes: np.ndarray,
     field: Union[np.ndarray, None] = None,
     is_element_field: bool = True,
-    fringe_limits: Union[Tuple[float, float], None] = None,
+    fringe_limits: Union[tuple[float, float], None] = None,
 ):
     """Plot a mesh
 
@@ -190,23 +190,17 @@ def plot_shell_mesh(
     _html_jquery_js = script_string_js.format(jszip_jquery_format)
 
     # pylint: disable = consider-using-f-string
-    return """
+    return f"""
 <!DOCTYPE html>
 <html lang="en">
     <head>
     <meta charset="utf-8" />
-        {_jquery_js}
-        {_jszip_js}
-        {_three_js}
-        {_chroma_js}
+        {_html_jquery_js}
+        {_html_jszip_js}
+        {_html_three_js}
+        {_html_chroma_js}
     </head>
     <body>
         {_html_div}
     </body>
-</html>""".format(
-        _html_div=_html_div,
-        _jszip_js=_html_jszip_js,
-        _three_js=_html_three_js,
-        _chroma_js=_html_chroma_js,
-        _jquery_js=_html_jquery_js,
-    )
+</html>"""

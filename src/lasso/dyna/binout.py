@@ -1,5 +1,5 @@
 import glob
-from typing import List, Union
+from typing import Union
 
 import h5py
 import numpy as np
@@ -67,13 +67,13 @@ class Binout:
 
         # check file existence
         if not self.filelist:
-            raise IOError("No file was found.")
+            raise OSError("No file was found.")
 
         # open lsda buffer
         self.lsda = Lsda(self.filelist, "r")
         self.lsda_root = self.lsda.root
 
-    def read(self, *path) -> Union[List[str], str, np.ndarray]:
+    def read(self, *path) -> Union[list[str], str, np.ndarray]:
         """Read all data from Binout (top to low level)
 
         Parameters

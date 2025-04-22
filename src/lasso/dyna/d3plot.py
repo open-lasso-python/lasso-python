@@ -10,7 +10,8 @@ import tempfile
 import traceback
 import typing
 import webbrowser
-from typing import Any, BinaryIO, Dict, Iterable, List, Set, Tuple, Union
+from typing import Any, BinaryIO, Union
+from collections.abc import Iterable
 
 import numpy as np
 
@@ -30,7 +31,7 @@ FORTRAN_OFFSET = 1
 LOGGER = get_logger(__name__)
 
 
-def _check_ndim(d3plot, array_dim_names: Dict[str, List[str]]):
+def _check_ndim(d3plot, array_dim_names: dict[str, list[str]]):
     """Checks if the specified array is fine in terms of ndim
 
     Parameters
@@ -50,7 +51,7 @@ def _check_ndim(d3plot, array_dim_names: Dict[str, List[str]]):
 
 
 def _check_array_occurrence(
-    d3plot, array_names: List[str], required_array_names: List[str]
+    d3plot, array_names: list[str], required_array_names: list[str]
 ) -> bool:
     """Check if an array exists, if all depending on it exist too
 
@@ -80,7 +81,7 @@ def _check_array_occurrence(
     return False
 
 
-def _negative_to_positive_state_indexes(indexes: Set[int], n_entries) -> Set[int]:
+def _negative_to_positive_state_indexes(indexes: set[int], n_entries) -> set[int]:
     """Convert negative indexes of an iterable to positive ones
 
     Parameters
@@ -96,7 +97,7 @@ def _negative_to_positive_state_indexes(indexes: Set[int], n_entries) -> Set[int
         the positive indexes
     """
 
-    new_entries: Set[int] = set()
+    new_entries: set[int] = set()
     for _, index in enumerate(indexes):
         new_index = index + n_entries if index < 0 else index
         if new_index >= n_entries:
@@ -1171,8 +1172,8 @@ class D3plotWriterSettings:
         raise RuntimeError(msg, type(value), value)
 
     def count_array_state_var(
-        self, array_type: str, dimension_names: List[str], has_layers: bool, n_layers: int = 0
-    ) -> Tuple[int, int]:
+        self, array_type: str, dimension_names: list[str], has_layers: bool, n_layers: int = 0
+    ) -> tuple[int, int]:
         """This functions checks and updates the variable count for certain types of arrays
 
         Parameters
@@ -1432,8 +1433,8 @@ class D3plot:
         filepath: str = None,
         use_femzip: Union[bool, None] = None,
         n_files_to_load_at_once: Union[int, None] = None,
-        state_array_filter: Union[List[str], None] = None,
-        state_filter: Union[None, Set[int]] = None,
+        state_array_filter: Union[list[str], None] = None,
+        state_filter: Union[None, set[int]] = None,
         buffered_reading: bool = False,
     ):
         """Constructor for a D3plot
@@ -1744,7 +1745,7 @@ class D3plot:
 
     # pylint: disable = unused-argument, too-many-locals
     def _read_d3plot_file_generator(
-        self, buffered_reading: bool, state_filter: Union[None, Set[int]]
+        self, buffered_reading: bool, state_filter: Union[None, set[int]]
     ) -> typing.Any:
         """Generator function for reading bare d3plot files
 
@@ -1782,7 +1783,7 @@ class D3plot:
         # if using buffered reading, we load one state at a time
         # into memory
         if buffered_reading:
-            file_infos_tmp: List[MemoryInfo] = []
+            file_infos_tmp: list[MemoryInfo] = []
             n_previous_states = 0
             for minfo in file_infos:
                 for i_file_state in range(minfo.n_states):
@@ -1818,7 +1819,7 @@ class D3plot:
             yield buffer, n_states
 
     def _read_femzip_file_generator(
-        self, buffered_reading: bool, state_filter: Union[None, Set[int]]
+        self, buffered_reading: bool, state_filter: Union[None, set[int]]
     ) -> typing.Any:
         """Generator function for reading femzipped d3plot files
 
@@ -1845,7 +1846,7 @@ class D3plot:
         n_timesteps: int = buffer_info.n_timesteps
 
         # convert negative filter indexes
-        state_filter_parsed: Set[int] = set()
+        state_filter_parsed: set[int] = set()
         if state_filter is not None:
             state_filter_parsed = _negative_to_positive_state_indexes(state_filter, n_timesteps)
             n_states_to_load = len(state_filter)
@@ -2657,7 +2658,7 @@ class D3plot:
         info = self._rigid_body_info
         info.n_rigid_bodies = rigid_body_description_header["nrigid"]
 
-        rigid_bodies: List[RigidBodyMetadata] = []
+        rigid_bodies: list[RigidBodyMetadata] = []
         for _ in range(info.n_rigid_bodies):
             rigid_body_info = {
                 # rigid body part internal number
@@ -5661,7 +5662,7 @@ class D3plot:
 
         return var_index
 
-    def _collect_file_infos(self, size_per_state: int) -> List[MemoryInfo]:
+    def _collect_file_infos(self, size_per_state: int) -> list[MemoryInfo]:
         """This routine collects the memory and file info for the d3plot files
 
         Parameters
@@ -5828,8 +5829,8 @@ class D3plot:
 
     @staticmethod
     def _read_file_from_memory_info(
-        memory_infos: Union[MemoryInfo, List[MemoryInfo]],
-    ) -> Tuple[BinaryBuffer, int]:
+        memory_infos: Union[MemoryInfo, list[MemoryInfo]],
+    ) -> tuple[BinaryBuffer, int]:
         """Read files from a single or multiple memory infos
 
         Parameters
@@ -6051,7 +6052,7 @@ class D3plot:
         i_timestep: int = 0,
         field: Union[np.ndarray, None] = None,
         is_element_field: bool = True,
-        fringe_limits: Union[Tuple[float, float], None] = None,
+        fringe_limits: Union[tuple[float, float], None] = None,
         export_filepath: str = "",
     ):
         """Plot the d3plot geometry
@@ -7604,7 +7605,7 @@ class D3plot:
 
         n_parts = settings.header["nmmat"]
 
-        def _write_part_field(array_type: str, default_shape: Union[int, Tuple], dtype: np.dtype):
+        def _write_part_field(array_type: str, default_shape: Union[int, tuple], dtype: np.dtype):
             array = (
                 self.arrays[array_type][i_timestep]
                 if array_type in self.arrays
@@ -9354,7 +9355,7 @@ class D3plot:
         return n_bytes_written
 
     def check_array_dims(
-        self, array_dimensions: Dict[str, int], dimension_name: str, dimension_size: int = -1
+        self, array_dimensions: dict[str, int], dimension_name: str, dimension_size: int = -1
     ):
         """This function checks if multiple arrays share an array dimensions
         with the same size.

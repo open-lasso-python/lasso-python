@@ -140,7 +140,7 @@ class _Diskfile:
         self.fp.write(struct.pack(self.lcunpack, length, Lsda.DATA))
         self.fp.write(struct.pack("bb", sym.type, nlen) + bytes(sym.name, "utf-8"))
         #    fmt=self.ordercode+self.packtype[sym.type]*sym.length
-        fmt = "%c%d%c" % (self.ordercode, sym.length, self.packtype[sym.type])
+        fmt = f"{self.ordercode}{sym.length}{self.packtype[sym.type]}"
         self.fp.write(struct.pack(fmt, *data))
         sym.file = self
 
@@ -239,7 +239,7 @@ class Symbol:
         self.file.ateof = 0
         #    format = self.file.ordercode + _Diskfile.packtype[self.type]*(end-start)
         #    return struct.unpack(format,self.file.fp.read(size*(end-start)))
-        format = "%c%d%c" % (self.file.ordercode, (end - start), _Diskfile.packtype[self.type])
+        format = f"{(self.file.ordercode)}{end - start}{_Diskfile.packtype[self.type]}"
         if self.type == Lsda.LINK:
             return struct.unpack(format, self.file.fp.read(size * (end - start)))[0]
         else:
@@ -622,7 +622,7 @@ class Lsda:
             newname = parts[0] + "%001"
         else:
             ret = int(parts[1]) + 1
-            newname = "%s%%%3.3d" % (parts[0], ret)
+            newname = f"{parts[0]}%{ret:03d}"
         if self.mode == "w":
             self.fw = _Diskfile(newname, "w")
         else:
@@ -639,5 +639,5 @@ for a, b in types:
     s = struct.pack(a, x)
     if len(s) != b:
         print("LSDA: initialization error")
-        print("Data type %s has length %d instead of %d" % (a, len(s), b))
+        print(f"Data type {a} has length {len(s)} instead of {b}")
         types_ok = 0

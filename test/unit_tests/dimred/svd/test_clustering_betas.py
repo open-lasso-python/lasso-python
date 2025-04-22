@@ -9,7 +9,7 @@ class TestClustering(TestCase):
         """tests correct function of the group_betas function
         in clustering_betas.py"""
 
-        fake_names = np.array(["betas_{i}".format(i=i) for i in range(25)])
+        fake_names = np.array([f"betas_{i}" for i in range(25)])
         fake_cluster_0 = np.random.rand(12, 3) + 5
         fake_cluster_1 = np.random.rand(12, 3) - 5
         fake_betas = np.stack([*fake_cluster_0, *fake_cluster_1, np.array([0, 0, 0])])

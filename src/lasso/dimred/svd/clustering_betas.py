@@ -1,4 +1,5 @@
-from typing import Sequence, Tuple, Union
+from typing import Union
+from collections.abc import Sequence
 
 import numpy as np
 from sklearn.cluster import DBSCAN, OPTICS, KMeans, SpectralClustering
@@ -418,7 +419,7 @@ __cluster_dict = {
 }
 
 
-def create_cluster_arg_dict(args: Sequence[str]) -> Union[Tuple[str, dict], str]:
+def create_cluster_arg_dict(args: Sequence[str]) -> Union[tuple[str, dict], str]:
     """Determines which cluster to use and creates a python dictionary to use as cluster_params
 
     Parameters
@@ -493,7 +494,7 @@ def create_cluster_arg_dict(args: Sequence[str]) -> Union[Tuple[str, dict], str]
     return cluster_type, cluster_arg_dict
 
 
-def create_detector_arg_dict(args: Sequence[str]) -> Union[Tuple[str, dict], str]:
+def create_detector_arg_dict(args: Sequence[str]) -> Union[tuple[str, dict], str]:
     """Determines which detector to use and creates a python dictionary to use as detector_params
 
     Parameters
@@ -579,7 +580,7 @@ def group_betas(
     detector=None,
     cluster_params=None,
     detector_params=None,
-) -> Union[Tuple[list, list], str]:
+) -> Union[tuple[list, list], str]:
     """
     Base function to to group betas into groups, detect outliers. Provides that all different
     clustering and outlier detection algorithms are implemented in an easy to access environment.
