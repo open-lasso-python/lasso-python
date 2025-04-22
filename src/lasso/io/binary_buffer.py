@@ -1,6 +1,6 @@
 import mmap
 import os
-from typing import Any, List, Union
+from typing import Any, Union
 
 import numpy as np
 
@@ -225,7 +225,7 @@ class BinaryBuffer:
 
         self.filepath_ = filepath_parsed
 
-    def load(self, filepath: Union[List[str], str, None] = None, n_bytes: int = 0):
+    def load(self, filepath: Union[list[str], str, None] = None, n_bytes: int = 0):
         """load a file
 
         Parameters

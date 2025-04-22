@@ -1,7 +1,6 @@
 from unittest import TestCase
 from lasso.dimred.svd.pod_functions import calculate_v_and_betas
 import numpy as np
-from typing import Tuple
 
 
 class PodFunctionsTest(TestCase):
@@ -25,7 +24,7 @@ class PodFunctionsTest(TestCase):
         result = calculate_v_and_betas(rand_samples)
 
         # returns Tuple containing v_rob and betas
-        self.assertTrue(isinstance(result, Tuple))
+        self.assertTrue(isinstance(result, tuple))
 
         v_rob, betas = result
 

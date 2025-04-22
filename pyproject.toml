@@ -85,7 +85,7 @@ select = [
     # "I",   # isort (Ensures imports are sorted properly)
     # "B",   # flake8-bugbear (Detects likely bugs and bad practices)
     # "TID", # flake8-tidy-imports (Checks for banned or misplaced imports)
-    # "UP",  # pyupgrade (Automatically updates old Python syntax)
+    "UP",  # pyupgrade (Automatically updates old Python syntax)
     # "YTT", # flake8-2020 (Detects outdated Python 2/3 compatibility issues)
     # "FLY", # flynt (Converts old-style string formatting to f-strings)
     # "PIE", # flake8-pie

@@ -2,7 +2,8 @@ import contextlib
 import glob
 import os
 import typing
-from typing import Iterator, List, Union
+from typing import Union
+from collections.abc import Iterator
 
 
 @contextlib.contextmanager
@@ -37,7 +38,7 @@ def open_file_or_filepath(
 
 
 def collect_files(
-    dirpath: Union[str, List[str]], patterns: Union[str, List[str]], recursive: bool = False
+    dirpath: Union[str, list[str]], patterns: Union[str, list[str]], recursive: bool = False
 ):
     """Collect files from directories
 

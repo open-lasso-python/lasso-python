@@ -18,7 +18,7 @@ from ctypes import (
     c_uint64,
     sizeof,
 )
-from typing import Any, Dict, List, Set, Tuple, Union
+from typing import Any, Union
 
 import numpy as np
 
@@ -355,7 +355,7 @@ class FemzipAPI:
         return self._api
 
     @staticmethod
-    def _parse_state_filter(state_filter: Union[Set[int], None], n_timesteps: int) -> Set[int]:
+    def _parse_state_filter(state_filter: Union[set[int], None], n_timesteps: int) -> set[int]:
         # convert negative indexes
         state_filter_parsed = (
             {entry if entry >= 0 else entry + n_timesteps for entry in state_filter}
@@ -394,7 +394,7 @@ class FemzipAPI:
             raise FemzipException(err_msg.format(err.ier, fz_error_msg))
 
     @staticmethod
-    def struct_to_dict(struct: Structure) -> Dict[str, Any]:
+    def struct_to_dict(struct: Structure) -> dict[str, Any]:
         """Converts a ctypes struct into a dict
 
         Parameters
@@ -481,7 +481,7 @@ class FemzipAPI:
         return memoryview(buffer).cast("B")
 
     def read_state_deletion_info(
-        self, buffer_info: FemzipBufferInfo, state_filter: Union[Set[int], None] = None
+        self, buffer_info: FemzipBufferInfo, state_filter: Union[set[int], None] = None
     ) -> np.ndarray:
         """Get information which elements are alive
 
@@ -824,7 +824,7 @@ class FemzipAPI:
         self,
         filepath: str,
         buffer_info: Union[FemzipBufferInfo, None] = None,
-        state_filter: Union[Set[int], None] = None,
+        state_filter: Union[set[int], None] = None,
     ) -> np.ndarray:
         """Reads all femzip state information
 
@@ -945,7 +945,7 @@ class FemzipAPI:
         # pylint: disable=too-many-statements
 
         buffer_size_state = 0
-        var_indexes_to_remove: Set[int] = set()
+        var_indexes_to_remove: set[int] = set()
         for i_var in range(file_metadata.number_of_variables):
             var_info = file_metadata.variable_infos[i_var]
             variable_name = var_info.name.decode("utf-8")
@@ -1023,14 +1023,14 @@ class FemzipAPI:
         all_vars_array: np.ndarray,
         n_timesteps_read: int,
         file_metadata: FemzipFileMetadata,
-    ) -> Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray]:
+    ) -> dict[tuple[int, str, FemzipVariableCategory], np.ndarray]:
         # pylint: disable=too-many-arguments
         # pylint: disable=too-many-locals
         # pylint: disable=too-many-branches
         # pylint: disable=too-many-statements
 
         # decompose array
-        result_arrays: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray] = {}
+        result_arrays: dict[tuple[int, str, FemzipVariableCategory], np.ndarray] = {}
         var_pos = 0
         for i_var in range(file_metadata.number_of_variables):
             var_info: VariableInfo = file_metadata.variable_infos[i_var]
@@ -1139,8 +1139,8 @@ class FemzipAPI:
         n_rigid_wall_vars: int,
         n_airbag_particles: int,
         n_airbags: int,
-        state_filter: Union[Set[int], None] = None,
-    ) -> Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray]:
+        state_filter: Union[set[int], None] = None,
+    ) -> dict[tuple[int, str, FemzipVariableCategory], np.ndarray]:
         """Read specific variables from Femzip
 
         Parameters
@@ -1291,12 +1291,12 @@ class FemzipD3plotArrayMapping:
     i_integration_point: Union[int, None]
     i_var_index: Union[int, None]
 
-    fz_array_slices = Tuple[slice]
+    fz_array_slices = tuple[slice]
 
     def __init__(
         self,
         d3plot_array_type: str,
-        fz_array_slices: Tuple[slice] = (slice(None),),
+        fz_array_slices: tuple[slice] = (slice(None),),
         i_integration_point: Union[int, None] = None,
         i_var_index: Union[int, None] = None,
     ):
@@ -1311,7 +1311,7 @@ class FemzipArrayMetadata:
 
     array_type: FemzipArrayType
     category: FemzipVariableCategory
-    d3plot_mappings: List[FemzipD3plotArrayMapping]
+    d3plot_mappings: list[FemzipD3plotArrayMapping]
     # set when parsed
     fz_var_index: Union[int, None] = None
 
@@ -1319,7 +1319,7 @@ class FemzipArrayMetadata:
         self,
         array_type: FemzipArrayType,
         category: FemzipVariableCategory,
-        d3plot_mappings: List[FemzipD3plotArrayMapping],
+        d3plot_mappings: list[FemzipD3plotArrayMapping],
     ):
         self.array_type = array_type
         self.category = category

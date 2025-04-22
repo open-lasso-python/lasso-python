@@ -1,5 +1,5 @@
 import enum
-from typing import Any, Dict, Tuple, Union
+from typing import Any, Union
 
 import numpy as np
 import rich
@@ -317,7 +317,7 @@ class D3plotHeader:
     itype: np.dtype = np.int32
     ftype: np.dtype = np.float32
     wordsize: int = 4
-    raw_header: Dict[str, Any] = {}
+    raw_header: dict[str, Any] = {}
     external_numbers_dtype = np.int32
     n_header_bytes: int = 0
 
@@ -345,7 +345,7 @@ class D3plotHeader:
     quadratic_elems_has_full_connectivity: bool = False
     quadratic_elems_has_data_at_integration_points: bool = False
     n_post_branches: int = 0
-    n_types: Tuple[int, ...] = ()
+    n_types: tuple[int, ...] = ()
 
     # parts
     n_parts: int = 0
@@ -1099,7 +1099,7 @@ class D3plotHeader:
     @staticmethod
     def _determine_file_settings(
         bb: Union[BinaryBuffer, None] = None,
-    ) -> Tuple[int, Union[np.int32, np.int64], Union[np.float32, np.float64]]:
+    ) -> tuple[int, Union[np.int32, np.int64], Union[np.float32, np.float64]]:
         """Determine the precision of the file
 
         Parameters
@@ -1169,7 +1169,7 @@ class D3plotHeader:
 
         return word_size, itype, ftype
 
-    def compare(self, other: "D3plotHeader") -> Dict[str, Tuple[Any, Any]]:
+    def compare(self, other: "D3plotHeader") -> dict[str, tuple[Any, Any]]:
         """Compare two headers and get the differences
 
         Parameters
