@@ -351,7 +351,7 @@ class DimredRun:
             self.reference_run,
             self.exclude_runs,
         ) = self._parse_simulation_and_reference_runs(
-            simulation_runs, reference_run, tuple() if not exclude_runs else exclude_runs, table
+            simulation_runs, reference_run, () if not exclude_runs else exclude_runs, table
         )
 
         # check if basename or foldername serves as unique identifier
@@ -361,7 +361,7 @@ class DimredRun:
 
         # set project dir and simulation runs
         self.project_dir = self._parse_project_dir(project_dir, table)
-        self.part_ids = part_id_filter if part_id_filter is not None else tuple()
+        self.part_ids = part_id_filter if part_id_filter is not None else ()
         if self.part_ids is not None and len(self.part_ids) != 0:
             table.add_row("selected parts", ",".join(str(entry) for entry in self.part_ids))
         self.timestep = timestep
@@ -500,7 +500,7 @@ class DimredRun:
     def _parse_part_ids(self, part_ids: Union[Sequence[int], None]) -> Sequence[int]:
 
         if not part_ids:
-            return tuple()
+            return ()
 
         assert all(isinstance(pid, int) for pid in part_ids), "All part ids must be of type 'int'"
 

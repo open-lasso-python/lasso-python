@@ -78,7 +78,7 @@ class TestDimredRun(TestCase):
 
                 # get test betas
                 test_betas_group = test_run.h5file[HDF5FileNames.BETAS_GROUP_NAME.value]
-                test_ids = np.stack([key for key in test_betas_group.keys()])
+                test_ids = np.stack(list(test_betas_group.keys()))
                 test_betas = np.stack([test_betas_group[key][:] for key in test_betas_group.keys()])
 
                 # we check if test_ids and test_betas are of correct shape

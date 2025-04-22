@@ -329,7 +329,7 @@ class FemzipAPI:
             self._api.is_femunzip_version_ok.restype = FemzipError
 
             # femzip status
-            self._api.get_femzip_status.argtypes = tuple()
+            self._api.get_femzip_status.argtypes = ()
             self._api.get_femzip_status.restype = FemzipAPIStatus
 
             # get part titles
@@ -341,7 +341,7 @@ class FemzipAPI:
             self._api.finish_reading_states.restype = FemzipError
 
             # close file
-            self._api.close_current_file.argtypes = tuple()
+            self._api.close_current_file.argtypes = ()
             self._api.close_current_file.restype = FemzipError
 
             # read single state

@@ -1537,7 +1537,7 @@ class D3plot:
         self._sph_info = SphSectionInfo()
         self._airbag_info = AirbagInfo()
         self._numbering_info = NumberingInfo()
-        self._rigid_body_info = RigidBodyInfo(rigid_body_metadata_list=tuple())
+        self._rigid_body_info = RigidBodyInfo(rigid_body_metadata_list=())
         self._rigid_road_info = RigidRoadInfo()
         self._state_info = StateInfo()
 
@@ -1821,7 +1821,7 @@ class D3plot:
 
         # some status
         n_files = len(file_infos)
-        n_states = sum(map(lambda file_info: file_info.n_states, file_infos))
+        n_states = sum(file_info.n_states for file_info in file_infos)
         LOGGER.debug("n_files found: %d", n_files)
         LOGGER.debug("n_states estimated: %d", n_states)
 
@@ -1859,7 +1859,7 @@ class D3plot:
         LOGGER.debug("buffers: %s", pprint.pformat([info.__dict__ for info in file_infos]))
 
         # number of states and if buffered reading is used
-        n_states_selected = sum(map(lambda file_info: file_info.n_states, file_infos))
+        n_states_selected = sum(file_info.n_states for file_info in file_infos)
         yield n_states_selected
 
         sub_file_infos = [file_infos] if not buffered_reading else [[info] for info in file_infos]
@@ -7597,7 +7597,7 @@ class D3plot:
         if ArrayType.global_timesteps not in self.arrays:
             # if any state array is present simply make up a timestep array
             if any(array_name in self.arrays for array_name in ArrayType.get_state_array_names()):
-                array_dims = {array_name: 0 for array_name in ArrayType.get_state_array_names()}
+                array_dims = dict.fromkeys(ArrayType.get_state_array_names(), 0)
                 n_timesteps = self.check_array_dims(
                     array_dimensions=array_dims, dimension_name="n_timesteps"
                 )

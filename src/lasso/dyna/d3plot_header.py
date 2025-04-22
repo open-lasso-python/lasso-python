@@ -345,7 +345,7 @@ class D3plotHeader:
     quadratic_elems_has_full_connectivity: bool = False
     quadratic_elems_has_data_at_integration_points: bool = False
     n_post_branches: int = 0
-    n_types: Tuple[int, ...] = tuple()
+    n_types: Tuple[int, ...] = ()
 
     # parts
     n_parts: int = 0
