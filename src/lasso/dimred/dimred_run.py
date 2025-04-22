@@ -348,12 +348,10 @@ class DimredRun:
 
         # parse simulation and reference run
         # if no reference run was set use first simulation run
-        (
-            self.simulation_runs,
-            self.reference_run,
-            self.exclude_runs,
-        ) = self._parse_simulation_and_reference_runs(
-            simulation_runs, reference_run, () if not exclude_runs else exclude_runs, table
+        (self.simulation_runs, self.reference_run, self.exclude_runs) = (
+            self._parse_simulation_and_reference_runs(
+                simulation_runs, reference_run, () if not exclude_runs else exclude_runs, table
+            )
         )
 
         # check if basename or foldername serves as unique identifier
