@@ -1,6 +1,3 @@
-import typing
-
-
 class ClusterType:
     """Specifies names of specific clustering algorithms
 
@@ -22,7 +19,7 @@ class ClusterType:
     SpectralClustering = "SpectralClustering"
 
     @staticmethod
-    def get_cluster_type_name() -> typing.List[str]:
+    def get_cluster_type_name() -> list[str]:
         """Get the name of the clustering algorithms"""
         return [
             ClusterType.OPTICS,
@@ -51,7 +48,7 @@ class DetectorType:
     # Experimental = "Experimental"
 
     @staticmethod
-    def get_detector_type_name() -> typing.List[str]:
+    def get_detector_type_name() -> list[str]:
         """Get the name of the detector algorithms"""
         return [
             DetectorType.IsolationForest,

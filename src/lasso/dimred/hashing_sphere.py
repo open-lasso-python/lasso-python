@@ -1,5 +1,4 @@
 import os
-import typing
 import warnings
 
 import h5py
@@ -15,7 +14,7 @@ from sklearn.preprocessing import normalize
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
-def _create_sphere_mesh(diameter: np.ndarray) -> typing.Tuple[np.ndarray, np.ndarray]:
+def _create_sphere_mesh(diameter: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Compute the alpha and beta increments for a
         meshed sphere for binning the projected values
 
@@ -70,7 +69,7 @@ def _create_sphere_mesh(diameter: np.ndarray) -> typing.Tuple[np.ndarray, np.nda
 
 def _project_to_sphere(
     points: np.ndarray, centroid: np.ndarray, axis: str = "Z"
-) -> typing.Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """compute the projection vectors of centroid to each point in terms of spherical coordinates
 
     Parameters

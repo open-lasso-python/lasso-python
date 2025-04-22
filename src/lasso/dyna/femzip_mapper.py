@@ -1,7 +1,7 @@
 import logging
 import re
 import traceback
-from typing import Dict, List, Set, Tuple, Union
+from typing import Union
 
 import numpy as np
 from lasso.dyna.array_type import ArrayType
@@ -9,8 +9,8 @@ from lasso.femzip.femzip_api import FemzipAPI, FemzipFileMetadata, VariableInfo
 from lasso.femzip.fz_config import FemzipArrayType, FemzipVariableCategory, get_last_int_of_line
 
 
-TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE: Dict[
-    Tuple[FemzipArrayType, FemzipVariableCategory], Set[str]
+TRANSL_FEMZIP_ARRATYPE_TO_D3PLOT_ARRAYTYPE: dict[
+    tuple[FemzipArrayType, FemzipVariableCategory], set[str]
 ] = {
     # GLOBAL
     (FemzipArrayType.GLOBAL_DATA, FemzipVariableCategory.GLOBAL): {
@@ -336,8 +336,8 @@ stress_index = {
 
 
 def femzip_to_d3plot(
-    result_arrays: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray],
-) -> Dict[str, np.ndarray]:
+    result_arrays: dict[tuple[int, str, FemzipVariableCategory], np.ndarray],
+) -> dict[str, np.ndarray]:
     """Map femzip arrays to d3plot arrays
 
     Parameters
@@ -407,7 +407,7 @@ class ArrayShapeInfo:
         """
         self._set_attr("n_timesteps", n_timesteps)
 
-    def to_shape(self) -> Tuple[int, ...]:
+    def to_shape(self) -> tuple[int, ...]:
         """Set the number of variables
 
         Returns
@@ -437,14 +437,14 @@ class D3plotArrayMapping:
 
     just_assign: bool = False
 
-    def to_slice(self) -> Tuple[Union[int, slice], ...]:
+    def to_slice(self) -> tuple[Union[int, slice], ...]:
         """Get the slices mapping a femzip array to a d3plot array
 
         Returns
         -------
         slices: Tuple[Union[int, slice], ...]
         """
-        slices: List[Union[slice, int]] = [slice(None), slice(None)]
+        slices: list[Union[slice, int]] = [slice(None), slice(None)]
         if self.d3_layer_slice is not None:
             slices.append(self.d3_layer_slice)
         if self.d3_var_slice is not None:
@@ -467,7 +467,7 @@ class FemzipArrayInfo:
     i_layer: Union[int, None] = None
     i_var: Union[int, None] = None
 
-    mappings: List[D3plotArrayMapping]
+    mappings: list[D3plotArrayMapping]
 
     def __init__(self):
         self.mappings = []
@@ -491,13 +491,13 @@ class FemzipMapper:
 
     FORTRAN_OFFSET: int = 1
 
-    _d3plot_arrays: Dict[str, np.ndarray] = {}
+    _d3plot_arrays: dict[str, np.ndarray] = {}
     _fz_array_slices = {}
 
     def __init__(self):
         pass
 
-    def map(self, result_arrays: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray]):
+    def map(self, result_arrays: dict[tuple[int, str, FemzipVariableCategory], np.ndarray]):
         """Map femzip data to d3plot arrays.
 
         Parameters
@@ -521,8 +521,8 @@ class FemzipMapper:
         self._map_arrays(array_infos, self._d3plot_arrays)
 
     def _convert(
-        self, result_arrays: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray]
-    ) -> List[FemzipArrayInfo]:
+        self, result_arrays: dict[tuple[int, str, FemzipVariableCategory], np.ndarray]
+    ) -> list[FemzipArrayInfo]:
         """Convert femzip result arrays into array infos
 
         Parameters
@@ -558,7 +558,7 @@ class FemzipMapper:
         return array_infos
 
     @staticmethod
-    def _build(fz_arrays: List[FemzipArrayInfo]) -> Dict[str, Tuple[int, ...]]:
+    def _build(fz_arrays: list[FemzipArrayInfo]) -> dict[str, tuple[int, ...]]:
         """Counts the occurrence of all variables in the result array such as the
         number of layers and stresses.
 
@@ -577,8 +577,8 @@ class FemzipMapper:
         Some variables only have partial stress results written for Sigma-x and Sigma-y
         and layers one to three for example.
         """
-        shape_infos: Dict[str, ArrayShapeInfo] = {}
-        name_count: Dict[Tuple[str, FemzipVariableCategory], int] = {}
+        shape_infos: dict[str, ArrayShapeInfo] = {}
+        name_count: dict[tuple[str, FemzipVariableCategory], int] = {}
 
         for arr_info in fz_arrays:
             # print(arr_info)
@@ -661,7 +661,7 @@ class FemzipMapper:
 
         return {name: info.to_shape() for name, info in shape_infos.items()}
 
-    def _map_arrays(self, array_infos: List[FemzipArrayInfo], d3plot_arrays: Dict[str, np.ndarray]):
+    def _map_arrays(self, array_infos: list[FemzipArrayInfo], d3plot_arrays: dict[str, np.ndarray]):
         """Allocate a femzip variable to its correct position in
         the d3plot array dictionary.
 
@@ -699,8 +699,8 @@ class FemzipMapper:
                     d3plot_array[slices] = arr_info.array
 
     def _allocate_d3plot_arrays(
-        self, array_shapes: Dict[str, Tuple[int, ...]]
-    ) -> Dict[str, np.ndarray]:
+        self, array_shapes: dict[str, tuple[int, ...]]
+    ) -> dict[str, np.ndarray]:
         """Initialize all the d3plot arrays.
 
         Parameters
@@ -725,7 +725,7 @@ class FemzipMapper:
 
     def _parse_femzip_name(
         self, fz_name: str, var_type: FemzipVariableCategory
-    ) -> Tuple[str, Union[int, None], Union[int, None], Union[int, None]]:
+    ) -> tuple[str, Union[int, None], Union[int, None], Union[int, None]]:
         """Parses the femzip variable names.
 
         Parameters
@@ -789,7 +789,7 @@ class FemzipMapper:
 
 
 def filter_femzip_variables(
-    file_metadata: FemzipFileMetadata, d3plot_array_filter: Union[Set[str], None]
+    file_metadata: FemzipFileMetadata, d3plot_array_filter: Union[set[str], None]
 ) -> FemzipFileMetadata:
     """Filters variable infos regarding d3plot array types
 
@@ -809,7 +809,7 @@ def filter_femzip_variables(
     # pylint: disable = too-many-locals
 
     # find out which arrays we need and
-    vars_to_copy: List[int] = []
+    vars_to_copy: list[int] = []
 
     for i_var in range(file_metadata.number_of_variables):
         try:

@@ -1,7 +1,8 @@
 import multiprocessing
 import os
 import time
-from typing import List, Tuple, Union, Sequence
+from typing import Union
+from collections.abc import Sequence
 
 import h5py
 import numpy as np
@@ -104,8 +105,8 @@ def _compute_mode_similarities(
     hashes2: np.ndarray,
     eigenvectors_sub1: np.ndarray,
     eigenvectors_sub2: np.ndarray,
-    matches: List[Tuple[int, int]],
-) -> List[float]:
+    matches: list[tuple[int, int]],
+) -> list[float]:
     """Compute the mode similarity between different meshes
 
     Parameters
@@ -217,7 +218,7 @@ def _join_hash_comparison_thread_files(
 
 def run_hash_comparison(
     comparison_filepath: str,
-    hashes_filepaths: List[str],
+    hashes_filepaths: list[str],
     n_threads: int = 1,
     print_progress: bool = False,
 ):
@@ -597,7 +598,7 @@ def curve_normalizer(x: np.ndarray, y: np.ndarray):
 
 def compute_hashes(
     eig_vecs: np.ndarray, result_field: np.ndarray, n_points: int = 100, bandwidth: float = 0.05
-) -> List[Tuple[np.ndarray, np.ndarray]]:
+) -> list[tuple[np.ndarray, np.ndarray]]:
     """Compute hashes for a result field
 
     Parameters

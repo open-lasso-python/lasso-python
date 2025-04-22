@@ -1,4 +1,4 @@
-from typing import Tuple, Union
+from typing import Union
 
 import numpy as np
 from scipy.sparse import csc_matrix
@@ -37,7 +37,7 @@ def calculate_v_and_betas(
     stacked_sub_displ: np.ndarray,
     progress_bar: Union[None, Progress, PlaceHolderBar] = None,
     task_id: Union[None, TaskID] = None,
-) -> Union[str, Tuple[np.ndarray, np.ndarray]]:
+) -> Union[str, tuple[np.ndarray, np.ndarray]]:
     """
     Calculates the right reduced order Basis V and up to 10 eigenvalues of the subsamples
 

@@ -10,7 +10,7 @@ import sys
 import time
 import typing
 from concurrent import futures
-from typing import List, Union
+from typing import Union
 from pathlib import Path
 import psutil
 
@@ -688,9 +688,7 @@ class DiffcrashRun:
 
             if n_imports_finished != n_new_imports_finished:
                 # pylint: disable = consider-using-f-string
-                msg = "Running Imports ... [{0}/{1}] - {2:3.2f}%\r".format(
-                    n_new_imports_finished, len(return_code_futures), percentage
-                )
+                msg = f"Running Imports ... [{n_new_imports_finished}/{len(return_code_futures)}] - {percentage:3.2f}%\r"
                 print(str_running(msg), end="", flush=True)
                 self.logger.info(msg)
 
@@ -1091,7 +1089,7 @@ class DiffcrashRun:
         success : `bool`
         """
 
-        with open(logfile, "r", encoding="utf-8") as fp:
+        with open(logfile, encoding="utf-8") as fp:
             for line in fp:
                 if "successfully" in line:
                     return True
@@ -1181,7 +1179,7 @@ class DiffcrashRun:
         # reinit logger
         self.logger = self._setup_logger()
 
-    def read_config_file(self, config_file: str) -> List[str]:
+    def read_config_file(self, config_file: str) -> list[str]:
         """Read a diffcrash config file
 
         Parameters
@@ -1203,7 +1201,7 @@ class DiffcrashRun:
         # pylint: disable = too-many-branches
         # pylint: disable = too-many-statements
 
-        with open(config_file, "r", encoding="utf-8") as conf:
+        with open(config_file, encoding="utf-8") as conf:
             conf_lines = conf.readlines()
         line = 0
 
@@ -1303,7 +1301,7 @@ class DiffcrashRun:
 
         return export_item_list
 
-    def check_if_logfiles_show_success(self, pattern: str) -> List[str]:
+    def check_if_logfiles_show_success(self, pattern: str) -> list[str]:
         """Check if a logfiles with given pattern show success
 
         Parameters

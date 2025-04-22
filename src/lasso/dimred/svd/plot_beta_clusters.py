@@ -2,7 +2,8 @@ import os
 import re
 import time
 import webbrowser
-from typing import Sequence, Union
+from typing import Union
+from collections.abc import Sequence
 
 import numpy as np
 
@@ -118,11 +119,13 @@ def plot_clusters_js(
         id_nr.append(id_group)
 
     # pylint: disable = consider-using-f-string
-    _three_min_ = '<script type="text/javascript">%s</script>' % _read_file(
-        os.path.join(
-            # move path to "~/lasso/"
-            os.path.split(os.path.split(os.path.dirname(__file__))[0])[0],
-            "plotting/resources/three_latest.min.js",
+    _three_min_ = '<script type="text/javascript">{}</script>'.format(
+        _read_file(
+            os.path.join(
+                # move path to "~/lasso/"
+                os.path.split(os.path.split(os.path.dirname(__file__))[0])[0],
+                "plotting/resources/three_latest.min.js",
+            )
         )
     )
 
@@ -136,10 +139,10 @@ def plot_clusters_js(
             name = "outliers"
             color = "black"
         else:
-            name = "cluster {i}".format(i=index)
+            name = f"cluster {index}"
             color = colorlist[(index - 1) % 10]
         formatted_trace = TRACE_STRING.format(
-            _traceNr_="trace{i}".format(i=index),
+            _traceNr_=f"trace{index}",
             _name_=name,
             _color_=color,
             _runIDs_=id_cluster[index].tolist(),

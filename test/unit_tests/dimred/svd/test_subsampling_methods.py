@@ -1,6 +1,5 @@
 import os
 import tempfile
-from typing import Tuple
 from unittest import TestCase
 
 import numpy as np
@@ -21,7 +20,7 @@ class TestSubsampling(TestCase):
             result = create_reference_subsample(load_path, parts=[], nr_samples=n_nodes)
 
             # result should be tuple containing subsample, load time and total process time
-            self.assertTrue(isinstance(result, Tuple))
+            self.assertTrue(isinstance(result, tuple))
 
             ref_sample, t_total, t_load = result
 
@@ -68,7 +67,7 @@ class TestSubsampling(TestCase):
 
             # sub_result should be Tuple containing subsample, total process time,
             # and plot load time
-            self.assertTrue(isinstance(sub_result, Tuple))
+            self.assertTrue(isinstance(sub_result, tuple))
 
             subsample, t_total, t_load = sub_result
 

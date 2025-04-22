@@ -1,4 +1,4 @@
-from typing import Dict, Set, Tuple, Union
+from typing import Union
 from unittest import TestCase
 
 import numpy as np
@@ -7,7 +7,7 @@ from lasso.femzip.fz_config import FemzipArrayType, FemzipVariableCategory
 from lasso.dyna.array_type import ArrayType
 from lasso.dyna.femzip_mapper import FemzipMapper
 
-part_global_femzip_translations: Dict[Tuple[FemzipArrayType, FemzipVariableCategory], Set[str]] = {
+part_global_femzip_translations: dict[tuple[FemzipArrayType, FemzipVariableCategory], set[str]] = {
     # GLOBAL
     (FemzipArrayType.GLOBAL_DATA, FemzipVariableCategory.GLOBAL): {
         # ArrayType.global_timesteps,
@@ -26,7 +26,7 @@ part_global_femzip_translations: Dict[Tuple[FemzipArrayType, FemzipVariableCateg
     },
 }
 
-element_nope_femzip_translations: Dict[Tuple[str, FemzipVariableCategory], str] = {
+element_nope_femzip_translations: dict[tuple[str, FemzipVariableCategory], str] = {
     # NODE
     (
         FemzipArrayType.NODE_DISPLACEMENT.value,
@@ -254,7 +254,7 @@ element_nope_femzip_translations: Dict[Tuple[str, FemzipVariableCategory], str] 
 class MapperTest(TestCase):
     def validate(
         self,
-        fz: Dict[Tuple[str, FemzipVariableCategory], np.ndarray],
+        fz: dict[tuple[str, FemzipVariableCategory], np.ndarray],
         d3plot_shape: tuple,
         data_index_positions: Union[tuple, slice] = slice(None),
     ):
@@ -334,7 +334,7 @@ class MapperTest(TestCase):
         d1 = np.random.randn(2, 1200)
         d2 = np.random.randn(2, 1200)
 
-        fz: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray] = {
+        fz: dict[tuple[int, str, FemzipVariableCategory], np.ndarray] = {
             (1, "element_dependent_variable_2", FemzipVariableCategory.SHELL): d2,
             (2, "element_dependent_variable_1", FemzipVariableCategory.SHELL): d1,
         }
@@ -355,7 +355,7 @@ class MapperTest(TestCase):
         d2 = np.random.randn(2, 20000)
         d3 = np.random.randn(2, 20000)
 
-        fz: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray] = {
+        fz: dict[tuple[int, str, FemzipVariableCategory], np.ndarray] = {
             (1, "Effective plastic strain (   1)", FemzipVariableCategory.SHELL): d1,
             (2, "Effective plastic strain (   2)", FemzipVariableCategory.SHELL): d2,
             (3, "Effective plastic strain (   3)", FemzipVariableCategory.SHELL): d3,
@@ -390,7 +390,7 @@ class MapperTest(TestCase):
         history_vars1 = np.random.randn(3, 2)
         history_vars2 = np.random.randn(3, 2)
 
-        fz: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray] = {
+        fz: dict[tuple[int, str, FemzipVariableCategory], np.ndarray] = {
             # stress
             (1, "Sigma-x (IP 6)", FemzipVariableCategory.SOLID): stress_1,
             (2, "Sigma-y (IP 3)", FemzipVariableCategory.SOLID): stress_2,
@@ -439,7 +439,7 @@ class MapperTest(TestCase):
         bending = np.random.randn(3, 123)
         torsion = np.random.rand(2, 5)
 
-        fz: Dict[Tuple[int, str, FemzipVariableCategory], np.ndarray] = {
+        fz: dict[tuple[int, str, FemzipVariableCategory], np.ndarray] = {
             (1, "axial_force", FemzipVariableCategory.BEAM): axial_force,
             (2, "s_shear_resultant", FemzipVariableCategory.BEAM): shear,
             (3, "t_bending_moment", FemzipVariableCategory.BEAM): bending,

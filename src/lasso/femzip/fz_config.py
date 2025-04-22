@@ -1,9 +1,9 @@
-from typing import Dict, Union, Tuple
+from typing import Union
 
 import enum
 
 
-def get_last_int_of_line(line: str) -> Tuple[str, Union[None, int]]:
+def get_last_int_of_line(line: str) -> tuple[str, Union[None, int]]:
     """Searches an integer in the line
 
     Parameters
@@ -117,7 +117,7 @@ class FemzipVariableCategory(enum.Enum):
         return FEMZIP_CATEGORY_TRANSL_DICT[number]
 
 
-FEMZIP_CATEGORY_TRANSL_DICT: Dict[int, FemzipVariableCategory] = {
+FEMZIP_CATEGORY_TRANSL_DICT: dict[int, FemzipVariableCategory] = {
     entry.value: entry for entry in FemzipVariableCategory.__members__.values()
 }
 

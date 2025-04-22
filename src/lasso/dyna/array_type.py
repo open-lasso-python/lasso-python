@@ -1,6 +1,3 @@
-import typing
-
-
 class ArrayType:
     """Specifies the names for specific arrays
 
@@ -494,7 +491,7 @@ class ArrayType:
     rigid_wall_position = "rigid_wall_position"
 
     @staticmethod
-    def get_state_array_names() -> typing.List[str]:
+    def get_state_array_names() -> list[str]:
         """Get the names of all state arrays
 
         Returns:
