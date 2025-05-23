@@ -7,7 +7,7 @@ from collections.abc import Sequence
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 
-from ...dyna import ArrayType, D3plot
+from lasso.dyna import ArrayType, D3plot
 
 
 def _mark_dead_eles(node_indexes: np.ndarray, alive_shells: np.ndarray) -> np.ndarray:

@@ -14,7 +14,8 @@ from typing import Union
 from pathlib import Path
 import psutil
 
-from ..logging import str_error, str_info, str_running, str_success, str_warn
+# from ..logging import str_error, str_info, str_running, str_success, str_warn
+from lasso.logging import str_error, str_info, str_running, str_success, str_warn
 
 # pylint: disable = too-many-lines
 

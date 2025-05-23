@@ -9,8 +9,7 @@ import numpy as np
 from scipy import integrate
 from sklearn.neighbors import KDTree
 
-
-from ..math.stochastic import jensen_shannon_entropy
+from lasso.math.stochastic import jensen_shannon_entropy
 
 
 def _match_modes(
