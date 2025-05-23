@@ -13,7 +13,7 @@ from lasso.diffcrash.diffcrash_run import (
     parse_diffcrash_args,
 )
 
-from ..logging import str_error
+from lasso.logging import str_error
 
 
 def _parse_stages(start_stage: str, end_stage: str):

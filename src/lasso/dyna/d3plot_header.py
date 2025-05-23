@@ -4,8 +4,8 @@ from typing import Any, Union
 import numpy as np
 import rich
 
-from ..io.binary_buffer import BinaryBuffer
-from ..logging import get_logger
+from lasso.io.binary_buffer import BinaryBuffer
+from lasso.logging import get_logger
 
 # We have a lot of docstrings here but even if not so, we want to contain the
 # code here.

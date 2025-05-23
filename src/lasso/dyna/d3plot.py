@@ -15,15 +15,15 @@ from collections.abc import Iterable
 
 import numpy as np
 
-from ..femzip.femzip_api import FemzipAPI, FemzipBufferInfo, FemzipVariableCategory
-from ..io.binary_buffer import BinaryBuffer
-from ..io.files import open_file_or_filepath
-from ..logging import get_logger
-from ..plotting import plot_shell_mesh
-from .array_type import ArrayType
-from .d3plot_header import D3plotFiletype, D3plotHeader
-from .femzip_mapper import FemzipMapper, filter_femzip_variables
-from .filter_type import FilterType
+from lasso.femzip.femzip_api import FemzipAPI, FemzipBufferInfo, FemzipVariableCategory
+from lasso.io.binary_buffer import BinaryBuffer
+from lasso.io.files import open_file_or_filepath
+from lasso.logging import get_logger
+from lasso.plotting import plot_shell_mesh
+from lasso.dyna.array_type import ArrayType
+from lasso.dyna.d3plot_header import D3plotFiletype, D3plotHeader
+from lasso.dyna.femzip_mapper import FemzipMapper, filter_femzip_variables
+from lasso.dyna.filter_type import FilterType
 
 # pylint: disable = too-many-lines
 

@@ -18,11 +18,15 @@ from rich.progress import BarColumn, Progress
 from rich.table import Table
 from rich.text import Text
 
-from ..utils.rich_progress_bars import PlaceHolderBar, WorkingDots
-from .svd.clustering_betas import create_cluster_arg_dict, create_detector_arg_dict, group_betas
-from .svd.plot_beta_clusters import plot_clusters_js
-from .svd.pod_functions import calculate_v_and_betas
-from .svd.subsampling_methods import create_reference_subsample, remap_random_subsample
+from lasso.utils.rich_progress_bars import PlaceHolderBar, WorkingDots
+from lasso.dimred.svd.clustering_betas import (
+    create_cluster_arg_dict,
+    create_detector_arg_dict,
+    group_betas,
+)
+from lasso.dimred.svd.plot_beta_clusters import plot_clusters_js
+from lasso.dimred.svd.pod_functions import calculate_v_and_betas
+from lasso.dimred.svd.subsampling_methods import create_reference_subsample, remap_random_subsample
 
 # pylint: disable = too-many-lines
 
