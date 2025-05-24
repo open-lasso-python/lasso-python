@@ -4,6 +4,7 @@ import traceback
 from typing import Union
 
 import numpy as np
+
 from lasso.dyna.array_type import ArrayType
 from lasso.femzip.femzip_api import FemzipAPI, FemzipFileMetadata, VariableInfo
 from lasso.femzip.fz_config import FemzipArrayType, FemzipVariableCategory, get_last_int_of_line

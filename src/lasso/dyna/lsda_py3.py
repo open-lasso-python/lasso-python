@@ -1,6 +1,7 @@
 import glob
 import struct
 
+
 # We disable pylint here since this code is ancient code from LSTC and has the
 # respective quality. I tried rewriting it but could not understand it at all
 # in time.
@@ -100,15 +101,15 @@ class _Diskfile:
         s = struct.pack(self.lunpack, length)
         self.fp.write(s)
 
-    def writecd(self, dir):
+    def writecd(self, directory):
         """Write a whole CD command to the file at the current location"""
-        length = self.lengthsize + self.commandsize + len(dir)
+        length = self.lengthsize + self.commandsize + len(directory)
         s = struct.pack(self.lcunpack, length, Lsda.CD)
         self.fp.write(s)
-        if isinstance(dir, str):
-            self.fp.write(bytes(dir, "utf-8"))
+        if isinstance(directory, str):
+            self.fp.write(bytes(directory, "utf-8"))
         else:
-            self.fp.write(dir)
+            self.fp.write(directory)
 
     def writestentry(self, r):
         """Write a VARIABLE command (symbol table entry) to the file at
@@ -223,8 +224,7 @@ class Symbol:
         This routine does NOT follow links."""
         if self.type == 0:  # directory -- return listing
             return sorted(self.children.keys())
-        if end > self.length:
-            end = self.length
+        end = min(end, self.length)
         if end < 0:
             end = self.length + end
         if start > self.length:
@@ -239,11 +239,11 @@ class Symbol:
         self.file.ateof = 0
         #    format = self.file.ordercode + _Diskfile.packtype[self.type]*(end-start)
         #    return struct.unpack(format,self.file.fp.read(size*(end-start)))
-        format = f"{(self.file.ordercode)}{end - start}{_Diskfile.packtype[self.type]}"
+        fmt = f"{(self.file.ordercode)}{end - start}{_Diskfile.packtype[self.type]}"
         if self.type == Lsda.LINK:
-            return struct.unpack(format, self.file.fp.read(size * (end - start)))[0]
+            return struct.unpack(fmt, self.file.fp.read(size * (end - start)))[0]
         else:
-            return struct.unpack(format, self.file.fp.read(size * (end - start)))
+            return struct.unpack(fmt, self.file.fp.read(size * (end - start)))
 
     def read(self, start=0, end=2000000000):
         """Read data from the file.  Same as lread, but follows links"""
@@ -253,8 +253,7 @@ class Symbol:
         """Read data from the file and return as bytestring"""
         if self.type == 0:  # directory -- return listing
             return sorted(self.children.keys())
-        if end > self.length:
-            end = self.length
+        end = min(end, self.length)
         if end < 0:
             end = self.length + end
         if start > self.length:
@@ -534,20 +533,19 @@ class Lsda:
             if part == "..":
                 if self.cwd.parent:
                     self.cwd = self.cwd.parent
-            else:
-                # if self.cwd.children.has_key(part)):
-                if part in self.cwd.children:
-                    self.cwd = self.cwd.children[part]
-                    if self.cwd.type != 0:  # component is a variable, not a directory!
-                        self.cwd = self.cwd.parent
-                        break
-                elif create == 1 or (create == 2 and self.make_dirs == 1):
-                    self.cwd = Symbol(part, self.cwd)  # Create directory on the fly
-                else:  # component in path is missing
+            # if self.cwd.children.has_key(part)):
+            elif part in self.cwd.children:
+                self.cwd = self.cwd.children[part]
+                if self.cwd.type != 0:  # component is a variable, not a directory!
+                    self.cwd = self.cwd.parent
                     break
+            elif create == 1 or (create == 2 and self.make_dirs == 1):
+                self.cwd = Symbol(part, self.cwd)  # Create directory on the fly
+            else:  # component in path is missing
+                break
         return self.cwd
 
-    def write(self, name, type, data):
+    def write(self, name, data_type, data):
         """Write a new DATA record to the file.  Creates and returns
         the Symbol for the data written"""
         if self.fw is None:
@@ -572,7 +570,7 @@ class Lsda:
             sym = self.cwd.children[name]
         else:
             sym = Symbol(name, self.cwd)
-        sym.type = type
+        sym.type = data_type
         sym.length = len(data)
         self.fw.writedata(sym, data)
         self.dirty_symbols.add(sym)

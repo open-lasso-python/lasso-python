@@ -1,6 +1,5 @@
-from typing import Union
-
 import enum
+from typing import Union
 
 
 def get_last_int_of_line(line: str) -> tuple[str, Union[None, int]]:

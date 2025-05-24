@@ -46,7 +46,9 @@ class BinaryBuffer:
         new_mv: memoryview
             memoryview used to store the bytes
         """
-        assert isinstance(new_mv, memoryview)
+        if not isinstance(new_mv, memoryview):
+            raise TypeError(f"new_mv must be a memoryview, got {type(new_mv)}")
+
         self.mv_ = new_mv
         self.sizes_ = [len(self.mv_)]
 
@@ -68,8 +70,11 @@ class BinaryBuffer:
             the slice as a new buffer
         """
 
-        assert start < len(self)
-        assert end is None or end < len(self)
+        if start >= len(self):
+            raise IndexError(f"start index {start} out of range (length {len(self)})")
+
+        if end is not None and end >= len(self):
+            raise IndexError(f"end index {end} out of range (length {len(self)})")
 
         end = len(self) if end is None else end
 
@@ -283,7 +288,10 @@ class BinaryBuffer:
             buffer to append
         """
 
-        assert isinstance(binary_buffer, BinaryBuffer)
+        if not isinstance(binary_buffer, BinaryBuffer):
+            raise TypeError(
+                f"binary_buffer must be an instance of BinaryBuffer, got {type(binary_buffer)}"
+            )
 
         self.mv_ = memoryview(bytearray(self.mv_) + bytearray(binary_buffer.mv_))
         self.sizes_.append(len(binary_buffer))

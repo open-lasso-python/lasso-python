@@ -1,7 +1,8 @@
+import warnings
 from unittest import TestCase
 
 import numpy as np
-import warnings
+
 from lasso.dyna.d3plot_header import (
     D3plotFiletype,
     D3plotHeader,
@@ -24,7 +25,7 @@ class D3plotHeaderTest(TestCase):
             D3plotHeader().load_file(filepath)
 
         # TODO more
-        warnings.warn("No assertions of behavior, test is incomplete")
+        warnings.warn(message="No assertions of behavior, test is incomplete", stacklevel=2)
 
     def test_get_digit(self) -> None:
         number = 1234567890

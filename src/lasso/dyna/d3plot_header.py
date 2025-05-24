@@ -7,6 +7,7 @@ import rich
 from lasso.io.binary_buffer import BinaryBuffer
 from lasso.logging import get_logger
 
+
 # We have a lot of docstrings here but even if not so, we want to contain the
 # code here.
 # pylint: disable=too-many-lines
@@ -883,35 +884,34 @@ class D3plotHeader:
         self.has_solid_shell_thermal_strain_tensor = get_digit(self.raw_header["idtdt"], 3) == 1
         if self.raw_header["idtdt"] > 100:
             self.has_element_strain = get_digit(self.raw_header["idtdt"], 4) == 1
-        else:
-            # took a 1000 years to figure this out ...
-            # Warning: 4 gaussian points are not considered
-            if self.n_shell_vars > 0:
-                if (
-                    self.n_shell_vars
-                    - self.n_shell_tshell_layers
-                    * (
-                        6 * self.has_shell_tshell_stress
-                        + self.has_shell_tshell_pstrain
-                        + self.n_shell_tshell_history_vars
-                    )
-                    - 8 * self.has_shell_forces
-                    - 4 * self.has_shell_extra_variables
-                ) > 1:
-                    self.has_element_strain = True
-                # else:
-                # self.has_element_strain = False
-            elif self.n_thick_shell_vars > 0:
-                if (
-                    self.n_thick_shell_vars
-                    - self.n_shell_tshell_layers
-                    * (
-                        6 * self.has_shell_tshell_stress
-                        + self.has_shell_tshell_pstrain
-                        + self.n_shell_tshell_history_vars
-                    )
-                ) > 1:
-                    self.has_element_strain = True
+        # took a 1000 years to figure this out ...
+        # Warning: 4 gaussian points are not considered
+        elif self.n_shell_vars > 0:
+            if (
+                self.n_shell_vars
+                - self.n_shell_tshell_layers
+                * (
+                    6 * self.has_shell_tshell_stress
+                    + self.has_shell_tshell_pstrain
+                    + self.n_shell_tshell_history_vars
+                )
+                - 8 * self.has_shell_forces
+                - 4 * self.has_shell_extra_variables
+            ) > 1:
+                self.has_element_strain = True
+            # else:
+            # self.has_element_strain = False
+        elif self.n_thick_shell_vars > 0:
+            if (
+                self.n_thick_shell_vars
+                - self.n_shell_tshell_layers
+                * (
+                    6 * self.has_shell_tshell_stress
+                    + self.has_shell_tshell_pstrain
+                    + self.n_shell_tshell_history_vars
+                )
+            ) > 1:
+                self.has_element_strain = True
                 # else:
                 #     self.has_element_strain = False
             # else:
@@ -1085,7 +1085,7 @@ class D3plotHeader:
                 storage_dict[name] = int(bb.read_number(data[0], data[1]))
             elif data[1] == self.ftype:
                 storage_dict[name] = float(bb.read_number(data[0], data[1]))
-            elif data[1] == str:
+            elif data[1] is str:
                 try:
                     storage_dict[name] = bb.read_text(data[0], data[2])
                 except UnicodeDecodeError:
@@ -1182,7 +1182,11 @@ class D3plotHeader:
         differences: Dict[str, Tuple[Any, Any]]
             The different entries of both headers in a dict
         """
-        assert isinstance(other, D3plotHeader)
+        if not isinstance(other, D3plotHeader):
+            raise TypeError(
+                "Only D3plotHeaders instances are supported. "
+                f"Detected {type(other)} is unsupported."
+            )
 
         differences = {}
         names = {*self.raw_header.keys(), *other.raw_header.keys()}

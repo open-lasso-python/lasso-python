@@ -76,7 +76,8 @@ def _laplacian_gauss_idw(
     L: array-like, shape (n_points, n_points)
       The laplacian matrix for manifold given by its sampling `points`.
     """
-    assert 2 == points.ndim
+    if points.ndim != 2:
+        raise TypeError("Only 2D arrays are supported.")
 
     if min_neighbors is None:
         min_neighbors = points.shape[1]
@@ -110,7 +111,8 @@ def _laplacian_gauss_idw(
         graph[i, j] = d = np.exp(d)
         graph[j, i] = d[:, np.newaxis]
 
-    assert 0 == (graph != graph.T).sum()
+    if not np.array_equal(graph, graph.T):
+        raise RuntimeError("graph matrix is not symetric.")
 
     return csgraph.laplacian(graph, normed=True)
 

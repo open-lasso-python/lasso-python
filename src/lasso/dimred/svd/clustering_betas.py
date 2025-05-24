@@ -1,5 +1,5 @@
-from typing import Union
 from collections.abc import Sequence
+from typing import Union
 
 import numpy as np
 from sklearn.cluster import DBSCAN, OPTICS, KMeans, SpectralClustering
@@ -355,7 +355,8 @@ def __rescale_betas(betas):
     maxb: np.ndarray
         Array to rescale betas back to original values
     """
-    assert len(betas.shape) == 2
+    if len(betas.shape) != 2:
+        raise TypeError("only 2D arrays are supported.")
     ref_betas = np.abs(betas)
     maxb = np.array([np.max(ref_betas[:, i]) for i in range(betas.shape[1])])
     # return np.array([(betas[:, i]/maxb[i]) for i in range(betas.shape[1])]).T

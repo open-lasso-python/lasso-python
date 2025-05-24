@@ -11,6 +11,7 @@ from scipy.spatial import ConvexHull
 from scipy.stats import binned_statistic_2d
 from sklearn.preprocessing import normalize
 
+
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
@@ -31,7 +32,8 @@ def _create_sphere_mesh(diameter: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         beta bin boundaries
     """
 
-    assert diameter.dtype == np.float32
+    if diameter.dtype != np.float32:
+        raise TypeError("diameter array must be of type `np.float32`.")
 
     # partition latitude
     n_alpha = 145
@@ -59,8 +61,7 @@ def _create_sphere_mesh(diameter: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     bin_beta = 1 - tmp
 
     # In case of trailing floats (-1.00000004 for example)
-    if bin_beta[-1] < -1:
-        bin_beta[-1] = -1
+    bin_beta[-1] = max(bin_beta[-1], -1)
 
     bin_beta = np.arccos(bin_beta)
 
@@ -139,10 +140,16 @@ def sphere_hashing(
     """
     # bin_numbers holds the bin_number for its respective index and must have
     # same length as the number of points
-    assert len(bin_numbers[0] == len(field))
+    if not len(bin_numbers[0] == len(field)):
+        raise AssertionError(
+            "bin_numbers holds the bin_number for its respective index and"
+            "must have same length as the number of points."
+        )
     # check data types
-    assert bin_numbers.dtype == np.int
-    assert bin_counts.dtype == np.float32
+    if not np.issubdtype(bin_numbers.dtype, np.integer):
+        raise TypeError(f"Expected int dtype got {bin_numbers.dtype}")
+    if not np.issubdtype(bin_counts.dtype, np.floating):
+        raise TypeError(f"Expected float dtype got {bin_counts.dtype}.")
 
     n_rows = bin_counts.shape[0]
     n_cols = bin_counts.shape[1]

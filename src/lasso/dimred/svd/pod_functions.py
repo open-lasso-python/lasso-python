@@ -1,9 +1,9 @@
 from typing import Union
 
 import numpy as np
+from rich.progress import Progress, TaskID
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import svds
-from rich.progress import Progress, TaskID
 
 from lasso.utils.rich_progress_bars import PlaceHolderBar
 

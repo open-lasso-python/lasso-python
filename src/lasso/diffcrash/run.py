@@ -12,7 +12,6 @@ from lasso.diffcrash.diffcrash_run import (
     DiffcrashRun,
     parse_diffcrash_args,
 )
-
 from lasso.logging import str_error
 
 

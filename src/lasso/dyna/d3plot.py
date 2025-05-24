@@ -1,5 +1,4 @@
 import ctypes
-from dataclasses import dataclass
 import logging
 import mmap
 import os
@@ -10,20 +9,22 @@ import tempfile
 import traceback
 import typing
 import webbrowser
-from typing import Any, BinaryIO, Union
 from collections.abc import Iterable
+from dataclasses import dataclass
+from typing import Any, BinaryIO, Union
 
 import numpy as np
 
+from lasso.dyna.array_type import ArrayType
+from lasso.dyna.d3plot_header import D3plotFiletype, D3plotHeader
+from lasso.dyna.femzip_mapper import FemzipMapper, filter_femzip_variables
+from lasso.dyna.filter_type import FilterType
 from lasso.femzip.femzip_api import FemzipAPI, FemzipBufferInfo, FemzipVariableCategory
 from lasso.io.binary_buffer import BinaryBuffer
 from lasso.io.files import open_file_or_filepath
 from lasso.logging import get_logger
 from lasso.plotting import plot_shell_mesh
-from lasso.dyna.array_type import ArrayType
-from lasso.dyna.d3plot_header import D3plotFiletype, D3plotHeader
-from lasso.dyna.femzip_mapper import FemzipMapper, filter_femzip_variables
-from lasso.dyna.filter_type import FilterType
+
 
 # pylint: disable = too-many-lines
 
@@ -129,7 +130,9 @@ class D3plotWriterSettings:
             msg = "Invalid type for floats: {0}. np.float32 or np.float64 is required."
             raise RuntimeError(msg.format(d3plot.ftype))
 
-        assert isinstance(d3plot, D3plot)
+        if not isinstance(d3plot, D3plot):
+            raise TypeError(f"d3plot must be a D3plot instance, got {type(d3plot)}")
+
         self.d3plot = d3plot
         self._header = {}
         self.block_size_bytes = block_size_bytes
@@ -176,7 +179,9 @@ class D3plotWriterSettings:
 
     @header.setter
     def set_header(self, new_header: dict):
-        assert isinstance(new_header, dict)
+        if not isinstance(new_header, dict):
+            raise TypeError(f"new_header must be a dict, got {type(new_header)}")
+
         self._header = new_header
 
     # pylint: disable = too-many-branches, too-many-statements, too-many-locals
@@ -603,17 +608,16 @@ class D3plotWriterSettings:
             or ArrayType.element_tshell_stress in self.d3plot.arrays
         ):
             new_header["ioshl1"] = 1000
+        # if either stress or pstrain is written for solids
+        # the whole block of 7 basic variables is always written
+        # to the file
+        elif (
+            ArrayType.element_solid_stress in self.d3plot.arrays
+            or ArrayType.element_solid_effective_plastic_strain in self.d3plot.arrays
+        ):
+            new_header["ioshl1"] = 999
         else:
-            # if either stress or pstrain is written for solids
-            # the whole block of 7 basic variables is always written
-            # to the file
-            if (
-                ArrayType.element_solid_stress in self.d3plot.arrays
-                or ArrayType.element_solid_effective_plastic_strain in self.d3plot.arrays
-            ):
-                new_header["ioshl1"] = 999
-            else:
-                new_header["ioshl1"] = 0
+            new_header["ioshl1"] = 0
 
         if n_shells == 0 and n_thick_shells == 0 and n_solids == 0:
             new_header["ioshl1"] = (
@@ -635,11 +639,10 @@ class D3plotWriterSettings:
             or ArrayType.element_tshell_effective_plastic_strain in self.d3plot.arrays
         ):
             new_header["ioshl2"] = 1000
+        elif ArrayType.element_solid_effective_plastic_strain in self.d3plot.arrays:
+            new_header["ioshl2"] = 999
         else:
-            if ArrayType.element_solid_effective_plastic_strain in self.d3plot.arrays:
-                new_header["ioshl2"] = 999
-            else:
-                new_header["ioshl2"] = 0
+            new_header["ioshl2"] = 0
 
         if n_shells == 0 and n_thick_shells == 0 and n_solids == 0:
             new_header["ioshl2"] = (
@@ -662,15 +665,14 @@ class D3plotWriterSettings:
             or ArrayType.element_shell_normal_force in self.d3plot.arrays
         ):
             new_header["ioshl3"] = 1000
+        # See https://github.com/open-lasso-python/lasso-python/issues/39
+        elif (
+            ArrayType.element_shell_thickness in self.d3plot.arrays
+            or ArrayType.element_shell_internal_energy in self.d3plot.arrays
+        ):
+            new_header["ioshl3"] = 999
         else:
-            # See https://github.com/open-lasso-python/lasso-python/issues/39
-            if (
-                ArrayType.element_shell_thickness in self.d3plot.arrays
-                or ArrayType.element_shell_internal_energy in self.d3plot.arrays
-            ):
-                new_header["ioshl3"] = 999
-            else:
-                new_header["ioshl3"] = 0
+            new_header["ioshl3"] = 0
 
         if n_shells == 0:
             new_header["ioshl3"] = (
@@ -846,11 +848,7 @@ class D3plotWriterSettings:
             if array.ndim != 3:
                 msg = "Array '{0}' was expected to have {1} dimensions ({2})."
                 raise ValueError(
-                    msg.format(
-                        ArrayType.rigid_wall_force,
-                        3,
-                        ",".join(["n_timesteps", "n_rigid_bodies", "x_y_z"]),
-                    )
+                    msg.format(ArrayType.rigid_wall_force, 3, "n_timesteps,n_rigid_bodies,x_y_z")
                 )
             new_header["numrbs"] = array.shape[1]
         else:
@@ -922,9 +920,7 @@ class D3plotWriterSettings:
             if array.ndim != 2:
                 msg = "Array '{0}' was expected to have {1} dimensions ({2})."
                 raise ValueError(
-                    msg.format(
-                        ArrayType.rigid_wall_force, 2, ",".join(["n_timesteps", "n_rigid_walls"])
-                    )
+                    msg.format(ArrayType.rigid_wall_force, 2, "n_timesteps,n_rigid_walls")
                 )
             n_rigid_walls = array.shape[1]
         if ArrayType.rigid_wall_position in self.d3plot.arrays:
@@ -933,11 +929,7 @@ class D3plotWriterSettings:
             if array.ndim != 3:
                 msg = "Array '{0}' was expected to have {1} dimensions ({2})."
                 raise ValueError(
-                    msg.format(
-                        ArrayType.rigid_wall_position,
-                        3,
-                        ",".join(["n_timesteps", "n_rigid_walls", "x_y_z"]),
-                    )
+                    msg.format(ArrayType.rigid_wall_position, 3, "n_timesteps,n_rigid_walls,x_y_z")
                 )
             n_rigid_walls = array.shape[1]
 
@@ -1118,7 +1110,10 @@ class D3plotWriterSettings:
             If the type cannot be deserialized for being unknown.
         """
 
-        assert dtype_hint in (None, np.integer, np.floating)
+        if dtype_hint not in (None, np.integer, np.floating):
+            raise TypeError(
+                f"dtype_hint must be None, np.integer, or np.floating, got {dtype_hint}"
+            )
 
         # INT
         if isinstance(value, self._allowed_int_types):
@@ -1215,12 +1210,9 @@ class D3plotWriterSettings:
             if has_layers:
                 if n_layers == 0:
                     n_layers = array.shape[2]
-                else:
-                    if n_layers != array.shape[2]:
-                        msg = (
-                            "Array '{0}' has '{1}' integration layers but another array used '{2}'."
-                        )
-                        raise ValueError(msg.format(array_type, array.shape[2], n_layers))
+                elif n_layers != array.shape[2]:
+                    msg = "Array '{0}' has '{1}' integration layers but another array used '{2}'."
+                    raise ValueError(msg.format(array_type, array.shape[2], n_layers))
 
                 # last dimension is collapsed
                 if array.ndim == 3:
@@ -1229,12 +1221,11 @@ class D3plotWriterSettings:
                     n_vars = array.shape[3] * n_layers
 
             # no layers
+            # last dimension is collapsed
+            elif array.ndim == 2:
+                n_vars = 1
             else:
-                # last dimension is collapsed
-                if array.ndim == 2:
-                    n_vars = 1
-                else:
-                    n_vars = array.shape[2]
+                n_vars = array.shape[2]
 
         return n_vars, n_layers
 
@@ -1368,7 +1359,10 @@ class RigidBodyMetadata:
     active_node_indexes: np.ndarray
 
 
-class RigidBodyInfo:
+# NOTE: class-as-data-structure (B903)
+# Class could be dataclass or namedtuple
+# See: https://docs.astral.sh/ruff/rules/class-as-data-structure/
+class RigidBodyInfo:  # noqa B903
     """RigidBodyMetadata contains vars for the individual rigid bodies"""
 
     rigid_body_metadata_list: Iterable[RigidBodyMetadata]
@@ -1381,7 +1375,10 @@ class RigidBodyInfo:
         self.n_rigid_bodies = n_rigid_bodies
 
 
-class RigidRoadInfo:
+# NOTE: class-as-data-structure (B903)
+# Class could be dataclass or namedtuple
+# See: https://docs.astral.sh/ruff/rules/class-as-data-structure/
+class RigidRoadInfo:  # noqa B903
     """RigidRoadInfo contains metadata for the description of rigid roads"""
 
     n_nodes: int = 0
@@ -1399,7 +1396,10 @@ class RigidRoadInfo:
         self.motion = motion
 
 
-class StateInfo:
+# NOTE: class-as-data-structure (B903)
+# Class could be dataclass or namedtuple
+# See: https://docs.astral.sh/ruff/rules/class-as-data-structure/
+class StateInfo:  # noqa B903
     """StateInfo holds metadata for states which is currently solely the timestep.
     We all had bigger plans in life ...
     """
@@ -1621,7 +1621,9 @@ class D3plot:
 
     @arrays.setter
     def arrays(self, array_dict: dict):
-        assert isinstance(array_dict, dict)
+        if not isinstance(array_dict, dict):
+            raise TypeError(f"array_dict must be a dict, got {type(array_dict)}")
+
         self._arrays = array_dict
 
     @property
@@ -3582,13 +3584,12 @@ class D3plot:
                 buffer_array = buffer_array_dict[array_name]
                 n_states_buffer_array = buffer_array.shape[0]
                 array[i_state : i_state + n_states_buffer_array] = buffer_array
-            else:
-                # remove unnecessary state arrays (not geometry arrays!)
-                # we "could" deal with this in the allocate function
-                # by not allocating them but this would replicate code
-                # in the reading functions
-                if array_name in state_array_names:
-                    arrays_to_delete.append(array_name)
+            # remove unnecessary state arrays (not geometry arrays!)
+            # we "could" deal with this in the allocate function
+            # by not allocating them but this would replicate code
+            # in the reading functions
+            elif array_name in state_array_names:
+                arrays_to_delete.append(array_name)
 
         for array_name in arrays_to_delete:
             del master_array_dict[array_name]
@@ -4023,20 +4024,19 @@ class D3plot:
             ):
                 LOGGER.warning("Bug while reading global data for rigid walls. Skipping this data.")
                 var_index += self.header.n_global_vars - previous_global_vars
-            else:
-                # rigid wall force
-                if n_rigid_walls * n_rigid_wall_vars != 0:
-                    array_dict[ArrayType.rigid_wall_force] = state_data[
-                        :, var_index : var_index + n_rigid_walls
-                    ]
-                    var_index += n_rigid_walls
+            # rigid wall force
+            elif n_rigid_walls * n_rigid_wall_vars != 0:
+                array_dict[ArrayType.rigid_wall_force] = state_data[
+                    :, var_index : var_index + n_rigid_walls
+                ]
+                var_index += n_rigid_walls
 
-                    # rigid wall position
-                    if n_rigid_wall_vars > 1:
-                        array_dict[ArrayType.rigid_wall_position] = state_data[
-                            :, var_index : var_index + 3 * n_rigid_walls
-                        ].reshape(n_states, n_rigid_walls, 3)
-                        var_index += 3 * n_rigid_walls
+                # rigid wall position
+                if n_rigid_wall_vars > 1:
+                    array_dict[ArrayType.rigid_wall_position] = state_data[
+                        :, var_index : var_index + 3 * n_rigid_walls
+                    ].reshape(n_states, n_rigid_walls, 3)
+                    var_index += 3 * n_rigid_walls
 
         return var_index
 
@@ -6096,10 +6096,16 @@ class D3plot:
             >>> d3plot.plot(0, field=pstrain[last_timestep], fringe_limits=(0, 0.3))
         """
 
-        assert i_timestep < self._state_info.n_timesteps
-        assert ArrayType.node_displacement in self.arrays
-        if fringe_limits:
-            assert len(fringe_limits) == 2
+        if i_timestep >= self._state_info.n_timesteps:
+            raise ValueError(
+                f"i_timestep must be less than {self._state_info.n_timesteps}, got {i_timestep}"
+            )
+
+        if ArrayType.node_displacement not in self.arrays:
+            raise KeyError("ArrayType.node_displacement is missing from self.arrays")
+
+        if fringe_limits is not None and len(fringe_limits) != 2:
+            raise ValueError("fringe_limits must be a sequence of length 2")
 
         # shell nodes
         shell_node_indexes = self.arrays[ArrayType.element_shell_node_indexes]
@@ -6109,7 +6115,12 @@ class D3plot:
 
         # check for correct field size
         if isinstance(field, np.ndarray):
-            assert field.ndim == 1
+            if getattr(field, "ndim", None) != 1:
+                raise ValueError(
+                    "field must be a 1-dimensional array, "
+                    f"got ndim={getattr(field, 'ndim', 'unknown')}"
+                )
+
             if is_element_field and len(shell_node_indexes) != len(field):  # type: ignore
                 msg = "Element indexes and field have different len: {} != {}"
                 raise ValueError(msg.format(shell_node_indexes.shape, field.shape))
@@ -6959,17 +6970,16 @@ class D3plot:
             array = self.arrays[typename]
             if dim_size < 0:
                 dim_size = len(array)
-            else:
-                if len(array) != dim_size:
-                    dimension_size_dict = {
-                        typename2: len(self.arrays[typename2]) for typename2 in array_dims
-                    }
-                    msg = "Inconsistency in array dim '{0}' detected:\n{1}"
-                    size_list = [
-                        f"   - name: {typename}, dim: {array_dims[typename]}, size: {size}"
-                        for typename, size in dimension_size_dict.items()
-                    ]
-                    raise ValueError(msg.format("n_rigid_bodies", "\n".join(size_list)))
+            elif len(array) != dim_size:
+                dimension_size_dict = {
+                    typename2: len(self.arrays[typename2]) for typename2 in array_dims
+                }
+                msg = "Inconsistency in array dim '{0}' detected:\n{1}"
+                size_list = [
+                    f"   - name: {typename}, dim: {array_dims[typename]}, size: {size}"
+                    for typename, size in dimension_size_dict.items()
+                ]
+                raise ValueError(msg.format("n_rigid_bodies", "\n".join(size_list)))
 
         rigid_body_part_indexes = self.arrays[ArrayType.rigid_body_part_indexes] + FORTRAN_OFFSET
         # rigid_body_n_nodes = self.arrays[ArrayType.rigid_body_n_nodes]
@@ -8999,7 +9009,10 @@ class D3plot:
             ArrayType.airbag_bag_volume: 1,
         }
         n_airbags = self.check_array_dims(array_dims, "n_airbags")
-        assert n_airbags == settings.header["npefg"] % 1000
+        if n_airbags != settings.header["npefg"] % 1000:
+            raise ValueError(
+                f"Expected n_airbags to equal settings.header['npefg'] % 1000, but got {n_airbags}"
+            )
 
         array_dims = {
             ArrayType.global_timesteps: 0,
@@ -9411,18 +9424,17 @@ class D3plot:
                 raise ValueError(msg, dimension_name, dimension_size, "\n".join(msg_arrays))
 
         # dynamic dimensions
-        else:
-            if dimension_size_dict:
-                unique_sizes = np.unique(list(dimension_size_dict.values()))
-                if len(unique_sizes) > 1:
-                    msg = "Inconsistency in array dim '%d' detected:\n%s"
-                    size_list = [
-                        f"   - name: {typename}, dim: {array_dimensions[typename]}, size: {size}"
-                        for typename, size in dimension_size_dict.items()
-                    ]
-                    raise ValueError(msg, dimension_name, "\n".join(size_list))
-                if len(unique_sizes) == 1:
-                    dimension_size = unique_sizes[0]
+        elif dimension_size_dict:
+            unique_sizes = np.unique(list(dimension_size_dict.values()))
+            if len(unique_sizes) > 1:
+                msg = "Inconsistency in array dim '%d' detected:\n%s"
+                size_list = [
+                    f"   - name: {typename}, dim: {array_dimensions[typename]}, size: {size}"
+                    for typename, size in dimension_size_dict.items()
+                ]
+                raise ValueError(msg, dimension_name, "\n".join(size_list))
+            if len(unique_sizes) == 1:
+                dimension_size = unique_sizes[0]
 
         if dimension_size < 0:
             return 0
@@ -9515,7 +9527,9 @@ class D3plot:
 
         # pylint: disable = too-many-nested-blocks
 
-        assert isinstance(d3plot2, D3plot)
+        if not isinstance(d3plot2, D3plot):
+            raise TypeError(f"d3plot2 must be an instance of D3plot, got {type(d3plot2)}")
+
         d3plot1 = self
 
         hdr_differences = d3plot1.header.compare(d3plot2.header)
@@ -9554,26 +9568,25 @@ class D3plot:
                 if isinstance(array1, np.ndarray):
                     if array1.shape != array2.shape:
                         comparison = f"shape mismatch {array1.shape} != {array2.shape}"
+                    elif np.issubdtype(array1.dtype, np.number) and np.issubdtype(
+                        array2.dtype, np.number
+                    ):
+                        diff = np.abs(array1 - array2)
+                        if diff.size:
+                            if array_eps is not None:
+                                diff2 = diff[diff > array_eps]
+                                if diff2.size:
+                                    diff2_max = diff2.max()
+                                    if diff2_max:
+                                        comparison = f"Δmax = {diff2_max}"
+                            else:
+                                diff_max = diff.max()
+                                if diff_max:
+                                    comparison = f"Δmax = {diff_max}"
                     else:
-                        if np.issubdtype(array1.dtype, np.number) and np.issubdtype(
-                            array2.dtype, np.number
-                        ):
-                            diff = np.abs(array1 - array2)
-                            if diff.size:
-                                if array_eps is not None:
-                                    diff2 = diff[diff > array_eps]
-                                    if diff2.size:
-                                        diff2_max = diff2.max()
-                                        if diff2_max:
-                                            comparison = f"Δmax = {diff2_max}"
-                                else:
-                                    diff_max = diff.max()
-                                    if diff_max:
-                                        comparison = f"Δmax = {diff_max}"
-                        else:
-                            n_mismatches = (array1 != array2).sum()
-                            if n_mismatches:
-                                comparison = f"Mismatches: {n_mismatches}"
+                        n_mismatches = (array1 != array2).sum()
+                        if n_mismatches:
+                            comparison = f"Mismatches: {n_mismatches}"
 
                 else:
                     comparison = "Arrays don't match"

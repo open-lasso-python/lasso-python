@@ -1,8 +1,8 @@
 import os
 import random
 import time
-from typing import Union
 from collections.abc import Sequence
+from typing import Union
 
 import numpy as np
 from sklearn.neighbors import NearestNeighbors

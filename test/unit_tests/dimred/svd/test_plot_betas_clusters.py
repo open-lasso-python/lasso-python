@@ -2,6 +2,7 @@ import hashlib
 from unittest import TestCase
 
 import numpy as np
+
 from lasso.dimred.svd.plot_beta_clusters import plot_clusters_js
 
 
