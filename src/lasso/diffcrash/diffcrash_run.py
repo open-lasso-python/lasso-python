@@ -10,12 +10,13 @@ import sys
 import time
 import typing
 from concurrent import futures
-from typing import Union
 from pathlib import Path
+from typing import Union
+
 import psutil
 
-# from ..logging import str_error, str_info, str_running, str_success, str_warn
 from lasso.logging import str_error, str_info, str_running, str_success, str_warn
+
 
 # pylint: disable = too-many-lines
 
@@ -337,9 +338,7 @@ class DiffcrashRun:
         self.logger.info(self._msg_option.format("crash-code", crash_code))
 
         if not crash_code_ok:
-            err_msg = (
-                f"Invalid crash code '{crash_code}'. Please use one of: {str(valid_crash_codes)}"
-            )
+            err_msg = f"Invalid crash code '{crash_code}'. Please use one of: {valid_crash_codes!s}"
             self.logger.error(err_msg)
             raise RuntimeError(str_error(err_msg))
 
@@ -647,22 +646,21 @@ class DiffcrashRun:
                         str(i_filepath + counter_offset),
                     ]
             # indeed there is a parameter file
+            elif self.use_id_mapping:
+                args = [
+                    self.diffcrash_home / f"DFC_Import_{self.crash_code}",
+                    "-ID",
+                    self.simulation_runs[i_filepath],
+                    self.project_dir,
+                    str(i_filepath + counter_offset),
+                ]
             else:
-                if self.use_id_mapping:
-                    args = [
-                        self.diffcrash_home / f"DFC_Import_{self.crash_code}",
-                        "-ID",
-                        self.simulation_runs[i_filepath],
-                        self.project_dir,
-                        str(i_filepath + counter_offset),
-                    ]
-                else:
-                    args = [
-                        self.diffcrash_home / f"DFC_Import_{self.crash_code}",
-                        self.simulation_runs[i_filepath],
-                        self.project_dir,
-                        str(i_filepath + counter_offset),
-                    ]
+                args = [
+                    self.diffcrash_home / f"DFC_Import_{self.crash_code}",
+                    self.simulation_runs[i_filepath],
+                    self.project_dir,
+                    str(i_filepath + counter_offset),
+                ]
 
             # append args to list
             import_arguments.append(args)
@@ -689,7 +687,11 @@ class DiffcrashRun:
 
             if n_imports_finished != n_new_imports_finished:
                 # pylint: disable = consider-using-f-string
-                msg = f"Running Imports ... [{n_new_imports_finished}/{len(return_code_futures)}] - {percentage:3.2f}%\r"
+                msg = (
+                    f"Running Imports ... [{n_new_imports_finished}/{len(return_code_futures)}] - "
+                    f"{percentage:3.2f}%\r"
+                )
+
                 print(str_running(msg), end="", flush=True)
                 self.logger.info(msg)
 
@@ -1206,7 +1208,7 @@ class DiffcrashRun:
             conf_lines = conf.readlines()
         line = 0
 
-        for i in range(0, len(conf_lines)):
+        for i in range(len(conf_lines)):
             if conf_lines[i].find("FUNCTION") >= 0:
                 line = i + 1
                 break
@@ -1216,7 +1218,7 @@ class DiffcrashRun:
         if line != 0:
             while 1:
                 while 1:
-                    for i in range(0, len(conf_lines[line])):
+                    for i in range(len(conf_lines[line])):
                         if conf_lines[line][i] == "<":
                             element_start = i + 1
                         if conf_lines[line][i] == ">":
@@ -1231,7 +1233,7 @@ class DiffcrashRun:
                     j += 1
                     items = check.split(" ")
                     pos = -1
-                    for n in range(0, len(items)):
+                    for n in range(len(items)):
                         if items[n].startswith("!"):
                             msg = f"FOUND at {n}"
                             print(msg)
@@ -1240,7 +1242,7 @@ class DiffcrashRun:
                             break
                         pos = len(items)
 
-                    for n in range(0, pos):
+                    for n in range(pos):
                         if items[n] == "PDMX" or items[n] == "pdmx":
                             break
                         if items[n] == "PDXMX" or items[n] == "pdxmx":
@@ -1262,7 +1264,7 @@ class DiffcrashRun:
 
                     for k in range(n, pos):
                         postval = None
-                        for m in range(0, n):
+                        for m in range(n):
                             if items[m] == "coordinates":
                                 items[m] = "geometry"
                             if postval is None:

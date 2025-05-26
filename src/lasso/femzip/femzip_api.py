@@ -1,6 +1,5 @@
 import logging
 import os
-from pathlib import Path
 import re
 import stat
 import sys
@@ -18,11 +17,13 @@ from ctypes import (
     c_uint64,
     sizeof,
 )
+from pathlib import Path
 from typing import Any, Union
 
 import numpy as np
 
 from .fz_config import FemzipArrayType, FemzipVariableCategory, get_last_int_of_line
+
 
 # During next refactoring we should take a look at reducing the file size.
 # pylint: disable = too-many-lines
@@ -441,7 +442,10 @@ class FemzipAPI:
         """
         # We access some internal members to do some magic.
         # pylint: disable = protected-access
-        assert src._fields_ == dest._fields_
+        if src._fields_ != dest._fields_:
+            raise ValueError(
+                f"Source and destination fields do not match: {src._fields_} != {dest._fields_}"
+            )
 
         for field_name, _ in src._fields_:
             setattr(dest, field_name, getattr(src, field_name))
@@ -1284,7 +1288,10 @@ class FemzipAPI:
         return file_metadata2
 
 
-class FemzipD3plotArrayMapping:
+# NOTE: class-as-data-structure (B903)
+# Class could be dataclass or namedtuple
+# See: https://docs.astral.sh/ruff/rules/class-as-data-structure/
+class FemzipD3plotArrayMapping:  # noqa B903
     """Contains information about how to map femzip arrays to d3plot arrays"""
 
     d3plot_array_type: str

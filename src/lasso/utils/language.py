@@ -47,10 +47,9 @@ def set_var(name, value, context):
         if i_name == len(name) - 1:
             current_context[current_name] = value
         # otherwise iterate into next level
+        elif current_name in current_context:
+            current_context = current_context[current_name]
         else:
-            if current_name in current_context:
-                current_context = current_context[current_name]
-            else:
-                new_level = {}
-                current_context[current_name] = new_level
-                current_context = new_level
+            new_level = {}
+            current_context[current_name] = new_level
+            current_context = new_level

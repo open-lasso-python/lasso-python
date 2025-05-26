@@ -1,6 +1,8 @@
 from unittest import TestCase
-from lasso.dimred.svd.pod_functions import calculate_v_and_betas
+
 import numpy as np
+
+from lasso.dimred.svd.pod_functions import calculate_v_and_betas
 
 
 class PodFunctionsTest(TestCase):

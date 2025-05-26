@@ -3,6 +3,7 @@ import platform
 
 from lasso.utils.console_coloring import ConsoleColoring
 
+
 # settings
 MARKER_INFO = "[/]"
 MARKER_RUNNING = "[~]"

@@ -6,9 +6,9 @@ import re
 import shutil
 import sys
 import time
+from collections.abc import Sequence
 from concurrent.futures.process import ProcessPoolExecutor
 from typing import Union
-from collections.abc import Sequence
 
 import h5py
 import numpy as np
@@ -18,7 +18,6 @@ from rich.progress import BarColumn, Progress
 from rich.table import Table
 from rich.text import Text
 
-from lasso.utils.rich_progress_bars import PlaceHolderBar, WorkingDots
 from lasso.dimred.svd.clustering_betas import (
     create_cluster_arg_dict,
     create_detector_arg_dict,
@@ -27,6 +26,8 @@ from lasso.dimred.svd.clustering_betas import (
 from lasso.dimred.svd.plot_beta_clusters import plot_clusters_js
 from lasso.dimred.svd.pod_functions import calculate_v_and_betas
 from lasso.dimred.svd.subsampling_methods import create_reference_subsample, remap_random_subsample
+from lasso.utils.rich_progress_bars import PlaceHolderBar, WorkingDots
+
 
 # pylint: disable = too-many-lines
 
@@ -505,7 +506,8 @@ class DimredRun:
         if not part_ids:
             return ()
 
-        assert all(isinstance(pid, int) for pid in part_ids), "All part ids must be of type 'int'"
+        if not all(isinstance(pid, int) for pid in part_ids):
+            raise TypeError("All part ids must be of type 'int'")
 
         return part_ids
 
@@ -583,14 +585,13 @@ class DimredRun:
                 self.raise_error(err_msg)
 
             reference_run = os.path.normpath(reference_run_pattern)
+        # use first simulation run if no reference run was provided
+        # check if enough simulation runs remain
+        elif len(simulation_runs) > 1:
+            reference_run = simulation_runs[0]
         else:
-            # use first simulation run if no reference run was provided
-            # check if enough simulation runs remain
-            if len(simulation_runs) > 1:
-                reference_run = simulation_runs[0]
-            else:
-                err_msg = "Number of Simulation runs after using first as reference run is zero."
-                self.raise_error(err_msg)
+            err_msg = "Number of Simulation runs after using first as reference run is zero."
+            self.raise_error(err_msg)
 
         # add to table
         table.add_row("reference-run", reference_run)
@@ -804,7 +805,10 @@ class DimredRun:
                             h5_sample.attrs[HDF5FileNames.SUBSAMPLE_PROCESS_TIME.value] = sub[
                                 1
                             ].result()[1]
-                            submitted_samples.pop(i)
+                            # FIXME: loop-iterator-mutation (B909)
+                            # Mutation to loop iterable `submitted_samples` during iteration
+                            # See: https://docs.astral.sh/ruff/rules/loop-iterator-mutation/
+                            submitted_samples.pop(i)  # noqa B909
                             prog.advance(task1)  # type: ignore
                             t_cum_io += sub[1].result()[2]
                             t_cum += sub[1].result()[1]

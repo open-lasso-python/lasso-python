@@ -2,8 +2,8 @@ import contextlib
 import glob
 import os
 import typing
-from typing import Union
 from collections.abc import Iterator
+from typing import Union
 
 
 @contextlib.contextmanager

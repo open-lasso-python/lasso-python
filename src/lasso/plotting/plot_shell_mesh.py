@@ -1,10 +1,11 @@
-import os
 import io
-import uuid
 import json
+import os
+import uuid
 from base64 import b64encode
-from zipfile import ZipFile, ZIP_DEFLATED
 from typing import Union
+from zipfile import ZIP_DEFLATED, ZipFile
+
 import numpy as np
 
 
@@ -55,16 +56,48 @@ def plot_shell_mesh(
 
     # pylint: disable = too-many-locals, too-many-statements
 
-    assert node_coordinates.ndim == 2
-    assert node_coordinates.shape[1] == 3
-    assert shell_node_indexes.ndim == 2
-    assert shell_node_indexes.shape[1] in [3, 4]
+    if getattr(node_coordinates, "ndim", None) != 2:
+        raise ValueError(
+            f"node_coordinates must be 2-dimensional, "
+            f"got ndim={getattr(node_coordinates, 'ndim', 'unknown')}"
+        )
+
+    if getattr(node_coordinates, "shape", (None, None))[1] != 3:
+        raise ValueError(
+            f"node_coordinates must have shape[1] == 3, "
+            f"got shape={getattr(node_coordinates, 'shape', 'unknown')}"
+        )
+
+    if getattr(shell_node_indexes, "ndim", None) != 2:
+        raise ValueError(
+            f"shell_node_indexes must be 2-dimensional, "
+            f"got ndim={getattr(shell_node_indexes, 'ndim', 'unknown')}"
+        )
+
+    shape_1 = getattr(shell_node_indexes, "shape", (None, None))[1]
+    if shape_1 not in (3, 4):
+        raise ValueError(f"shell_node_indexes must have shape[1] of 3 or 4, got shape[1]={shape_1}")
+
     if isinstance(field, np.ndarray):
-        assert field.ndim == 1
+        if getattr(field, "ndim", None) != 1:
+            raise ValueError(
+                f"field must be 1-dimensional, got ndim={getattr(field, 'ndim', 'unknown')}"
+            )
+
         if is_element_field:
-            assert field.shape[0] == shell_node_indexes.shape[0]
-        else:
-            assert field.shape[0] == node_coordinates.shape[0]
+            if (
+                getattr(field, "shape", (None,))[0]
+                != getattr(shell_node_indexes, "shape", (None,))[0]
+            ):
+                raise ValueError(
+                    f"field length {getattr(field, 'shape', (None,))[0]} does not match "
+                    f"shell_node_indexes length {getattr(shell_node_indexes, 'shape', (None,))[0]}"
+                )
+        elif getattr(field, "shape", (None,))[0] != getattr(node_coordinates, "shape", (None,))[0]:
+            raise ValueError(
+                f"field length {getattr(field, 'shape', (None,))[0]} does not match "
+                f"node_coordinates length {getattr(node_coordinates, 'shape', (None,))[0]}"
+            )
 
     # cast types correctly
     # the types MUST be float32

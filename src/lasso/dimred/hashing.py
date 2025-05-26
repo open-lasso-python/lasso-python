@@ -1,8 +1,8 @@
 import multiprocessing
 import os
 import time
-from typing import Union
 from collections.abc import Sequence
+from typing import Union
 
 import h5py
 import numpy as np
@@ -83,7 +83,10 @@ def is_orientation_flip_required(eigenvectors1: np.ndarray, eigenvectors2: np.nd
         The eigenmodes require switching if the dot product of the knn-eigenfields yield
         a negative result.
     """
-    assert eigenvectors1.shape == eigenvectors2.shape
+    if eigenvectors1.shape != eigenvectors2.shape:
+        raise AssertionError(
+            f"shape mismatch detected. {eigenvectors1.shape} not equal to {eigenvectors2.shape}"
+        )
 
     # one eigenmode only
     if eigenvectors1.ndim == 1:
@@ -133,7 +136,10 @@ def _compute_mode_similarities(
 
     mode_similarities = []
     for i_hash, j_hash in matches:
-        assert hashes1.shape[2] == hashes2.shape[2]
+        if hashes1.shape[2] != hashes2.shape[2]:
+            raise AssertionError(
+                f"Unequal number of columns. {hashes1.shape[2]} is not equal to {hashes2.shape[2]}"
+            )
 
         field1 = eigenvectors_sub1[:, i_hash]
         field2 = eigenvectors_sub2[:, j_hash]
@@ -238,7 +244,8 @@ def run_hash_comparison(
 
     # pylint: disable = too-many-locals, too-many-statements
 
-    assert n_threads > 0
+    if n_threads <= 0:
+        raise ValueError("Number of threads cannot be negative or zero.")
 
     # fixed settings
     hdf5_dataset_compression = "gzip"
@@ -621,7 +628,11 @@ def compute_hashes(
         For comparison, only y is usually used.
     """
 
-    assert eig_vecs.shape[0] == len(result_field), f"{eig_vecs.shape[0]} != {len(result_field)}"
+    if eig_vecs.shape[0] != len(result_field):
+        raise AssertionError(
+            f"Unequal number of rows detected. {eig_vecs.shape[0]} "
+            f"is not equal to {len(result_field)}"
+        )
 
     # Note: needs to be vectorized to speed it up
 

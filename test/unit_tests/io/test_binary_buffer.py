@@ -1,7 +1,8 @@
-import os
-import numpy as np
-from unittest import TestCase
 import filecmp
+import os
+from unittest import TestCase
+
+import numpy as np
 
 from lasso.io.binary_buffer import BinaryBuffer
 
@@ -19,7 +20,7 @@ class BinaryBufferTest(TestCase):
 
     def test_memoryview(self):
         self.assertEqual(self.bb.mv_, self.bb.memoryview)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             self.bb.memoryview = None
         self.memoryview = memoryview(bytearray(b""))
 

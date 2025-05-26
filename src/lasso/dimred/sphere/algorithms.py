@@ -1,13 +1,12 @@
 import numpy as np
 
-from sklearn.preprocessing import normalize
-
 # scipy is C-code which causes invalid linter warning about ConvexHull not
 # being around.
 # pylint: disable = no-name-in-module
 from scipy.spatial import ConvexHull
 from scipy.stats import binned_statistic_2d
 from scipy.stats._binned_statistic import BinnedStatistic2dResult
+from sklearn.preprocessing import normalize
 
 
 def to_spherical_coordinates(points: np.ndarray, centroid: np.ndarray, axis: str = "Z"):
@@ -78,7 +77,11 @@ def sphere_hashing(histo: BinnedStatistic2dResult, field: np.ndarray):
     """
     bin_n = histo.binnumber
 
-    assert len(bin_n[0] == len(field))
+    if not len(bin_n[0] == len(field)):
+        raise AssertionError(
+            "bin_numbers holds the bin_number for its respective index and"
+            "must have same length as the number of points."
+        )
 
     # get dims of the embedding space
     n_rows = histo.statistic.shape[0]
@@ -150,8 +153,7 @@ def create_sphere(diameter: float):
     tmp = count * a_ele
     tmp /= r**2 * delt_alpha
     bin_beta = 1 - tmp
-    if bin_beta[-1] < -1:
-        bin_beta[-1] = -1
+    bin_beta[-1] = max(bin_beta[-1], -1)
 
     bin_beta = np.arccos(bin_beta)
     return bin_alpha, bin_beta

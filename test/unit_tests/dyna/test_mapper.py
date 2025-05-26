@@ -3,9 +3,10 @@ from unittest import TestCase
 
 import numpy as np
 
-from lasso.femzip.fz_config import FemzipArrayType, FemzipVariableCategory
 from lasso.dyna.array_type import ArrayType
 from lasso.dyna.femzip_mapper import FemzipMapper
+from lasso.femzip.fz_config import FemzipArrayType, FemzipVariableCategory
+
 
 part_global_femzip_translations: dict[tuple[FemzipArrayType, FemzipVariableCategory], set[str]] = {
     # GLOBAL
@@ -256,7 +257,7 @@ class MapperTest(TestCase):
         self,
         fz: dict[tuple[str, FemzipVariableCategory], np.ndarray],
         d3plot_shape: tuple,
-        data_index_positions: Union[tuple, slice] = slice(None),
+        data_index_positions: Union[tuple, slice] = None,
     ):
         """Validate that the arrays have the same shape and that the
         raw data has been allocated to the correct positions in the
@@ -271,6 +272,8 @@ class MapperTest(TestCase):
         data_index_positions:
             positions of the raw data in the d3plot array
         """
+        if data_index_positions is None:
+            data_index_positions = slice(None)
         d3plot_name = []
 
         m = FemzipMapper()

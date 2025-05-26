@@ -1,5 +1,6 @@
 import random
 from typing import Union
+
 import numpy as np
 from sklearn.neighbors import KDTree
 
@@ -23,7 +24,10 @@ def unique_subsamples(start: int, end: int, n_samples: int, seed=None) -> np.nda
     indexes: np.ndarray
         unique sample indexes
     """
-    assert start <= end
+    if start > end:
+        raise ValueError(
+            f"Invalid range: start ({start}) must be less than or equal to end ({end})"
+        )
 
     n_samples = min(n_samples, end - start)
     random.seed(seed)
