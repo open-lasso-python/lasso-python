@@ -211,7 +211,7 @@ def _join_hash_comparison_thread_files(
                 thread_weights = thread_file["weights"]
 
                 for (i_row, i_col), values, matches in zip(
-                    matrix_indexes, matrix_similarities, matrix_matches
+                    matrix_indexes, matrix_similarities, matrix_matches, strict=False
                 ):
                     smatrix[i_row, i_col] = values
                     ds_matches[i_row, i_col] = matches

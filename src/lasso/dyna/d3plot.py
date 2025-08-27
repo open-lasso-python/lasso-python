@@ -7162,7 +7162,9 @@ class D3plot:
         rigid_road_segment_road_id = self.arrays[ArrayType.rigid_road_segment_road_id]
         rigid_road_segment_node_ids = self.arrays[ArrayType.rigid_road_segment_node_ids]
 
-        for segment_id, node_ids in zip(rigid_road_segment_road_id, rigid_road_segment_node_ids):
+        for segment_id, node_ids in zip(
+            rigid_road_segment_road_id, rigid_road_segment_node_ids, strict=False
+        ):
             n_bytes_written += fp.write(settings.pack(segment_id))
             n_bytes_written += fp.write(settings.pack(len(node_ids)))
             n_bytes_written += fp.write(settings.pack(node_ids, dtype_hint=np.integer))
@@ -7347,7 +7349,7 @@ class D3plot:
             title_wordsize = 4
             max_len = 18 * title_wordsize
             fmt_name = "{0:" + str(max_len) + "}"
-            for pid, title in zip(part_titles_ids, part_titles):
+            for pid, title in zip(part_titles_ids, part_titles, strict=False):
                 title = title.decode("utf-8")
                 n_bytes_written += fp.write(settings.pack(pid))
 
@@ -7387,7 +7389,7 @@ class D3plot:
 
             max_len = 18 * self.header.wordsize
             fmt_name = "{0:" + str(max_len) + "}"
-            for pid, title in zip(titles_ids, titles):
+            for pid, title in zip(titles_ids, titles, strict=False):
                 n_bytes_written += fp.write(settings.pack(pid))
 
                 formatted_title = fmt_name.format(title[:max_len])

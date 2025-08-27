@@ -200,7 +200,9 @@ class Binout:
             if args[0] == "rcforc":
                 ids = [
                     (str(i) + "m") if j else (str(i) + "s")
-                    for i, j in zip(self.read("rcforc", "ids"), self.read("rcforc", "side"))
+                    for i, j in zip(
+                        self.read("rcforc", "ids"), self.read("rcforc", "side"), strict=False
+                    )
                 ]
             else:
                 ids = self.read(*args[:-1], "ids")
