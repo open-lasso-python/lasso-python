@@ -21,12 +21,12 @@ requires-python = ">=3.11"
 dependencies = [
     "h5py==3.*",
     "scipy==1.*",
-    "numpy==1.*",
+    "numpy>2.2",
     "plotly==5.*",
     "psutil==5.*",
     "rich==13.*",
     "pandas==2.*",
-    "scikit_learn==1.*"
+    "scikit_learn==1.*",
 ]
 
 [tool.setuptools]
