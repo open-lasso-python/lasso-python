@@ -13,13 +13,11 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
 
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = [
     "h5py==3.*",
     "scipy==1.*",
@@ -89,6 +87,7 @@ select = [
     "YTT", # flake8-2020 (Detects outdated Python 2/3 compatibility issues)
     "FLY", # flynt (Converts old-style string formatting to f-strings)
     "PIE", # flake8-pie
+    "NPY201", # numpy2-deprecations
     # "PL",  # pylint
     # "RUF", # Ruff-specific rules (Additional optimizations and best practices)
 ]
