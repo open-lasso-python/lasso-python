@@ -40,8 +40,8 @@ jobs:
           path: .venv
           key: venv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
 
-      - name: Install and upgrade pip and uv
-        run: python -m pip install --upgrade pip uv
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Install Dependencies
         run: ./bin/task setup
@@ -92,12 +92,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip poetry
-          ./bin/task setup
+        run: ./bin/task setup
 
       - name: Build packages for release
         run: ./bin/task build
@@ -108,7 +109,7 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_NON_INTERACTIVE: 1
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        run: poetry run twine upload --skip-existing --verbose 'dist/*'
+        run: uv run twine upload --skip-existing --verbose 'dist/*'
 
   # JOB
   # Test install from pypi to see if we have any installation bugs.
@@ -171,12 +172,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade poetry pip
-          ./bin/task setup
+        run: ./bin/task setup
 
       - name: Build packages for release
         run: ./bin/task build
@@ -195,7 +197,7 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_NON_INTERACTIVE: 1
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: poetry run twine upload --skip-existing --verbose 'dist/*'
+        run: uv run twine upload --skip-existing --verbose 'dist/*'
 
       - name: Upload new docs
         # We run a git pull first to ensure the runner has the latest pages
