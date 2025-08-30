@@ -187,7 +187,7 @@ jobs:
       # Not required but this saves the distribution files
       # with the package upload for debugging purposes.
       - name: Save packages as artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist
