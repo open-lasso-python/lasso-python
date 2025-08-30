@@ -44,17 +44,14 @@ class TestClustering(TestCase):
                 self.assertTrue((fake_betas[index] - beta_clusters[c][e]).max() == 0)
 
         # verify different keyword combinations
-
         for cluster_type in ClusterType.get_cluster_type_name():
             for detector_type in DetectorType.get_detector_type_name():
-                
                 # As some clustering algorithms require parameters, we need to provide them
                 # to avoid errors
                 if cluster_type == "KMeans" or cluster_type == "SpectralClustering":
                     cluster_params = {"n_clusters": 2}
                 else:
                     cluster_params = {}
-                
                 result = group_betas(
                     fake_names,
                     fake_betas,
@@ -65,14 +62,12 @@ class TestClustering(TestCase):
 
                 if isinstance(result, str):
                     self.fail(f"group_betas returned an error: {result}")
-                
                 beta_clusters, name_clusters = result
 
                 # verify correct output
                 self.assertIsInstance(beta_clusters, list)
                 self.assertIsInstance(name_clusters, list)
                 self.assertEqual(len(beta_clusters), len(name_clusters))
-
 
     def test_group_betas_no_detector(self):
         """tests correct function of the group_betas function
@@ -108,9 +103,7 @@ class TestClustering(TestCase):
                 self.assertTrue((fake_betas[index] - beta_clusters[c][e]).max() == 0)
 
         # verify different keyword combinations
-
         for cluster_type in ClusterType.get_cluster_type_name():
-
             # As some clustering algorithms require parameters, we need to provide them
             # to avoid errors
             if cluster_type == "KMeans" or cluster_type == "SpectralClustering":
