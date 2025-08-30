@@ -2158,7 +2158,15 @@ class D3plot:
         LOGGER.debug("_read_fluid_material_data end at byte %d", self.geometry_section_size)
 
     def _read_sph_element_data_flags(self):
-        """Read the sph element data flags"""
+        """Read the sph element data flags
+
+        The LS-DYNA database has some undocumented behaviour between older and newer
+        versions that impact how SPH header data is handled. The manual idnicates that
+        isphfg(1) should always be 11. However, in versions of LS-DYNA newer than R9,
+        isphfg(1) can be either 10 or 11 as history variables are handled differently.
+        Special handling was needed to ensure that old behaviour broken while handling
+        this undocumented change.
+        """
 
         if not self._buffer:
             return
@@ -2198,14 +2206,12 @@ class D3plot:
         self._sph_info.has_strainrate = sph_header_data["isphfg9"] > 6
         self._sph_info.has_true_strains = sph_header_data["isphfg9"] < 0
         self._sph_info.has_mass = sph_header_data["isphfg10"] != 0
-        self._sph_info.n_sph_history_vars = sph_header_data["isphfg11"]
-
-        if self._sph_info.n_sph_array_length != 11:
-            msg = (
-                "Detected inconsistency: "
-                f"isphfg = {self._sph_info.n_sph_array_length} but must be 11."
-            )
-            raise RuntimeError(msg)
+        # If isphfg1 = 10, then there are no history variables by default and isphfg11
+        # is filled with junk data that causes issues calculating n_sph_vars below
+        if sph_header_data["isphfg1"] == 10:
+            self._sph_info.n_sph_history_vars = 0
+        else:
+            self._sph_info.n_sph_history_vars = sph_header_data["isphfg11"]
 
         self._sph_info.n_sph_vars = (
             sph_header_data["isphfg2"]
@@ -2217,7 +2223,7 @@ class D3plot:
             + sph_header_data["isphfg8"]
             + abs(sph_header_data["isphfg9"])
             + sph_header_data["isphfg10"]
-            + sph_header_data["isphfg11"]
+            + self._sph_info.n_sph_history_vars
             + 1
         )  # material number
 
