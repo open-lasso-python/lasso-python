@@ -65,17 +65,10 @@ jobs:
     # Required for installation of the test package in the
     # next job.
     outputs:
-      version: ${{ steps.extract_version.outputs.version }}
+      version: ${{ steps.get_version.outputs.version }}
 
     steps:
       - uses: actions/checkout@v3
-
-      - name: Remember version
-        id: extract_version
-        run: |
-          VERSION=$(cat pyproject.toml | grep -oE -m 1 "version = \"(.*)\"" | cut -f2 -d '"')
-          echo "Version: ${VERSION}"
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       # For publishing any version will do
       - name: Set up Python 3.11
@@ -102,6 +95,12 @@ jobs:
 
       - name: Build packages for release
         run: ./bin/task build
+
+      - name: Get package version
+        id: get_version
+        run: |
+          VERSION=$(basename dist/*.whl | cut -d- -f2)
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Publish distribution to Test PyPI
         env:
