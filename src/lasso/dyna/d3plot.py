@@ -1285,7 +1285,8 @@ class SphSectionInfo:
     has_material_density: bool = False
     has_internal_energy: bool = False
     has_n_affecting_neighbors: bool = False
-    has_strain_and_strainrate: bool = False
+    has_strain: bool = False
+    has_strainrate: bool = False
     has_true_strains: bool = False
     has_mass: bool = False
     n_sph_history_vars: int = 0
@@ -2157,7 +2158,15 @@ class D3plot:
         LOGGER.debug("_read_fluid_material_data end at byte %d", self.geometry_section_size)
 
     def _read_sph_element_data_flags(self):
-        """Read the sph element data flags"""
+        """Read the sph element data flags
+
+        The LS-DYNA database has some undocumented behaviour between older and newer
+        versions that impact how SPH header data is handled. The manual idnicates that
+        isphfg(1) should always be 11. However, in versions of LS-DYNA newer than R9,
+        isphfg(1) can be either 10 or 11 as history variables are handled differently.
+        Special handling was needed to ensure that old behaviour broken while handling
+        this undocumented change.
+        """
 
         if not self._buffer:
             return
@@ -2193,17 +2202,16 @@ class D3plot:
         self._sph_info.has_material_density = sph_header_data["isphfg6"] != 0
         self._sph_info.has_internal_energy = sph_header_data["isphfg7"] != 0
         self._sph_info.has_n_affecting_neighbors = sph_header_data["isphfg8"] != 0
-        self._sph_info.has_strain_and_strainrate = sph_header_data["isphfg9"] != 0
+        self._sph_info.has_strain = sph_header_data["isphfg9"] != 0
+        self._sph_info.has_strainrate = sph_header_data["isphfg9"] > 6
         self._sph_info.has_true_strains = sph_header_data["isphfg9"] < 0
         self._sph_info.has_mass = sph_header_data["isphfg10"] != 0
-        self._sph_info.n_sph_history_vars = sph_header_data["isphfg11"]
-
-        if self._sph_info.n_sph_array_length != 11:
-            msg = (
-                "Detected inconsistency: "
-                f"isphfg = {self._sph_info.n_sph_array_length} but must be 11."
-            )
-            raise RuntimeError(msg)
+        # If isphfg1 = 10, then there are no history variables by default and isphfg11
+        # is filled with junk data that causes issues calculating n_sph_vars below
+        if sph_header_data["isphfg1"] == 10:
+            self._sph_info.n_sph_history_vars = 0
+        else:
+            self._sph_info.n_sph_history_vars = sph_header_data["isphfg11"]
 
         self._sph_info.n_sph_vars = (
             sph_header_data["isphfg2"]
@@ -2215,7 +2223,7 @@ class D3plot:
             + sph_header_data["isphfg8"]
             + abs(sph_header_data["isphfg9"])
             + sph_header_data["isphfg10"]
-            + sph_header_data["isphfg11"]
+            + self._sph_info.n_sph_history_vars
             + 1
         )  # material number
 
@@ -5082,13 +5090,17 @@ class D3plot:
 
         # extract data
         try:
-            sph_data = state_data[:, var_index : var_index + n_particles * n_variables]
+            sph_data = state_data[:, var_index : var_index + n_particles * n_variables].reshape((
+                n_states,
+                n_particles,
+                n_variables,
+            ))
 
             i_var = 1
 
             # deletion
             try:
-                array_dict[ArrayType.sph_deletion] = sph_data[:, 0] < 0
+                array_dict[ArrayType.sph_deletion] = sph_data[:, :, 0] < 0
             except Exception:
                 trb_msg = traceback.format_exc()
                 msg = "A failure in %s was caught:\n%s"
@@ -5097,7 +5109,7 @@ class D3plot:
             # particle radius
             if info.has_influence_radius:
                 try:
-                    array_dict[ArrayType.sph_radius] = sph_data[:, i_var]
+                    array_dict[ArrayType.sph_radius] = sph_data[:, :, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
                     msg = "A failure in %s was caught:\n%s"
@@ -5108,7 +5120,7 @@ class D3plot:
             # pressure
             if info.has_particle_pressure:
                 try:
-                    array_dict[ArrayType.sph_pressure] = sph_data[:, i_var]
+                    array_dict[ArrayType.sph_pressure] = sph_data[:, :, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
                     msg = "A failure in %s was caught:\n%s"
@@ -5119,20 +5131,18 @@ class D3plot:
             # stress
             if info.has_stresses:
                 try:
-                    array_dict[ArrayType.sph_stress] = sph_data[
-                        :, i_var : i_var + n_particles * 6
-                    ].reshape((n_states, n_particles, 6))
+                    array_dict[ArrayType.sph_stress] = sph_data[:, :, i_var : i_var + 6]
                 except Exception:
                     trb_msg = traceback.format_exc()
                     msg = "A failure in %s was caught:\n%s"
                     LOGGER.warning(msg, "_read_states_sph, pressure", trb_msg)
                 finally:
-                    i_var += 6 * n_particles
+                    i_var += 6
 
             # eff. plastic strain
             if info.has_plastic_strain:
                 try:
-                    array_dict[ArrayType.sph_effective_plastic_strain] = sph_data[:, i_var]
+                    array_dict[ArrayType.sph_effective_plastic_strain] = sph_data[:, :, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
                     msg = "A failure in %s was caught:\n%s"
@@ -5143,7 +5153,7 @@ class D3plot:
             # density
             if info.has_material_density:
                 try:
-                    array_dict[ArrayType.sph_density] = sph_data[:, i_var]
+                    array_dict[ArrayType.sph_density] = sph_data[:, :, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
                     msg = "A failure in %s was caught:\n%s"
@@ -5154,7 +5164,7 @@ class D3plot:
             # internal energy
             if info.has_internal_energy:
                 try:
-                    array_dict[ArrayType.sph_internal_energy] = sph_data[:, i_var]
+                    array_dict[ArrayType.sph_internal_energy] = sph_data[:, :, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
                     msg = "A failure in %s was caught:\n%s"
@@ -5165,7 +5175,7 @@ class D3plot:
             # number of neighbors
             if info.has_n_affecting_neighbors:
                 try:
-                    array_dict[ArrayType.sph_n_neighbors] = sph_data[:, i_var]
+                    array_dict[ArrayType.sph_n_neighbors] = sph_data[:, :, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
                     msg = "A failure in %s was caught:\n%s"
@@ -5173,34 +5183,31 @@ class D3plot:
                 finally:
                     i_var += 1
 
-            # strain and strainrate
-            if info.has_strain_and_strainrate:
+            # strain
+            if info.has_strain:
                 try:
-                    array_dict[ArrayType.sph_strain] = sph_data[
-                        :, i_var : i_var + n_particles * 6
-                    ].reshape((n_states, n_particles, 6))
+                    array_dict[ArrayType.sph_strain] = sph_data[:, :, i_var : i_var + 6]
                 except Exception:
                     trb_msg = traceback.format_exc()
                     msg = "A failure in %s was caught:\n%s"
                     LOGGER.warning(msg, "_read_states_sph, strain", trb_msg)
                 finally:
-                    i_var += 6 * n_particles
+                    i_var += 6
 
+            if info.has_strainrate:
                 try:
-                    array_dict[ArrayType.sph_strainrate] = sph_data[
-                        :, i_var : i_var + n_particles * 6
-                    ].reshape((n_states, n_particles, 6))
+                    array_dict[ArrayType.sph_strainrate] = sph_data[:, :, i_var : i_var + 6]
                 except Exception:
                     trb_msg = traceback.format_exc()
                     msg = "A failure in %s was caught:\n%s"
                     LOGGER.warning(msg, "_read_states_sph, strainrate", trb_msg)
                 finally:
-                    i_var += 6 * n_particles
+                    i_var += 6
 
             # mass
             if info.has_mass:
                 try:
-                    array_dict[ArrayType.sph_mass] = sph_data[:, i_var]
+                    array_dict[ArrayType.sph_mass] = sph_data[:, :, i_var]
                 except Exception:
                     trb_msg = traceback.format_exc()
                     msg = "A failure in %s was caught:\n%s"
