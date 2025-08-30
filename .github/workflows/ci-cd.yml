@@ -12,13 +12,13 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      # If either the tests for 3.9 or 3.12 fail, all workflows
+      # If either the tests for 3.11 or 3.12 fail, all workflows
       # are terminated to save computing resources.
       fail-fast: true
       # To safe runtime least and latest version supported are
       # chosen. For more info see the pyproject.toml
       matrix:
-        python-version: ["3.9", "3.12"]
+        python-version: ["3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v3
