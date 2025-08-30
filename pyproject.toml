@@ -13,22 +13,20 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
 
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = [
     "h5py==3.*",
     "scipy==1.*",
-    "numpy==1.*",
+    "numpy>2.2",
     "plotly==5.*",
     "psutil==5.*",
     "rich==13.*",
     "pandas==2.*",
-    "scikit_learn==1.*"
+    "scikit_learn==1.*",
 ]
 
 [tool.setuptools]
@@ -89,6 +87,7 @@ select = [
     "YTT", # flake8-2020 (Detects outdated Python 2/3 compatibility issues)
     "FLY", # flynt (Converts old-style string formatting to f-strings)
     "PIE", # flake8-pie
+    "NPY201",   # numpy2-deprecations
     # "PL",  # pylint
     # "RUF", # Ruff-specific rules (Additional optimizations and best practices)
 ]
@@ -99,6 +98,7 @@ ignore = [
     "S311",     # [suspicious-non-cryptographic-random-usage](https://docs.astral.sh/ruff/rules/suspicious-non-cryptographic-random-usage/)
     "S404",     # [suspicious-subprocess-import](https://docs.astral.sh/ruff/rules/suspicious-subprocess-import/)
     "S603",     # [subprocess-without-shell-equals-true](https://docs.astral.sh/ruff/rules/subprocess-without-shell-equals-true/)
+    "UP007",    # [non-pep604-annotation-union](https://docs.astral.sh/ruff/rules/non-pep604-annotation-union/#non-pep604-annotation-union-up007)
 ]
 
 [tool.ruff.lint.per-file-ignores]
