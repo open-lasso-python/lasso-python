@@ -69,6 +69,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       # For publishing any version will do
       - name: Set up Python 3.11
@@ -101,12 +103,6 @@ jobs:
         run: |
           VERSION=$(basename dist/*.whl | cut -d- -f2)
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
-
-      - name: Inspect packages
-        run: |
-          ls -R dist
-          unzip dist/*.whl -d dist/unpacked
-          ls -R dist/unpacked
 
       - name: Publish distribution to Test PyPI
         env:
