@@ -15,7 +15,7 @@ tasks:
   build:
     desc: Builds the python package
     cmds:
-      - uv build
+      - uv build -v
 
   test:
     desc: Runs tests on the code
