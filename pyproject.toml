@@ -48,7 +48,7 @@ dev = [
     "mkdocstrings[python]==0.*",
     "mkdocs-coverage==1.*",
     "git-changelog==2.*",
-    "twine==5.*",
+    "twine==6.*",
     "go-task-bin"
 ]
 
