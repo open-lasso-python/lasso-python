@@ -32,6 +32,8 @@ dependencies = [
 [tool.setuptools]
 package-dir = {"" = "src"}
 
+[tool.setuptools_scm]
+
 [project.scripts]
 diffcrash = "lasso.diffcrash.run:main"
 dimred = "lasso.dimred.run:main"
@@ -110,3 +112,8 @@ ignore = [
 [tool.ruff.format]
 docstring-code-format = true
 skip-magic-trailing-comma = true
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::UserWarning",
+]
