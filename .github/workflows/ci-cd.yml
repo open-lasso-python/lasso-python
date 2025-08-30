@@ -102,6 +102,12 @@ jobs:
           VERSION=$(basename dist/*.whl | cut -d- -f2)
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
+      - name: Inspect packages
+        run: |
+          ls -R dist
+          unzip dist/*.whl -d dist/unpacked
+          ls -R dist/unpacked
+
       - name: Publish distribution to Test PyPI
         env:
           TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
