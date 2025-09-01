@@ -453,3 +453,94 @@ class D3plotTest(TestCase):
         node_disp = d3plot.arrays[ArrayType.node_displacement][:, node_index]
 
         np.testing.assert_allclose(node_disp, disp_node_real, rtol=1e-4)
+
+    def test_read_sph_across_versions(self):
+        """Tests to parsing across several Dyna versions and history variables
+
+        R7.1.2: 11 positions in header data, isphfg(9) = 6 (strains only)
+        R9.3.1: 10 or 11 positions in header data, isphfg(9) = 6 (strains only)
+        R12.2.1: 10 or 11 positions of header data, isphfg(9) = 12 (strians and strain
+            rate)
+
+        All tests data has 25 nodes and 10 states
+        """
+        n_states = 10
+        n_nodes = 25
+
+        # Test R7.1.2
+        # Old database version, with no additonal history variables
+        filepath = "test/test_data/sph_models/R7_1_2/d3plot"
+
+        d3plot = D3plot(filepath)
+
+        mass_array = d3plot.arrays["sph_mass"]
+        strain_array = d3plot.arrays["sph_strain"]
+
+        np.testing.assert_equal(mass_array.shape, [n_states, n_nodes])
+        np.testing.assert_equal(strain_array.shape, [n_states, n_nodes, 6])
+        self.assertTrue("sph_strainrate" not in d3plot.arrays.keys())
+
+        # Test R7.1.2 with history variables
+        # Old database version, with 2 additonal history variables (NEIPHS)
+        filepath = "test/test_data/sph_models/R7_1_2_Histvar=2/d3plot"
+
+        d3plot = D3plot(filepath)
+
+        mass_array = d3plot.arrays["sph_mass"]
+        strain_array = d3plot.arrays["sph_strain"]
+        self.assertTrue("sph_strainrate" not in d3plot.arrays.keys())
+
+        np.testing.assert_equal(mass_array.shape, [n_states, n_nodes])
+        np.testing.assert_equal(strain_array.shape, [n_states, n_nodes, 6])
+
+        # Test R9.3.1
+        # New database version, with no additonal history variables
+        filepath = "test/test_data/sph_models/R9_3_1/d3plot"
+
+        d3plot = D3plot(filepath)
+
+        mass_array = d3plot.arrays["sph_mass"]
+        strain_array = d3plot.arrays["sph_strain"]
+
+        np.testing.assert_equal(mass_array.shape, [n_states, n_nodes])
+        np.testing.assert_equal(strain_array.shape, [n_states, n_nodes, 6])
+        self.assertTrue("sph_strainrate" not in d3plot.arrays.keys())
+
+        # Test R9.3.1 with history variables
+        # New database version with 2 additonal history variables (NEIPHS)
+        filepath = "test/test_data/sph_models/R9_3_1_Histvar=2/d3plot"
+
+        d3plot = D3plot(filepath)
+
+        mass_array = d3plot.arrays["sph_mass"]
+        strain_array = d3plot.arrays["sph_strain"]
+
+        np.testing.assert_equal(mass_array.shape, [n_states, n_nodes])
+        np.testing.assert_equal(strain_array.shape, [n_states, n_nodes, 6])
+        self.assertTrue("sph_strainrate" not in d3plot.arrays.keys())
+
+        # Test R12.21
+        # New database version, with no additonal history variables
+        filepath = "test/test_data/sph_models/R12_2_1/d3plot"
+
+        d3plot = D3plot(filepath)
+
+        mass_array = d3plot.arrays["sph_mass"]
+        strain_array = d3plot.arrays["sph_strain"]
+
+        np.testing.assert_equal(mass_array.shape, [n_states, n_nodes])
+        np.testing.assert_equal(strain_array.shape, [n_states, n_nodes, 6])
+        self.assertTrue("sph_strainrate" in d3plot.arrays.keys())
+
+        # Test R12.21 with history variables
+        # New database version with 2 additonal history variables (NEIPHS)
+        filepath = "test/test_data/sph_models/R12_2_1_Histvar=2/d3plot"
+
+        d3plot = D3plot(filepath)
+
+        mass_array = d3plot.arrays["sph_mass"]
+        strain_array = d3plot.arrays["sph_strain"]
+
+        np.testing.assert_equal(mass_array.shape, [n_states, n_nodes])
+        np.testing.assert_equal(strain_array.shape, [n_states, n_nodes, 6])
+        self.assertTrue("sph_strainrate" in d3plot.arrays.keys())
