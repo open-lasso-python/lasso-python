@@ -223,6 +223,9 @@ class FemzipAPI:
 
         # check executable rights
         if not os.access(path, os.X_OK) or not os.access(path, os.R_OK):
+            if getattr(sys, 'frozen', False):
+                # running in a bundle
+                path = os.path.join(sys._MEIPASS, os.path.basename(path))
             os.chmod(path, os.stat(path).st_mode | stat.S_IEXEC | stat.S_IREAD)
             if not os.access(path, os.X_OK) or not os.access(path, os.R_OK):
                 err_msg = "Library '{0}' is not executable and couldn't change execution rights."
@@ -1391,3 +1394,4 @@ class FemzipArrayMetadata:
         for mapping in self.d3plot_mappings:
             mapping.i_integration_point = i_integration_point
             mapping.i_var_index = var_index
+

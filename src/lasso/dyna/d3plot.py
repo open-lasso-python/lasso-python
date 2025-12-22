@@ -7365,7 +7365,7 @@ class D3plot:
 
         # TITLE2
         # yet another title, coz double is always more fun
-        if "title2" in self.header.title2:
+        if self.header.title2:
             ntype = 90000
 
             # title words always have 4 bytes
@@ -9722,3 +9722,4 @@ class D3plot:
             LOGGER.setLevel(logging.DEBUG)
         else:
             LOGGER.setLevel(logging.NOTSET)
+
