@@ -31,6 +31,10 @@ dependencies = [
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.package-data]
+"lasso" = ["femzip/lib/*"]
 
 [project.scripts]
 diffcrash = "lasso.diffcrash.run:main"
