@@ -338,11 +338,16 @@ class Binout:
                 if time_symbol:
                     time += time_symbol.read()
 
+        try:
+            data_array = np.array(data)
+        except ValueError:
+            data_array = np.array(data, dtype=object)
+
         # return sorted by time
         if len(time) == len(data):
-            return np.array(data)[np.argsort(time)]
+            return data_array[np.argsort(time)]
 
-        return np.array(data)
+        return data_array
 
     def _collect_variables(self, symbol):
         """Collect all variables from a symbol
