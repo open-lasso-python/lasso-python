@@ -23,7 +23,7 @@ dependencies = [
     "scipy==1.*",
     "numpy>2.2",
     "plotly==5.*",
-    "psutil==5.*",
+    "psutil>=5,<8",
     "rich==13.*",
     "pandas==2.*",
     "scikit_learn==1.*",
