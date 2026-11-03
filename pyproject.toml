@@ -109,4 +109,3 @@ ignore = [
 
 [tool.ruff.format]
 docstring-code-format = true
-skip-magic-trailing-comma = true

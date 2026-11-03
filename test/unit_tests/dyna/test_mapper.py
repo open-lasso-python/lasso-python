@@ -293,14 +293,16 @@ class MapperTest(TestCase):
         m = FemzipMapper()
 
         # NODE DISPLACEMENT
-        and = np.random.randn(2, 10, 3)
+        displacement = np.random.randn(2, 10, 3)
 
-        fz = {(1, FemzipArrayType.NODE_DISPLACEMENT.value, FemzipVariableCategory.NODE): and}
+        fz = {
+            (1, FemzipArrayType.NODE_DISPLACEMENT.value, FemzipVariableCategory.NODE): displacement
+        }
 
         m.map(fz)
 
         result = m.d3plot_arrays
-        self.assertTrue(np.allclose(and, result["node_displacement"]))
+        self.assertTrue(np.allclose(displacement, result["node_displacement"]))
 
     def test_tshells(self):
         d = np.random.randn(2, 2)
