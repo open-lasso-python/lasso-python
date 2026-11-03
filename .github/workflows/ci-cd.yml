@@ -211,8 +211,6 @@ jobs:
         run: uv publish --verbose
 
       - name: Upload new docs
-        # We run a git pull first to ensure the runner has the latest pages
-        # branch. It did fail because of it in the past.
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
@@ -222,5 +220,4 @@ jobs:
           export GIT_CONFIG_COUNT=1
           export GIT_CONFIG_KEY_0=http.https://github.com/.extraheader
           export GIT_CONFIG_VALUE_0="$AUTH_HEADER"
-          git pull origin gh-pages --rebase
           ./bin/task docs:deploy
