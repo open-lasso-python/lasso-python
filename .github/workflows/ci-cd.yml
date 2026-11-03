@@ -38,9 +38,9 @@ jobs:
         run: |
           sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
 
-      # Cache dependencies from poetry to speed things up
+      # Cache dependencies from uv to speed things up
       - name: Load cached venv
-        id: cached-poetry-dependencies
+        id: cached-uv-dependencies
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: .venv
@@ -98,27 +98,26 @@ jobs:
           sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
 
       - name: Load cached venv
-        id: cached-poetry-dependencies
+        id: cached-uv-dependencies
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
 
       - name: Install Dependencies
         run: |
-          python -m pip install --upgrade pip poetry
+          python -m pip install --upgrade pip uv
           ./bin/task setup
 
       - name: Build packages for release
-        run: ./bin/task build
+        run: uv build
 
       - name: Publish distribution to Test PyPI
         env:
-          TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
-          TWINE_USERNAME: __token__
-          TWINE_NON_INTERACTIVE: 1
-          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        run: poetry run twine upload --skip-existing --verbose 'dist/*'
+          UV_PUBLISH_URL: https://test.pypi.org/legacy/
+          UV_PUBLISH_CHECK_URL: https://test.pypi.org/simple/
+          UV_PUBLISH_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        run: uv publish --verbose
 
   # JOB
   # Test install from pypi to see if we have any installation bugs.
@@ -162,6 +161,8 @@ jobs:
     needs: [test-install]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
+    env:
+      HAS_PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN != '' }}
 
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -180,19 +181,19 @@ jobs:
           sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
 
       - name: Load cached venv
-        id: cached-poetry-dependencies
+        id: cached-uv-dependencies
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
 
       - name: Install Dependencies
         run: |
-          python -m pip install --upgrade poetry pip
+          python -m pip install --upgrade pip uv
           ./bin/task setup
 
       - name: Build packages for release
-        run: ./bin/task build
+        run: uv build
 
       # Not required but this saves the distribution files
       # with the package upload for debugging purposes.
@@ -204,11 +205,10 @@ jobs:
           if-no-files-found: error
 
       - name: Publish distribution to PyPI
+        if: env.HAS_PYPI_API_TOKEN == 'true'
         env:
-          TWINE_USERNAME: __token__
-          TWINE_NON_INTERACTIVE: 1
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: poetry run twine upload --skip-existing --verbose 'dist/*'
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: uv publish --verbose
 
       - name: Upload new docs
         # We run a git pull first to ensure the runner has the latest pages

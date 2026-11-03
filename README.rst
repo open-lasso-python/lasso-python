@@ -62,11 +62,11 @@ Join our open-source community on:
 Development
 -----------
 
-For development install `poetry`_ and `task`_:
+For development install `uv`_ and `task`_:
 
 ..  code-block:: bash
 
-    python -m pip install poetry
+    python -m pip install uv
     sh -c "$(curl --location https://taskfile.dev/install.sh)" \
         -- -d -b ~/.local/bin
 
@@ -75,5 +75,5 @@ commands such as ``task setup`` to install all dependencies or ``task test`` to
 run the test suite.
 Happy Coding 🥳🎉
 
-.. _poetry: https://python-poetry.org/
+.. _uv: https://docs.astral.sh/uv/
 .. _task: https://taskfile.dev/
