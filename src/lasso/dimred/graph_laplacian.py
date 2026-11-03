@@ -112,7 +112,7 @@ def _laplacian_gauss_idw(
         graph[j, i] = d[:, np.newaxis]
 
     if not np.array_equal(graph, graph.T):
-        raise RuntimeError("graph matrix is not symetric.")
+        raise RuntimeError("graph matrix is not symmetric.")
 
     return csgraph.laplacian(graph, normed=True)
 

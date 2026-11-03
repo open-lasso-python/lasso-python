@@ -45,15 +45,15 @@ Installation
 Community
 ---------
 
-Join our open-source community on: 
+Join our open-source community on:
 
     |DISCORD| `Discord`_
- 
+
 .. _Discord:  https://discord.gg/jYUgTsEWtN
 
 .. |LASSO| image:: ./docs/lasso-logo.png
     :target: https://open-lasso-python.github.io/lasso-python/build/html/index.html
-.. |DOCS| image:: ./docs/icon-home.png 
+.. |DOCS| image:: ./docs/icon-home.png
     :target: https://open-lasso-python.github.io/lasso-python/build/html/index.html
 .. |DISCORD| image:: ./docs/icon-discord.png
     :target: https://discord.gg/GeHu79b

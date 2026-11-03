@@ -146,12 +146,12 @@ def create_sphere(diameter: float):
     a_ele = a_sphere / n_ele
 
     # alpha angles around the equator and the size of one step
-    bin_alpha, delt_alpha = np.linspace(0, 2 * np.pi, n_alpha, retstep=True)
+    bin_alpha, delta_alpha = np.linspace(0, 2 * np.pi, n_alpha, retstep=True)
 
-    # bins for beta axis in terms of axis coorindates between -1 and 1
+    # bins for beta axis in terms of axis coordinates between -1 and 1
     count = np.linspace(0.0, float(n_beta), 145)
     tmp = count * a_ele
-    tmp /= r**2 * delt_alpha
+    tmp /= r**2 * delta_alpha
     bin_beta = 1 - tmp
     bin_beta[-1] = max(bin_beta[-1], -1)
 

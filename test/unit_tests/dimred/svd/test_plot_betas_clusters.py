@@ -16,7 +16,7 @@ def hash_str(data: str) -> str:
 
 class TestBetaViz(TestCase):
     def test_plot_clusters_js(self):
-        """Veryfies correct output .html file"""
+        """Verifies correct output .html file"""
 
         betas = [np.array([[1, 1, 1], [1, 2, 3]])]
         ids = np.array([["sample0", "sample1"]])

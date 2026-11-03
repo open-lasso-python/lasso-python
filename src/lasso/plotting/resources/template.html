@@ -1,18 +1,18 @@
 <!---
   Copyright 2016 Dirk Toewe
-  
+
   This file is part of PUP.
-  
+
   PUP is free software: you can redistribute it and/or modify it
   under the terms of the GNU General Public License as published
   by the Free Software Foundation, either version 3 of the License,
   or (at your option) any later version.
-  
+
   PUP is distributed in the hope that it will be useful, but WITHOUT
   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
   License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with PUP. If not, see <http://www.gnu.org/licenses/>.
 --->
@@ -79,7 +79,7 @@
       this.updateNearFar();
       this.updateCamera();
     }}
- 
+
     mouseDown( event )
     {{
       if( 1 & event.buttons )
@@ -104,7 +104,7 @@
       if( 4 & ~event.buttons )
         this.drag = false;
     }}
- 
+
     mouseLeave( event )
     {{
       this.rotate = false;
@@ -202,7 +202,7 @@
         h = canvas.height;
       for( let tick=0; tick <= 10; tick++ )
         ctx.fillText( minIntensity*(1-tick/10) + maxIntensity*tick/10, w+8,h*(0.05+0.9*tick/10) );
-      
+
       ctx.fillStyle = gradient;
       ctx.fillRect(0,h*0.05, w,h*0.95);
       ctx.fillStyle = this. lowIntensityColor;
@@ -267,7 +267,7 @@
     }}
     for( let i=0; i < positions.length; i+=3 )
       for( let j=0; j < 3; j++ )
-      {{ 
+      {{
         bounds.min[j] = Math.min( bounds.min[j], positions[i+j] );
         bounds.max[j] = Math.max( bounds.max[j], positions[i+j] );
       }}
@@ -279,14 +279,14 @@
       highIntensity = {highIntensity},
       colorMap = colorMaps.jet,
       colors = colorMap.mapToColors( intensities, {lowIntensity}, {highIntensity} ),//intensities.reduce( (x,y) => Math.min(x,y) ) ),
-      material = new THREE.MeshStandardMaterial({{ 
+      material = new THREE.MeshStandardMaterial({{
         vertexColors: THREE.VertexColors,
         shading: THREE.FlatShading,
         side: THREE.DoubleSide,
         // roughness: 0.5,
         // metalness: 0.75
       }});
- 
+
     let geometry = new THREE.BufferGeometry();
     geometry.addAttribute('position', new THREE.BufferAttribute(positions,3) );
     geometry.addAttribute('color',    new THREE.BufferAttribute(colors,   3) );
@@ -294,13 +294,13 @@
 
     let mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
- 
+
     let
       ambiLight = new THREE.    AmbientLight(0xffffff, 1.6),
       dirLights = [];
- 
+
     scene.add(ambiLight);
-    
+
     for( let i=0; i<8; i++ )
     {{
       let dirLight = new THREE.DirectionalLight(0xffffff, 0.05 );
@@ -311,12 +311,12 @@
       scene.add(dirLight);
       scene.add(dirLight.target);
     }}
-    
+
 
     let tooltip = {{ canvas: document.createElement('canvas') }};
     tooltip.canvas.width  = 256;
     tooltip.canvas.height =  32;
-    
+
     tooltip.texture = new THREE.Texture(tooltip.canvas);
 
     tooltip.context = tooltip.canvas.getContext('2d');
@@ -349,7 +349,7 @@
     let colorScale = {{ canvas: document.createElement('canvas') }};
     colorScale.canvas.width  = 128;
     colorScale.canvas.height = 512;
-    
+
     colorScale.texture = new THREE.Texture(colorScale.canvas);
     colorScale.texture.needsUpdate = true;
     colorMap.plotScale(colorScale.canvas,intensities,lowIntensity,highIntensity);
@@ -363,7 +363,7 @@
       -16 - colorScale.canvas.height/2,
       2
     );
-    
+
 
     let mouse = {{ x: NaN, y: NaN }};
     $(renderer.domElement).mousemove(

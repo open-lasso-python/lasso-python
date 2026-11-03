@@ -196,7 +196,7 @@ def parse_dimred_args():
 
 
 class DimredStage(enum.Enum):
-    """Enum for all stages of the dimenstionality reduction"""
+    """Enum for all stages of the dimensionality reduction"""
 
     REFERENCE_RUN = "REFERENCE_RUN"
     IMPORT_RUNS = "IMPORT_RUNS"
