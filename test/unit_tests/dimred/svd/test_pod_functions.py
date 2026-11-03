@@ -10,7 +10,7 @@ class PodFunctionsTest(TestCase):
         """Verify svd works
         Test for:
         - returns V and B of correct shape
-        - failes if dataset to small (1 sample)"""
+        - fails if dataset too small (1 sample)"""
 
         # random input for 1 sample, 5 timesteps, 100 nodes, 3 dimensions
         rand_samples = np.random.rand(1, 5, 100, 3)

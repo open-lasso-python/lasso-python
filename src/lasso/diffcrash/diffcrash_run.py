@@ -271,7 +271,7 @@ class DiffcrashRun:
         # mapping
         self.use_id_mapping = self._parse_use_id_mapping(use_id_mapping)
 
-        # exlude runs
+        # exclude runs
         self.exclude_runs = exclude_runs
 
         # simulation runs
@@ -491,7 +491,7 @@ class DiffcrashRun:
         return n_processes
 
     def create_project_dirs(self):
-        """Creates all project relevant directores
+        """Creates all project relevant directories
 
         Notes
         -----
@@ -1216,8 +1216,8 @@ class DiffcrashRun:
         export_item_list = []
         j = 1
         if line != 0:
-            while 1:
-                while 1:
+            while True:
+                while True:
                     for i in range(len(conf_lines[line])):
                         if conf_lines[line][i] == "<":
                             element_start = i + 1

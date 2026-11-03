@@ -52,7 +52,7 @@ class D3plotHeaderTest(TestCase):
         self.assertEqual(d3plot_filetype_from_integer(5), D3plotFiletype.D3PART)
         self.assertEqual(d3plot_filetype_from_integer(11), D3plotFiletype.D3EIGV)
 
-        # INFOR is forbidden
+        # INTFOR is forbidden
         with self.assertRaises(ValueError):
             d3plot_filetype_from_integer(4)
 
