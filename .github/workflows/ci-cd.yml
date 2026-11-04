@@ -14,15 +14,14 @@ jobs:
     permissions:
       contents: read
     runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
 
     strategy:
-      # If either the tests for 3.11 or 3.12 fail, all workflows
-      # are terminated to save computing resources.
+      # Stop the remaining matrix jobs if one fails.
       fail-fast: true
-      # To safe runtime least and latest version supported are
-      # chosen. For more info see the pyproject.toml
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.11", "3.14"]
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -44,7 +43,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
+          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/uv.lock') }}
 
       - name: Install and upgrade pip and uv
         run: python -m pip install --upgrade pip uv
