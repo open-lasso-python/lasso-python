@@ -131,7 +131,7 @@ jobs:
           UV_PUBLISH_URL: https://test.pypi.org/legacy/
           UV_PUBLISH_CHECK_URL: https://test.pypi.org/simple/
           UV_PUBLISH_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        run: uv publish --verbose
+        run: uv publish --verbose # zizmor: ignore[use-trusted-publishing] TODO: migrate Test PyPI to trusted publishing.
 
   # JOB
   # Test installation from Test PyPI or the built wheel.
@@ -233,7 +233,7 @@ jobs:
         if: env.HAS_PYPI_API_TOKEN == 'true'
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-        run: uv publish --verbose
+        run: uv publish --verbose # zizmor: ignore[use-trusted-publishing] TODO: migrate PyPI to trusted publishing.
 
       - name: Upload new docs
         env:
