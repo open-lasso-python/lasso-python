@@ -59,7 +59,7 @@ jobs:
         run: ./bin/task test
 
   # JOB
-  # This job publishes the package to test-pipy.
+  # This job builds the package and optionally publishes it to Test PyPI.
   test-publish:
     permissions:
       contents: read
@@ -70,22 +70,20 @@ jobs:
       startsWith(github.ref, 'refs/tags/') ||
       startsWith(github.ref, 'refs/heads/release/')
     runs-on: ubuntu-latest
+    env:
+      HAS_TEST_PYPI_API_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN != '' }}
     # Required for installation of the test package in the
     # next job.
     outputs:
       version: ${{ steps.extract_version.outputs.version }}
+      published: ${{ steps.publish.outcome == 'success' }}
 
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        # setuptools-scm needs the tags to compute the version
         with:
+          fetch-depth: 0
           persist-credentials: false
-
-      - name: Remember version
-        id: extract_version
-        run: |
-          VERSION=$(cat pyproject.toml | grep -oE -m 1 "version = \"(.*)\"" | cut -f2 -d '"')
-          echo "Version: ${VERSION}"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
       # For publishing any version will do
       - name: Set up Python 3.11
@@ -112,7 +110,24 @@ jobs:
       - name: Build packages for release
         run: uv build
 
+      - name: Remember version
+        id: extract_version
+        run: |
+          VERSION=$(python -c 'from pathlib import Path; print(next(Path("dist").glob("*.whl")).name.split("-")[1])')
+          echo "Version: ${VERSION}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Save test packages as artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Publish distribution to Test PyPI
+        id: publish
+        if: env.HAS_TEST_PYPI_API_TOKEN == 'true'
         env:
           UV_PUBLISH_URL: https://test.pypi.org/legacy/
           UV_PUBLISH_CHECK_URL: https://test.pypi.org/simple/
@@ -120,7 +135,7 @@ jobs:
         run: uv publish --verbose
 
   # JOB
-  # Test install from pypi to see if we have any installation bugs.
+  # Test installation from Test PyPI or the built wheel.
   test-install:
     needs: [test-publish]
     if: >
@@ -129,9 +144,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    # Use the version from the previous job
     env:
       VERSION: ${{ needs.test-publish.outputs.version }}
+      PUBLISHED: ${{ needs.test-publish.outputs.published }}
 
     steps:
       # Install python (be aware NO checkout action)
@@ -140,13 +155,24 @@ jobs:
         with:
           python-version: "3.11"
 
-      # Check if it installs without errors
-      - name: Install package
+      - name: Install package from Test PyPI
+        if: env.PUBLISHED == 'true'
         run: |
           python -m pip install \
             --index-url https://test.pypi.org/simple/ \
             --extra-index-url https://pypi.org/simple \
             lasso-python=="${VERSION}"
+
+      - name: Download test packages
+        if: env.PUBLISHED != 'true'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: test-dist
+          path: dist
+
+      - name: Install package from artifact
+        if: env.PUBLISHED != 'true'
+        run: python -m pip install dist/*.whl
 
       # We run the D3plot import here as it is the most delicate piece of the
       # package for importing C-libraries.
