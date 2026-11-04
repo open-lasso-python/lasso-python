@@ -9,6 +9,20 @@ permissions: {}
 
 jobs:
   # JOB
+  # This job runs the prek hooks (formatting, linting, typos, zizmor, ...)
+  prek:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: j178/prek-action@44924fe9ef4a6f88253c4b6b1bf11c689d3ce53d # v3.1.0
+
+  # JOB
   # This job runs unit tests, linting and format checks
   tests:
     permissions:
@@ -62,8 +76,7 @@ jobs:
   test-publish:
     permissions:
       contents: read
-    # Will run after the job 'tests'
-    needs: [tests]
+    needs: [prek, tests]
 
     if: >
       startsWith(github.ref, 'refs/tags/') ||
