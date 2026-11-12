@@ -48,7 +48,6 @@ dev = [
     "mkdocstrings[python]>=0.0",
     "mkdocs-coverage>=1.0",
     "git-changelog>=2.0",
-    "twine>=5.0",
     "go-task-bin"
 ]
 
