@@ -21,14 +21,14 @@ classifiers = [
 
 requires-python = ">=3.11"
 dependencies = [
-    "h5py>=3.0",
-    "scipy>=1.0",
+    "h5py>=3.11",
+    "scipy>=1.13",
     "numpy>2.2",
     "plotly>=5.0",
     "psutil>=5.0",
     "rich>=13.0",
-    "pandas>=2.0",
-    "scikit_learn>=1.0",
+    "pandas>=2.2.2",
+    "scikit_learn>=1.4.2",
 ]
 
 [tool.setuptools]
