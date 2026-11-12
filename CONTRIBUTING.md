@@ -34,9 +34,9 @@ Tl;dr;
 
 1. Fork the open lasso python repository
 2. Clone the repo to your filesystem
-3. Install [task][task_install]
+3. Install [uv][uv_install]
 4. Check out the `develop` branch
-5. Set up the repo for development through `task setup`
+5. Set up the repo for development through `uv run task setup`
 6. Create a new branch from `develop` with the naming pattern `feature/...`
 7. Make changes, commit and push them
 8. Create a Pull Request in your for repo with target on the original repo
@@ -46,13 +46,15 @@ Tl;dr;
     `<branch type>: <description>` where `branch_type` is one of the categories
     below.
 
-[task_install]:https://taskfile.dev/installation/
+[uv_install]:https://docs.astral.sh/uv/getting-started/installation/
 
 You can fork the repo (1) by clicking on for in the top-right of the original
 repo.
 Cloning the repo (2) is traditionally done with git then of course.
-Task is required (3) since it is used to store complex commands such as testing,
-linting, build docs, etc.
+uv is required (3) since it manages the dependencies and the development tools.
+[Task](https://taskfile.dev/) is installed as a development dependency and is
+used through `uv run task` to store complex commands such as testing, building
+docs, etc.
 (4) All development activities originate from the `develop` branch in which all
 Pull Requests are finally merged again.
 To create a branch choose a respective naming pattern following the angular

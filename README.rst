@@ -62,16 +62,16 @@ Join our open-source community on:
 Development
 -----------
 
-For development install `uv`_ and `task`_:
+For development install `uv`_. `task`_ is installed as a development
+dependency:
 
 ..  code-block:: bash
 
-    python -m pip install uv
-    sh -c "$(curl --location https://taskfile.dev/install.sh)" \
-        -- -d -b ~/.local/bin
+    uv sync
+    uv run task --list
 
-Then by simply running the command ``task`` you can find a variety of available
-commands such as ``task setup`` to install all dependencies or ``task test`` to
+Then ``uv run task`` gives access to a variety of commands such as
+``uv run task setup`` to install all dependencies or ``uv run task test`` to
 run the test suite.
 Happy Coding 🥳🎉
 
