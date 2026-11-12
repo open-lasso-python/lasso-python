@@ -45,15 +45,15 @@ Installation
 Community
 ---------
 
-Join our open-source community on: 
+Join our open-source community on:
 
     |DISCORD| `Discord`_
- 
+
 .. _Discord:  https://discord.gg/jYUgTsEWtN
 
 .. |LASSO| image:: ./docs/lasso-logo.png
     :target: https://open-lasso-python.github.io/lasso-python/build/html/index.html
-.. |DOCS| image:: ./docs/icon-home.png 
+.. |DOCS| image:: ./docs/icon-home.png
     :target: https://open-lasso-python.github.io/lasso-python/build/html/index.html
 .. |DISCORD| image:: ./docs/icon-discord.png
     :target: https://discord.gg/GeHu79b
@@ -62,18 +62,18 @@ Join our open-source community on:
 Development
 -----------
 
-For development install `poetry`_ and `task`_:
+For development install `uv`_. `task`_ is installed as a development
+dependency:
 
 ..  code-block:: bash
 
-    python -m pip install poetry
-    sh -c "$(curl --location https://taskfile.dev/install.sh)" \
-        -- -d -b ~/.local/bin
+    uv sync
+    uv run task --list
 
-Then by simply running the command ``task`` you can find a variety of available
-commands such as ``task setup`` to install all dependencies or ``task test`` to
+Then ``uv run task`` gives access to a variety of commands such as
+``uv run task setup`` to install all dependencies or ``uv run task test`` to
 run the test suite.
 Happy Coding 🥳🎉
 
-.. _poetry: https://python-poetry.org/
+.. _uv: https://docs.astral.sh/uv/
 .. _task: https://taskfile.dev/

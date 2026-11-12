@@ -51,13 +51,13 @@ def _create_sphere_mesh(diameter: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     a_ele = a_sphere / n_ele
 
     # bin values for alpha and the increment
-    bin_alpha, delt_alpha = np.linspace(0, 2 * np.pi, n_alpha, retstep=True)
+    bin_alpha, delta_alpha = np.linspace(0, 2 * np.pi, n_alpha, retstep=True)
 
     # for beta axis binning
     count = np.linspace(0.0, 144.0, 145)
     # compute required bin boundaries to ensure area of each element is the same
     tmp = count * a_ele
-    tmp /= r**2 * delt_alpha
+    tmp /= r**2 * delta_alpha
     bin_beta = 1 - tmp
 
     # In case of trailing floats (-1.00000004 for example)

@@ -293,14 +293,16 @@ class MapperTest(TestCase):
         m = FemzipMapper()
 
         # NODE DISPLACEMENT
-        nd = np.random.randn(2, 10, 3)
+        displacement = np.random.randn(2, 10, 3)
 
-        fz = {(1, FemzipArrayType.NODE_DISPLACEMENT.value, FemzipVariableCategory.NODE): nd}
+        fz = {
+            (1, FemzipArrayType.NODE_DISPLACEMENT.value, FemzipVariableCategory.NODE): displacement
+        }
 
         m.map(fz)
 
         result = m.d3plot_arrays
-        self.assertTrue(np.allclose(nd, result["node_displacement"]))
+        self.assertTrue(np.allclose(displacement, result["node_displacement"]))
 
     def test_tshells(self):
         d = np.random.randn(2, 2)
@@ -323,15 +325,15 @@ class MapperTest(TestCase):
         self.assertTrue(np.allclose(r[ArrayType.element_tshell_strain][:, :, 0, 3], d))
 
     def test_internal_shell_energy(self):
-        interal_energy = np.array([[1, 1, 0.12, 2.121202, 2.1123, 7.213]]).reshape(2, 3)
+        internal_energy = np.array([[1, 1, 0.12, 2.121202, 2.1123, 7.213]]).reshape(2, 3)
 
-        fz = {(1, "internal_energy", FemzipVariableCategory.SHELL): interal_energy}
+        fz = {(1, "internal_energy", FemzipVariableCategory.SHELL): internal_energy}
         m = FemzipMapper()
 
         m.map(fz)
 
         r = m.d3plot_arrays[ArrayType.element_shell_internal_energy]
-        self.assertTrue(np.allclose(r, interal_energy))
+        self.assertTrue(np.allclose(r, internal_energy))
 
     def test_dependent_variable(self):
         d1 = np.random.randn(2, 1200)

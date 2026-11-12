@@ -2,14 +2,14 @@ import contextlib
 import glob
 import os
 import typing
-from collections.abc import Iterator
+from collections.abc import Generator
 from typing import Union
 
 
 @contextlib.contextmanager
 def open_file_or_filepath(
     path_or_file: Union[str, typing.BinaryIO], mode: str
-) -> Iterator[typing.BinaryIO]:
+) -> Generator[typing.BinaryIO, None, None]:
     """This function accepts a file or filepath and handles closing correctly
 
     Parameters

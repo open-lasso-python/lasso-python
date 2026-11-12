@@ -196,7 +196,7 @@ def parse_dimred_args():
 
 
 class DimredStage(enum.Enum):
-    """Enum for all stages of the dimenstionality reduction"""
+    """Enum for all stages of the dimensionality reduction"""
 
     REFERENCE_RUN = "REFERENCE_RUN"
     IMPORT_RUNS = "IMPORT_RUNS"
@@ -887,7 +887,7 @@ class DimredRun:
 
             if min_step != max_step:
                 warn_msg = (
-                    "The timesteps fo the samples don't match, only "
+                    "The timesteps of the samples don't match, only "
                     + "processing up to timestep {}. Skipped {} timesteps"
                 )
                 warn_msg = warn_msg.format(min_step, max_step - min_step)

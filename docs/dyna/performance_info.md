@@ -11,7 +11,7 @@ In consequence performance benchmarks show that the runtime of the code is
 solely dominated by pulling the files into memory.
 
 ```text
-2108 function calls (2099 primitive calls) in 43.017 seconds 
+2108 function calls (2099 primitive calls) in 43.017 seconds
 Ordered by: internal time
 ncalls  tottime  percall  cumtime  percall filename:lineno(function)
     35   38.960    1.113   38.960    1.113 {method 'readinto' of '_io.BufferedReader' objects}
@@ -24,7 +24,7 @@ ncalls  tottime  percall  cumtime  percall filename:lineno(function)
     1     0.000    0.000    0.019    0.019 D3plot.py:2738(<listcomp>)
     1     0.000    0.000    0.000    0.000 {built-in method nt.listdir}
     36    0.000    0.000    0.000    0.000 {method 'match' of '_sre.SRE_Pattern' objects}
-    84    0.000    0.000    0.000    0.000 {built-in method numpy.core.multiarray.frombuffer} 
+    84    0.000    0.000    0.000    0.000 {built-in method numpy.core.multiarray.frombuffer}
     1     0.000    0.000   42.959   42.959 D3plot.py:1304(_read_states)
     ...
 ```

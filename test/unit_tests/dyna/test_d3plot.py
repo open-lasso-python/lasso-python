@@ -1,7 +1,9 @@
 import os
+import platform
 import struct
+import sys
 import tempfile
-from unittest import TestCase
+from unittest import TestCase, skipUnless
 
 import numpy as np
 
@@ -9,6 +11,13 @@ from lasso.dyna.array_type import ArrayType
 from lasso.dyna.d3plot import D3plot, FilterType, _negative_to_positive_state_indexes
 from lasso.femzip.femzip_api import FemzipAPI
 from lasso.io.binary_buffer import BinaryBuffer
+
+
+FEMZIP_SUPPORTED = sys.platform in {"linux", "win32"} and platform.machine().lower() in {
+    "x86_64",
+    "amd64",
+}
+FEMZIP_SKIP_REASON = "Bundled FEMZIP libraries require x86-64 Linux or Windows"
 
 
 class D3plotTest(TestCase):
@@ -187,6 +196,7 @@ class D3plotTest(TestCase):
         timesteps = d3plot.arrays[ArrayType.global_timesteps]
         self.assertListEqual(timesteps.astype(int).tolist(), [1, 2, 10, 11, 12, 22, 100])
 
+    @skipUnless(FEMZIP_SUPPORTED, FEMZIP_SKIP_REASON)
     def test_femzip_basic(self):
         self.maxDiff = None
 
@@ -195,6 +205,7 @@ class D3plotTest(TestCase):
 
         d3plot_kwargs_list = [{}, {"buffered_reading": True}, {"state_filter": [0]}]
 
+        self.addCleanup(setattr, D3plot, "use_advanced_femzip_api", D3plot.use_advanced_femzip_api)
         D3plot.use_advanced_femzip_api = False
 
         for d3plot_kwargs in d3plot_kwargs_list:
@@ -206,6 +217,7 @@ class D3plotTest(TestCase):
             self.assertDictEqual(hdr_diff, {})
             self.assertDictEqual(array_diff, {})
 
+    @skipUnless(FEMZIP_SUPPORTED, FEMZIP_SKIP_REASON)
     def test_femzip_extended(self):
         self.maxDiff = None
 
@@ -216,8 +228,9 @@ class D3plotTest(TestCase):
 
         api = FemzipAPI()
         if not api.has_femunziplib_license():
-            return
+            self.skipTest("Extended FEMZIP API requires a FEMUNZIPLIB-DYNA license")
 
+        self.addCleanup(setattr, D3plot, "use_advanced_femzip_api", D3plot.use_advanced_femzip_api)
         D3plot.use_advanced_femzip_api = True
 
         for d3plot_kwargs in d3plot_kwargs_list:

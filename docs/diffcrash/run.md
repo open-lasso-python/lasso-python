@@ -84,13 +84,13 @@ subdirectories (e.g. '/\*\*/\*.fz').
 
 ```console
 $ python -m lasso.diffcrash.run \
-$    --reference-run ./runs/run_1.fz \ 
+$    --reference-run ./runs/run_1.fz \
 $    --crash-code dyna \
-$    --project-dir diffcrash_project \  
+$    --project-dir diffcrash_project \
 $    ./runs/*.fz
 
 
-==== D I F F C R A S H ==== 
+==== D I F F C R A S H ====
 
 an open lasso utility script
 
@@ -107,13 +107,13 @@ an open lasso utility script
 [!] Parameter file missing. Consider specifying the path with the option '--parameter-file'.
 [/] n-processes     : 4
 
----- Running Routines ----   
+---- Running Routines ----
 
 [✔] Running Setup ... done in 3.88s
-[✔] Running Imports ... done in 58.20s   
-[✔] Running Math ... done in 56.22s   
-[✔] Running Export ... done in 2.22s   
-[✔] Running Matrix ... done in 9.78s   
-[✔] Running Eigen ... done in 0.46s   
+[✔] Running Imports ... done in 58.20s
+[✔] Running Math ... done in 56.22s
+[✔] Running Export ... done in 2.22s
+[✔] Running Matrix ... done in 9.78s
+[✔] Running Eigen ... done in 0.46s
 [✔] Running Merge ... done in 23.29s
 ```

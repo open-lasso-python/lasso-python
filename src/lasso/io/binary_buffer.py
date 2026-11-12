@@ -37,7 +37,7 @@ class BinaryBuffer:
         """
         return self.mv_
 
-    @memoryview.setter
+    @memoryview.setter  # noqa: A003 - Preserve the public memoryview property.
     def memoryview(self, new_mv):
         """Set the memoryview of the binary buffer manually
 

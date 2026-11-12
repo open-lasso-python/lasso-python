@@ -302,7 +302,7 @@ def _readsymboltable(lsda, f):
     Users should never call this.
     """
     f.ateof = 0
-    while 1:
+    while True:
         f.lastoffset = f.fp.tell()
         offset = f.readoffset()
         if offset == 0:
@@ -311,7 +311,7 @@ def _readsymboltable(lsda, f):
         (clen, cmd) = f.readcommand()
         if cmd != Lsda.BEGINSYMBOLTABLE:
             return
-        while 1:
+        while True:
             (clen, cmd) = f.readcommand()
             clen = clen - f.commandsize - f.lengthsize
             if cmd == Lsda.CD:

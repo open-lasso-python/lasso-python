@@ -1,0 +1,11 @@
+# https://github.com/crate-ci/typos/blob/master/docs/reference.md
+
+[files]
+extend-exclude = ["*.min.js"]
+
+[default.extend-identifiers]
+clen = "clen" # LSDA command length
+
+[default.extend-words]
+eles = "eles" # Abbreviation for elements
+metalness = "metalness" # Three.js material property

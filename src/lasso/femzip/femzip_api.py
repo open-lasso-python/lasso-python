@@ -548,7 +548,7 @@ class FemzipAPI:
                 n_timesteps_read += 1
                 state_filter_valid.remove(i_timestep)
 
-            # we processe what we need
+            # we process what we need
             if not state_filter_valid:
                 break
 

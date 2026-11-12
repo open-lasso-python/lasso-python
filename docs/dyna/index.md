@@ -32,7 +32,7 @@ For a detailed list of features, see the following list:
 >>> # read a file (zero-copy reading of everything)
 >>> d3plot = D3plot("path/to/d3plot")
 
->>> # read file 
+>>> # read file
 >>> # - buffered (less memory usage)
 >>> # - only node displacements (safes memory)
 >>> # - read only first and last state

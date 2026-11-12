@@ -97,7 +97,8 @@ def _laplacian_gauss_idw(
     for i, (j, d, e, k) in enumerate(
         zip(
             *tree.query_radius(points, return_distance=True, r=search_radius),
-            *tree.query(points, return_distance=True, k=1 + min_neighbors), strict=False,
+            *tree.query(points, return_distance=True, k=1 + min_neighbors),
+            strict=False,
         )
     ):
         # Always search for k neighbors, this prevents strongly connected local areas
@@ -112,7 +113,7 @@ def _laplacian_gauss_idw(
         graph[j, i] = d[:, np.newaxis]
 
     if not np.array_equal(graph, graph.T):
-        raise RuntimeError("graph matrix is not symetric.")
+        raise RuntimeError("graph matrix is not symmetric.")
 
     return csgraph.laplacian(graph, normed=True)
 
