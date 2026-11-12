@@ -42,14 +42,15 @@ dimred = "lasso.dimred.run:main"
 dev = [
     "pytest>=8.0",
     "pytest-cov>=5.0",
-    "ruff>=0.11.0",
     "mkdocs>=1.0",
     "mkdocs-material>=9.0",
     "mkdocstrings[python]>=0.0",
     "mkdocs-coverage>=1.0",
     "git-changelog>=2.0",
-    "go-task-bin"
+    "go-task-bin",
+    {include-group = "lint"},
 ]
+lint = ["ruff>=0.16.6"]
 
 [build-system]
 requires = ["setuptools>=78", "setuptools-scm>=8"]
@@ -60,7 +61,6 @@ build-backend = "setuptools.build_meta"
 local_scheme = "no-local-version"
 
 [tool.ruff]
-required-version = ">=0.11.0"
 line-length = 100
 indent-width = 4
 preview = true

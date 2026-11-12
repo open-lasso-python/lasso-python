@@ -10,7 +10,7 @@ tasks:
     desc: Lints the code and reports on issues.
     cmds:
       - uv run ruff check .
-      # - uv run ruff format . --check
+      - uv run ruff format . --check
 
   build:
     desc: Builds the python package

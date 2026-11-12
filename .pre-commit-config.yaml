@@ -25,12 +25,21 @@ repos:
       - id: typos
         exclude: ".+[.]min[.]js$"
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 321478e58f4938179c6b86e4ddfa923d1547a49b  # frozen: v0.16.6
+  # ruff comes from uv.lock (dependency group "lint")
+  - repo: local
     hooks:
       - id: ruff-format
+        name: ruff format
+        entry: uv run --frozen --only-group lint ruff format --force-exclude
+        language: system
+        types_or: [python, pyi, jupyter]
+        require_serial: true
       - id: ruff-check
-        args: ["--fix"]
+        name: ruff check
+        entry: uv run --frozen --only-group lint ruff check --force-exclude --fix
+        language: system
+        types_or: [python, pyi, jupyter]
+        require_serial: true
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
     rev: fa412071e4f5d44d44f9e365f4676f9df92456a2  # frozen: v1.30.1
