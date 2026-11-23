@@ -786,11 +786,23 @@ class D3plotWriterSettings:
         )
 
         # NMSPH - number of sph nodes
-        new_header["nmsph"] = (
-            len(self.d3plot.arrays[ArrayType.sph_node_indexes])
-            if ArrayType.sph_node_indexes in self.d3plot.arrays
-            else 0
+        required_arrays = [
+            ArrayType.sph_node_indexes,
+            ArrayType.sph_node_material_index,
+        ]
+        _check_array_occurrence(
+            self.d3plot, array_names=required_arrays, required_array_names=required_arrays
         )
+        if ArrayType.sph_node_indexes in self.d3plot.arrays:
+            new_header["nmsph"] = self.d3plot.check_array_dims(
+                {
+                    ArrayType.sph_node_indexes: 0,
+                    ArrayType.sph_node_material_index: 0,
+                },
+                "n_sph_nodes",
+            )
+        else:
+            new_header["nmsph"] = 0
 
         # NGPSPH - number of sph materials
         new_header["ngpsph"] = (
@@ -798,6 +810,61 @@ class D3plotWriterSettings:
             if ArrayType.sph_node_material_index in self.d3plot.arrays
             else 0
         )
+
+        # ISPHFG1..11 & NUMSPH - sph element data flags and variable count
+        if (
+            ArrayType.sph_strainrate in self.d3plot.arrays
+            and ArrayType.sph_strain not in self.d3plot.arrays
+        ):
+            msg = (
+                f"Array '{ArrayType.sph_strainrate}' requires "
+                f"'{ArrayType.sph_strain}' when writing d3plot."
+            )
+            raise ValueError(msg)
+
+        if new_header["nmsph"] > 0:
+            new_header["isphfg1"] = 11
+            new_header["isphfg2"] = 1 if ArrayType.sph_radius in self.d3plot.arrays else 0
+            new_header["isphfg3"] = 1 if ArrayType.sph_pressure in self.d3plot.arrays else 0
+            new_header["isphfg4"] = 6 if ArrayType.sph_stress in self.d3plot.arrays else 0
+            new_header["isphfg5"] = (
+                1 if ArrayType.sph_effective_plastic_strain in self.d3plot.arrays else 0
+            )
+            new_header["isphfg6"] = 1 if ArrayType.sph_density in self.d3plot.arrays else 0
+            new_header["isphfg7"] = 1 if ArrayType.sph_internal_energy in self.d3plot.arrays else 0
+            new_header["isphfg8"] = 1 if ArrayType.sph_n_neighbors in self.d3plot.arrays else 0
+            if ArrayType.sph_strainrate in self.d3plot.arrays:
+                new_header["isphfg9"] = 12
+            elif ArrayType.sph_strain in self.d3plot.arrays:
+                new_header["isphfg9"] = -6 if self.d3plot._sph_info.has_true_strains else 6
+            else:
+                new_header["isphfg9"] = 0
+            new_header["isphfg10"] = 1 if ArrayType.sph_mass in self.d3plot.arrays else 0
+            n_sph_history_vars = 0
+            if ArrayType.sph_history_vars in self.d3plot.arrays:
+                n_sph_history_vars, _ = self.count_array_state_var(
+                    ArrayType.sph_history_vars,
+                    ["n_timesteps", "n_sph_particles", "n_sph_history_vars"],
+                    False,
+                )
+            new_header["isphfg11"] = n_sph_history_vars
+            new_header["numsph"] = (
+                1
+                + new_header["isphfg2"]
+                + new_header["isphfg3"]
+                + new_header["isphfg4"]
+                + new_header["isphfg5"]
+                + new_header["isphfg6"]
+                + new_header["isphfg7"]
+                + new_header["isphfg8"]
+                + abs(new_header["isphfg9"])
+                + new_header["isphfg10"]
+                + new_header["isphfg11"]
+            )
+        else:
+            for i_flag in range(1, 12):
+                new_header[f"isphfg{i_flag}"] = 0
+            new_header["numsph"] = 0
 
         # NUMMATT - thick shell material count
         required_arrays = [
@@ -3508,6 +3575,7 @@ class D3plot:
             ArrayType.sph_internal_energy: [n_states, n_sph_particles],
             ArrayType.sph_n_neighbors: [n_states, n_sph_particles],
             ArrayType.sph_strain: [n_states, n_sph_particles, 6],
+            ArrayType.sph_strainrate: [n_states, n_sph_particles, 6],
             ArrayType.sph_mass: [n_states, n_sph_particles],
             # airbag
             ArrayType.airbag_n_active_particles: [n_states, n_airbags],
@@ -3547,11 +3615,19 @@ class D3plot:
             ArrayType.airbag_particle_chamber_id,
             ArrayType.airbag_particle_leakage,
         ]
+        bool_state_arrays = [
+            ArrayType.sph_deletion,
+        ]
 
         # (2) ALLOCATE ARRAYS
         # this looper allocates the arrays specified by the user.
         for array_name in array_names:
-            array_dtype = header.ftype if array_name not in int_state_arrays else header.itype
+            if array_name in bool_state_arrays:
+                array_dtype = np.bool_
+            elif array_name in int_state_arrays:
+                array_dtype = header.itype
+            else:
+                array_dtype = header.ftype
 
             if array_name in state_array_shapes:
                 array_dict[array_name] = np.empty(state_array_shapes[array_name], dtype=array_dtype)
@@ -6464,67 +6540,9 @@ class D3plot:
         if settings.header["nmsph"] <= 0:
             return 0
 
-        n_sph_var_count = 0
-
-        # radius
-        n_sph_radius_vars = 1 if ArrayType.sph_radius in self.arrays else 0
-        n_sph_var_count += n_sph_radius_vars
-
-        # pressure
-        n_sph_pressure_vars = 1 if ArrayType.sph_pressure in self.arrays else 0
-        n_sph_var_count += n_sph_pressure_vars
-
-        # stress
-        n_sph_stress_vars = 6 if ArrayType.sph_stress in self.arrays else 0
-        n_sph_var_count += n_sph_stress_vars
-
-        # eff pstrain
-        n_sph_eff_pstrain_vars = 1 if ArrayType.sph_effective_plastic_strain in self.arrays else 0
-        n_sph_var_count += n_sph_eff_pstrain_vars
-
-        # density
-        n_sph_density_vars = 1 if ArrayType.sph_density in self.arrays else 0
-        n_sph_var_count += n_sph_density_vars
-
-        # internal energy
-        n_sph_internal_energy_vars = 1 if ArrayType.sph_internal_energy in self.arrays else 0
-        n_sph_var_count += n_sph_internal_energy_vars
-
-        # n neighbors
-        n_sph_n_neighbors_vars = 1 if ArrayType.sph_n_neighbors in self.arrays else 0
-        n_sph_var_count += n_sph_n_neighbors_vars
-
-        # strains
-        n_sph_strain_vars = 6 if ArrayType.sph_strain in self.arrays else 0
-        n_sph_var_count += n_sph_strain_vars
-
-        # mass
-        n_sph_mass_vars = 1 if ArrayType.sph_mass in self.arrays else 0
-        n_sph_var_count += n_sph_mass_vars
-
-        # history vars
-        n_sph_history_vars = 0
-        if ArrayType.sph_history_vars in self.arrays:
-            n_sph_history_vars, _ = settings.count_array_state_var(
-                ArrayType.sph_history_vars,
-                ["n_timesteps", "n_sph_particles", "n_sph_history_vars"],
-                False,
-            )
-        n_sph_var_count += n_sph_history_vars
-
-        # write
         n_bytes_written = 0
-        n_bytes_written += fp.write(settings.pack(n_sph_var_count))
-        n_bytes_written += fp.write(settings.pack(n_sph_radius_vars))
-        n_bytes_written += fp.write(settings.pack(n_sph_pressure_vars))
-        n_bytes_written += fp.write(settings.pack(n_sph_stress_vars))
-        n_bytes_written += fp.write(settings.pack(n_sph_eff_pstrain_vars))
-        n_bytes_written += fp.write(settings.pack(n_sph_density_vars))
-        n_bytes_written += fp.write(settings.pack(n_sph_internal_energy_vars))
-        n_bytes_written += fp.write(settings.pack(n_sph_n_neighbors_vars))
-        n_bytes_written += fp.write(settings.pack(n_sph_strain_vars))
-        n_bytes_written += fp.write(settings.pack(n_sph_mass_vars))
-        n_bytes_written += fp.write(settings.pack(n_sph_history_vars))
+        for i_flag in range(1, 12):
+            n_bytes_written += fp.write(settings.pack(settings.header[f"isphfg{i_flag}"]))
 
         # check
         n_bytes_expected = 11 * settings.wordsize
@@ -7048,7 +7066,9 @@ class D3plot:
 
         sph_node_indexes = self.arrays[ArrayType.sph_node_indexes] + FORTRAN_OFFSET
         sph_node_material_index = self.arrays[ArrayType.sph_node_material_index] + FORTRAN_OFFSET
-        sph_data = np.concatenate((sph_node_indexes, sph_node_material_index), axis=1)
+        sph_data = np.concatenate(
+            (sph_node_indexes.reshape(-1, 1), sph_node_material_index.reshape(-1, 1)), axis=1
+        )
 
         # write
         n_bytes_written = fp.write(settings.pack(sph_data, dtype_hint=np.integer))
@@ -7412,9 +7432,13 @@ class D3plot:
 
         # if timestep array is missing check for any state arrays
         if ArrayType.global_timesteps not in self.arrays:
+            writable_state_arrays = [
+                *ArrayType.get_state_array_names(),
+                ArrayType.sph_history_vars,
+            ]
             # if any state array is present simply make up a timestep array
-            if any(array_name in self.arrays for array_name in ArrayType.get_state_array_names()):
-                array_dims = dict.fromkeys(ArrayType.get_state_array_names(), 0)
+            if any(array_name in self.arrays for array_name in writable_state_arrays):
+                array_dims = dict.fromkeys(writable_state_arrays, 0)
                 n_timesteps = self.check_array_dims(
                     array_dimensions=array_dims, dimension_name="n_timesteps"
                 )
@@ -8836,7 +8860,17 @@ class D3plot:
                 ArrayType.sph_internal_energy: ["n_timesteps", "n_particles"],
                 ArrayType.sph_n_neighbors: ["n_timesteps", "n_particles"],
                 ArrayType.sph_strain: ["n_timesteps", "n_particles", "εx_εy_εz_εxy_εyz_εxz"],
+                ArrayType.sph_strainrate: [
+                    "n_timesteps",
+                    "n_particles",
+                    "ε̇x_ε̇y_ε̇z_ε̇xy_ε̇yz_ε̇xz",
+                ],
                 ArrayType.sph_mass: ["n_timesteps", "n_particles"],
+                ArrayType.sph_history_vars: [
+                    "n_timesteps",
+                    "n_particles",
+                    "n_sph_history_vars",
+                ],
             },
         )
 
@@ -8851,12 +8885,15 @@ class D3plot:
             ArrayType.sph_internal_energy: 0,
             ArrayType.sph_n_neighbors: 0,
             ArrayType.sph_strain: 0,
+            ArrayType.sph_strainrate: 0,
             ArrayType.sph_mass: 0,
+            ArrayType.sph_history_vars: 0,
         }
         self.check_array_dims(array_dims, "n_timesteps")
 
         array_dims = {
             ArrayType.sph_node_indexes: 0,
+            ArrayType.sph_node_material_index: 0,
             ArrayType.sph_deletion: 1,
             ArrayType.sph_radius: 1,
             ArrayType.sph_pressure: 1,
@@ -8866,114 +8903,92 @@ class D3plot:
             ArrayType.sph_internal_energy: 1,
             ArrayType.sph_n_neighbors: 1,
             ArrayType.sph_strain: 1,
+            ArrayType.sph_strainrate: 1,
             ArrayType.sph_mass: 1,
+            ArrayType.sph_history_vars: 1,
         }
         n_particles = self.check_array_dims(array_dims, "n_particles")
         self.check_array_dims({ArrayType.sph_stress: 2}, "σx_σy_σz_σxy_σyz_σxz", 6)
         self.check_array_dims({ArrayType.sph_strain: 2}, "εx_εy_εz_εxy_εyz_εxz", 6)
+        self.check_array_dims({ArrayType.sph_strainrate: 2}, "ε̇x_ε̇y_ε̇z_ε̇xy_ε̇yz_ε̇xz", 6)
 
         n_sph_variables = settings.header["numsph"]
+        sph_data = np.zeros((n_particles, n_sph_variables), dtype=settings.ftype)
 
-        sph_data = np.zeros((n_particles, n_sph_variables))
-
-        start_index = 0
-        end_index = 0
-
-        # SPH MATERIAL AND DELETION
-        start_index = 0
-        end_index = 1
-        array = (
-            self.arrays[ArrayType.sph_deletion][i_timestep]
-            if ArrayType.sph_deletion in self.arrays
-            else np.ones(n_particles)
+        # SPH MATERIAL AND DELETION (positive material ID = alive, negative = deleted)
+        raw_mat_ids = (self.arrays[ArrayType.sph_node_material_index] + FORTRAN_OFFSET).astype(
+            settings.ftype
         )
-        sph_data[:, start_index:end_index] = array
+        mat_ids = np.where(raw_mat_ids > 0, raw_mat_ids, 1.0).astype(settings.ftype)
+        if ArrayType.sph_deletion in self.arrays:
+            deleted = np.asarray(self.arrays[ArrayType.sph_deletion][i_timestep], dtype=bool)
+            sph_data[:, 0] = np.where(deleted, -mat_ids, mat_ids)
+        else:
+            sph_data[:, 0] = mat_ids
+
+        i_var = 1
 
         # INFLUENCE RADIUS
         if settings.header["isphfg2"]:
-            start_index = end_index
-            end_index = start_index + n_particles
-            if ArrayType.sph_radius in self.arrays:
-                array = self.arrays[ArrayType.sph_radius][i_timestep]
-                sph_data[:, start_index:end_index] = array
+            sph_data[:, i_var] = self.arrays[ArrayType.sph_radius][i_timestep]
+            i_var += 1
 
         # PRESSURE
         if settings.header["isphfg3"]:
-            start_index = end_index
-            end_index = start_index + n_particles
-            if ArrayType.sph_pressure in self.arrays:
-                array = self.arrays[ArrayType.sph_pressure][i_timestep]
-                sph_data[:, start_index:end_index] = array
+            sph_data[:, i_var] = self.arrays[ArrayType.sph_pressure][i_timestep]
+            i_var += 1
 
         # STRESS
         if settings.header["isphfg4"]:
-            start_index = end_index
-            end_index = start_index + 6 * n_particles
-            if ArrayType.sph_stress in self.arrays:
-                array = self.arrays[ArrayType.sph_stress][i_timestep]
-                sph_data[:, start_index:end_index] = array
+            sph_data[:, i_var : i_var + 6] = self.arrays[ArrayType.sph_stress][i_timestep]
+            i_var += 6
 
         # PSTRAIN
         if settings.header["isphfg5"]:
-            start_index = end_index
-            end_index = start_index + n_particles
-            if ArrayType.sph_effective_plastic_strain in self.arrays:
-                array = self.arrays[ArrayType.sph_effective_plastic_strain][i_timestep]
-                sph_data[:, start_index:end_index] = array
+            sph_data[:, i_var] = self.arrays[ArrayType.sph_effective_plastic_strain][i_timestep]
+            i_var += 1
 
         # DENSITY
         if settings.header["isphfg6"]:
-            start_index = end_index
-            end_index = start_index + n_particles
-            if ArrayType.sph_density in self.arrays:
-                array = self.arrays[ArrayType.sph_density][i_timestep]
-                sph_data[:, start_index:end_index] = array
+            sph_data[:, i_var] = self.arrays[ArrayType.sph_density][i_timestep]
+            i_var += 1
 
         # INTERNAL ENERGY
         if settings.header["isphfg7"]:
-            start_index = end_index
-            end_index = start_index + n_particles
-            if ArrayType.sph_internal_energy in self.arrays:
-                array = self.arrays[ArrayType.sph_internal_energy][i_timestep]
-                sph_data[:, start_index:end_index] = array
+            sph_data[:, i_var] = self.arrays[ArrayType.sph_internal_energy][i_timestep]
+            i_var += 1
 
-        # INTERNAL ENERGY
+        # NUMBER OF NEIGHBORS
         if settings.header["isphfg8"]:
-            start_index = end_index
-            end_index = start_index + n_particles
-            if ArrayType.sph_n_neighbors in self.arrays:
-                array = self.arrays[ArrayType.sph_n_neighbors][i_timestep]
-                sph_data[:, start_index:end_index] = array
+            sph_data[:, i_var] = self.arrays[ArrayType.sph_n_neighbors][i_timestep]
+            i_var += 1
 
-        # STRAIN
+        # STRAIN AND STRAINRATE
         if settings.header["isphfg9"]:
-            start_index = end_index
-            end_index = start_index + n_particles * 6
-            if ArrayType.sph_strain in self.arrays:
-                array = self.arrays[ArrayType.sph_strain][i_timestep]
-                sph_data[:, start_index:end_index] = array
+            sph_data[:, i_var : i_var + 6] = self.arrays[ArrayType.sph_strain][i_timestep]
+            i_var += 6
+            if abs(settings.header["isphfg9"]) > 6:
+                sph_data[:, i_var : i_var + 6] = self.arrays[ArrayType.sph_strainrate][i_timestep]
+                i_var += 6
 
         # MASS
         if settings.header["isphfg10"]:
-            start_index = end_index
-            end_index = start_index + n_particles
-            if ArrayType.sph_mass in self.arrays:
-                array = self.arrays[ArrayType.sph_mass][i_timestep]
-                sph_data[:, start_index:end_index] = array
+            sph_data[:, i_var] = self.arrays[ArrayType.sph_mass][i_timestep]
+            i_var += 1
+
+        # HISTORY VARIABLES
+        if settings.header["isphfg11"]:
+            n_hist = settings.header["isphfg11"]
+            sph_data[:, i_var : i_var + n_hist] = self.arrays[ArrayType.sph_history_vars][
+                i_timestep
+            ]
+            i_var += n_hist
 
         n_bytes_written = fp.write(settings.pack(sph_data, dtype_hint=np.floating))
 
         # check bytes
-        n_bytes_expected = (
-            settings.header["nv2d"]
-            * (settings.header["nel4"] - settings.header["numrbe"])
-            * settings.wordsize
-        )
-        if n_bytes_expected != n_bytes_written:
-            msg = (
-                f"byte checksum wrong: {n_bytes_expected} (header) != {n_bytes_written} (checksum)"
-            )
-            raise RuntimeError(msg)
+        n_bytes_expected = n_particles * n_sph_variables * settings.wordsize
+        D3plot._compare_n_bytes_checksum(n_bytes_written, n_bytes_expected)
 
         # log
         msg = "%s wrote %d bytes."

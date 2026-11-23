@@ -575,6 +575,7 @@ class ArrayType:
             ArrayType.sph_internal_energy,
             ArrayType.sph_n_neighbors,
             ArrayType.sph_strain,
+            ArrayType.sph_strainrate,
             ArrayType.sph_mass,
             # airbag
             ArrayType.airbag_n_active_particles,
