@@ -1,3 +1,4 @@
+import io
 import os
 import platform
 import struct
@@ -467,3 +468,239 @@ class D3plotTest(TestCase):
         node_disp = d3plot.arrays[ArrayType.node_displacement][:, node_index]
 
         np.testing.assert_allclose(node_disp, disp_node_real, rtol=1e-4)
+
+    def test_write_sph_geometry_only(self):
+        d3plot = D3plot()
+        d3plot.arrays[ArrayType.node_coordinates] = np.array(
+            [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+            dtype=np.float32,
+        )
+        d3plot.arrays[ArrayType.sph_node_indexes] = np.array([0, 2, 3], dtype=np.int32)
+        d3plot.arrays[ArrayType.sph_node_material_index] = np.array([0, 1, 1], dtype=np.int32)
+
+        with tempfile.TemporaryDirectory() as dirpath:
+            filepath = os.path.join(dirpath, "sph_geom.d3plot")
+            d3plot.write_d3plot(filepath)
+
+            loaded = D3plot(filepath)
+            self.assertEqual(loaded.header.n_sph_nodes, 3)
+            self.assertEqual(loaded.header.n_sph_materials, 2)
+            np.testing.assert_array_equal(
+                loaded.arrays[ArrayType.sph_node_indexes],
+                d3plot.arrays[ArrayType.sph_node_indexes],
+            )
+            np.testing.assert_array_equal(
+                loaded.arrays[ArrayType.sph_node_material_index],
+                d3plot.arrays[ArrayType.sph_node_material_index],
+            )
+            np.testing.assert_allclose(
+                loaded.arrays[ArrayType.node_coordinates],
+                d3plot.arrays[ArrayType.node_coordinates],
+            )
+
+        # Also verify in-memory BinaryIO stream write
+        stream = io.BytesIO()
+        d3plot.write_d3plot(stream)
+        self.assertGreater(stream.tell(), 0)
+
+    def test_write_sph_full_and_partial_states(self):
+        self.maxDiff = None
+        rng = np.random.default_rng(42)
+        n_states = 3
+        n_nodes = 6
+        n_sph = 4
+
+        for wordsize, itype, ftype in ((4, np.int32, np.float32), (8, np.int64, np.float64)):
+            for single_file in (True, False):
+                d3plot = D3plot()
+                d3plot.header.wordsize = wordsize
+                d3plot.header.itype = itype
+                d3plot.header.ftype = ftype
+
+                # Mix shell element + SPH particles so neighboring section offsets are exercised
+                d3plot.arrays[ArrayType.node_coordinates] = rng.normal(size=(n_nodes, 3)).astype(
+                    ftype
+                )
+                d3plot.arrays[ArrayType.element_shell_node_indexes] = np.array(
+                    [[0, 1, 2, 2]], dtype=itype
+                )
+                d3plot.arrays[ArrayType.element_shell_part_indexes] = np.array([0], dtype=itype)
+                # Use non-monotonic node indexes and non-contiguous material indexes
+                d3plot.arrays[ArrayType.sph_node_indexes] = np.array([5, 2, 4, 3], dtype=itype)
+                d3plot.arrays[ArrayType.sph_node_material_index] = np.array(
+                    [3, 0, 3, 1], dtype=itype
+                )
+
+                d3plot.arrays[ArrayType.global_timesteps] = np.array([0.0, 0.5, 1.0], dtype=ftype)
+                d3plot.arrays[ArrayType.node_displacement] = rng.normal(
+                    size=(n_states, n_nodes, 3)
+                ).astype(ftype)
+                d3plot.arrays[ArrayType.sph_deletion] = np.array(
+                    [
+                        [False, False, False, False],
+                        [False, True, False, False],
+                        [False, True, False, True],
+                    ],
+                    dtype=bool,
+                )
+                d3plot.arrays[ArrayType.sph_radius] = rng.uniform(
+                    0.1, 1.0, size=(n_states, n_sph)
+                ).astype(ftype)
+                d3plot.arrays[ArrayType.sph_pressure] = rng.normal(size=(n_states, n_sph)).astype(
+                    ftype
+                )
+                d3plot.arrays[ArrayType.sph_stress] = rng.normal(size=(n_states, n_sph, 6)).astype(
+                    ftype
+                )
+                d3plot.arrays[ArrayType.sph_effective_plastic_strain] = rng.uniform(
+                    0.0, 0.5, size=(n_states, n_sph)
+                ).astype(ftype)
+                d3plot.arrays[ArrayType.sph_density] = rng.uniform(
+                    1.0, 8.0, size=(n_states, n_sph)
+                ).astype(ftype)
+                d3plot.arrays[ArrayType.sph_internal_energy] = rng.uniform(
+                    0.0, 10.0, size=(n_states, n_sph)
+                ).astype(ftype)
+                d3plot.arrays[ArrayType.sph_n_neighbors] = rng.integers(
+                    5, 40, size=(n_states, n_sph)
+                ).astype(ftype)
+                d3plot.arrays[ArrayType.sph_strain] = rng.normal(size=(n_states, n_sph, 6)).astype(
+                    ftype
+                )
+                d3plot.arrays[ArrayType.sph_strainrate] = rng.normal(
+                    size=(n_states, n_sph, 6)
+                ).astype(ftype)
+                d3plot.arrays[ArrayType.sph_mass] = rng.uniform(
+                    0.01, 0.2, size=(n_states, n_sph)
+                ).astype(ftype)
+
+                with tempfile.TemporaryDirectory() as dirpath:
+                    filepath = os.path.join(dirpath, "sph_full.d3plot")
+                    d3plot.write_d3plot(filepath, single_file=single_file)
+
+                    loaded = D3plot(filepath)
+                    loaded_buffered = D3plot(filepath, buffered_reading=True)
+
+                    for read_label, candidate in (
+                        ("unbuffered", loaded),
+                        ("buffered", loaded_buffered),
+                    ):
+                        hdr_diff, array_diff = d3plot.compare(candidate)
+                        array_diff = {
+                            name: reason
+                            for name, reason in array_diff.items()
+                            if "missing in original" not in reason
+                        }
+                        ctx = f"wordsize={wordsize}, single_file={single_file}, {read_label}"
+                        self.assertDictEqual(hdr_diff, {}, ctx)
+                        self.assertDictEqual(array_diff, {}, ctx)
+                        self.assertEqual(candidate.header.n_sph_nodes, n_sph, ctx)
+                        self.assertEqual(candidate.header.n_sph_materials, 3, ctx)
+                        self.assertEqual(
+                            candidate.arrays[ArrayType.sph_deletion].dtype, np.dtype(bool), ctx
+                        )
+                        np.testing.assert_array_equal(
+                            candidate.arrays[ArrayType.sph_deletion],
+                            d3plot.arrays[ArrayType.sph_deletion],
+                        )
+
+                    # Compare populated headers/arrays directly (non-empty raw_header)
+                    buf_hdr_diff, buf_arr_diff = loaded.compare(loaded_buffered)
+                    self.assertDictEqual(buf_hdr_diff, {})
+                    self.assertDictEqual(buf_arr_diff, {})
+
+                    # Second-hop rewrite verifies all 65 populated raw_header words round-trip
+                    rewrite_path = os.path.join(dirpath, "sph_rewrite.d3plot")
+                    loaded.write_d3plot(rewrite_path, single_file=single_file)
+                    reloaded = D3plot(rewrite_path)
+                    rew_hdr_diff, rew_arr_diff = loaded.compare(reloaded)
+                    self.assertDictEqual(rew_hdr_diff, {})
+                    self.assertDictEqual(rew_arr_diff, {})
+
+                    # Filtered single-array reads including sph_strainrate and sph_deletion
+                    for sph_array_name in (
+                        ArrayType.sph_deletion,
+                        ArrayType.sph_strainrate,
+                        ArrayType.sph_mass,
+                    ):
+                        filtered = D3plot(filepath, state_array_filter=[sph_array_name])
+                        np.testing.assert_allclose(
+                            filtered.arrays[sph_array_name],
+                            d3plot.arrays[sph_array_name],
+                        )
+
+        # Partial subset with true-strain flag and sph_history_vars (no sph_deletion or timesteps)
+        partial = D3plot()
+        partial._sph_info.has_true_strains = True
+        partial.arrays[ArrayType.node_coordinates] = np.zeros((n_sph, 3), dtype=np.float32)
+        partial.arrays[ArrayType.sph_node_indexes] = np.arange(n_sph, dtype=np.int32)
+        partial.arrays[ArrayType.sph_node_material_index] = np.zeros(n_sph, dtype=np.int32)
+        partial.arrays[ArrayType.sph_strain] = np.full((2, n_sph, 6), 0.125, dtype=np.float32)
+        partial.arrays[ArrayType.sph_mass] = np.full((2, n_sph), 0.25, dtype=np.float32)
+        expected_hist = np.arange(2 * n_sph * 2, dtype=np.float32).reshape(2, n_sph, 2) + 1.5
+        partial.arrays[ArrayType.sph_history_vars] = expected_hist
+
+        with tempfile.TemporaryDirectory() as dirpath:
+            filepath = os.path.join(dirpath, "sph_partial.d3plot")
+            partial.write_d3plot(filepath, single_file=False)
+            loaded_partial = D3plot(filepath)
+            self.assertTrue(loaded_partial._sph_info.has_true_strains)
+            self.assertEqual(loaded_partial._sph_info.n_sph_history_vars, 2)
+            np.testing.assert_allclose(
+                loaded_partial.arrays[ArrayType.sph_strain],
+                partial.arrays[ArrayType.sph_strain],
+            )
+            np.testing.assert_allclose(
+                loaded_partial.arrays[ArrayType.sph_mass],
+                partial.arrays[ArrayType.sph_mass],
+            )
+            self.assertFalse(np.any(loaded_partial.arrays[ArrayType.sph_deletion]))
+
+            # Verify trailing sph_history_vars columns in raw state files (10 vars/particle)
+            numsph_partial = 1 + 6 + 1 + 2
+            for i_state, suffix in enumerate(("01", "02")):
+                state_words = np.fromfile(filepath + suffix, dtype=np.float32)
+                sph_block = state_words[1 : 1 + n_sph * numsph_partial].reshape(
+                    n_sph, numsph_partial
+                )
+                np.testing.assert_allclose(sph_block[:, -2:], expected_hist[i_state])
+
+        # Also verify sph_history_vars alone drives n_timesteps inference when timesteps omitted
+        hist_only = D3plot()
+        hist_only.arrays[ArrayType.node_coordinates] = np.zeros((2, 3), dtype=np.float32)
+        hist_only.arrays[ArrayType.sph_node_indexes] = np.array([0, 1], dtype=np.int32)
+        hist_only.arrays[ArrayType.sph_node_material_index] = np.array([0, 1], dtype=np.int32)
+        hist_only.arrays[ArrayType.sph_history_vars] = np.array(
+            [[[2.5, 3.5], [4.5, 5.5]], [[6.5, 7.5], [8.5, 9.5]]], dtype=np.float32
+        )
+        with tempfile.TemporaryDirectory() as dirpath:
+            filepath = os.path.join(dirpath, "sph_hist_only.d3plot")
+            hist_only.write_d3plot(filepath, single_file=False)
+            loaded_hist_only = D3plot(filepath)
+            self.assertEqual(loaded_hist_only.n_timesteps, 2)
+            self.assertEqual(loaded_hist_only._sph_info.n_sph_history_vars, 2)
+
+    def test_write_sph_validation_errors(self):
+        # sph_strainrate without sph_strain cannot be represented by LS-DYNA isphfg9
+        d3plot = D3plot()
+        d3plot.arrays[ArrayType.node_coordinates] = np.zeros((2, 3), dtype=np.float32)
+        d3plot.arrays[ArrayType.sph_node_indexes] = np.array([0, 1], dtype=np.int32)
+        d3plot.arrays[ArrayType.sph_node_material_index] = np.array([0, 0], dtype=np.int32)
+        d3plot.arrays[ArrayType.sph_strainrate] = np.zeros((1, 2, 6), dtype=np.float32)
+        with self.assertRaises(ValueError):
+            d3plot.write_d3plot(io.BytesIO())
+
+        # Unpaired SPH geometry array must raise ValueError
+        d3plot_unpaired = D3plot()
+        d3plot_unpaired.arrays[ArrayType.node_coordinates] = np.zeros((2, 3), dtype=np.float32)
+        d3plot_unpaired.arrays[ArrayType.sph_node_material_index] = np.array([0, 0], dtype=np.int32)
+        with self.assertRaises(ValueError):
+            d3plot_unpaired.write_d3plot(io.BytesIO())
+
+        # Length-mismatched SPH geometry arrays must raise ValueError
+        d3plot_mismatch = D3plot()
+        d3plot_mismatch.arrays[ArrayType.node_coordinates] = np.zeros((3, 3), dtype=np.float32)
+        d3plot_mismatch.arrays[ArrayType.sph_node_indexes] = np.array([0, 1, 2], dtype=np.int32)
+        d3plot_mismatch.arrays[ArrayType.sph_node_material_index] = np.array([0, 1], dtype=np.int32)
+        with self.assertRaises(ValueError):
+            d3plot_mismatch.write_d3plot(io.BytesIO())
